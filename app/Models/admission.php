@@ -2,19 +2,12 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\Admission as Authenticatable;
-use Laravel\Passport\HasApiTokens;
-
 use Illuminate\Database\Eloquent\Model;
-use App\Http\Controllers\school;
 
 
 class Admission extends Model
 {
-      use Notifiable;
+  
      
      protected $fillable = [
 

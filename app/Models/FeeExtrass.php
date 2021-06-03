@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Http\Controllers\school;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class FeeExtrass extends Model
 {
-    use HasFactory;
-   use Loggable; 
+
      protected $fillable = [
         'student_id','description','select_fee','amount', 'term','year'
     ];

@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Http\Controllers\school;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class First_parent extends Model
 {
-   use HasFactory;
-   use Loggable; 
+ 
      protected $fillable = [
         'admission_id','title','relation','first_name', 'last_name','phone','email','id_passport','occupation','address','postal_code','passport_photo','national_id','middle_name','status'
     ];
