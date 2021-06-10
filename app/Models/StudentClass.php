@@ -16,4 +16,9 @@ class StudentClass extends Model
     {
         return $this->belongsToMany('App\student_class');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

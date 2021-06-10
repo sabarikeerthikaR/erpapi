@@ -19,5 +19,9 @@ class AddExcActivities extends Model
     public function categories()
     {
         return $this->belongsToMany('App\extra_curricular_activity');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

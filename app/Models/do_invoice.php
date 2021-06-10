@@ -17,5 +17,9 @@ class Do_invoice extends Model
     public function categories()
     {
         return $this->belongsToMany('App\do_invoice');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

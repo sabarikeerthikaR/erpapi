@@ -26,6 +26,8 @@ route::get('login_list', 'school\AuthController@index');
 route::post('update', 'school\AuthController@update');
 route::get('destroy', 'school\AuthController@destroy');
 
+route::get('settings', 'school\CommonController@settings');
+route::get('userStatus', 'school\CommonController@userStatus');
 
 
 //online registration

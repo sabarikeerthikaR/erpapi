@@ -19,4 +19,9 @@ class Items_manager_contact extends Model
     {
         return $this->belongsToMany('App\items_manager_contact');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

@@ -17,4 +17,9 @@ class Give_out_book_fund extends Model
     {
         return $this->belongsToMany('App\give_out_book_fund');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

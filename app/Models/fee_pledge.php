@@ -16,5 +16,9 @@ class Fee_pledge extends Model
     public function categories()
     {
         return $this->belongsToMany('App\fee_pledge');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

@@ -18,4 +18,9 @@ class Group_staff extends Model
     {
         return $this->belongsToMany('App\group_staff');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

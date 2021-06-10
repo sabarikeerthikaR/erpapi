@@ -16,5 +16,9 @@ class ClassAttendance extends Model
     public function categories()
     {
         return $this->belongsToMany('App\class_attendance');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

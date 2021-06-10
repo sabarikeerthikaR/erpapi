@@ -17,5 +17,9 @@ class Counties extends Model
     public function categories()
     {
         return $this->belongsToMany('App\counties');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

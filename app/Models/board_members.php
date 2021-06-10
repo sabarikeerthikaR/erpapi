@@ -17,5 +17,9 @@ class Board_members extends Model
     public function categories()
     {
         return $this->belongsToMany('App\board_members');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

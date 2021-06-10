@@ -16,5 +16,9 @@ class Emergency_contact extends Model
     public function categories()
     {
         return $this->belongsToMany('App\emergency_contact');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

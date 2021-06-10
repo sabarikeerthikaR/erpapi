@@ -17,5 +17,9 @@ class AddActivities extends Model
     public function categories()
     {
         return $this->belongsToMany('App\add_activities');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

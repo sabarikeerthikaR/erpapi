@@ -17,5 +17,9 @@ class Certificate_type extends Model
     public function categories()
     {
         return $this->belongsToMany('App\certificate_type');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

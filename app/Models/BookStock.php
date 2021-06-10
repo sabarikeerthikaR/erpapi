@@ -17,5 +17,9 @@ class BookStock extends Model
     public function categories()
     {
         return $this->belongsToMany('App\book_stock');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

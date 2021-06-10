@@ -18,4 +18,9 @@ class Item_category extends Model
     {
         return $this->belongsToMany('App\item_category');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

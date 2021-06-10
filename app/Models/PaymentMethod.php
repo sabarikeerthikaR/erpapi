@@ -17,4 +17,9 @@ class PaymentMethod extends Model
     {
         return $this->belongsToMany('App\payment_method');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

@@ -17,5 +17,9 @@ class Certificate_base extends Model
     public function categories()
     {
         return $this->belongsToMany('App\certificate_base');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

@@ -17,5 +17,9 @@ class Bank_account extends Model
     public function categories()
     {
         return $this->belongsToMany('App\bank_account');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

@@ -17,5 +17,9 @@ class ExpenseCategory extends Model
     public function categories()
     {
         return $this->belongsToMany('App\expense_category');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

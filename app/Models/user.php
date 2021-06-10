@@ -50,4 +50,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany('App\users');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
  }

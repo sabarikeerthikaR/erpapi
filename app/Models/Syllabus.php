@@ -16,4 +16,9 @@ class Syllabus extends Model
    {
        return $this->belongsToMany('App\syllabus');
    }
+    
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

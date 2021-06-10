@@ -16,5 +16,9 @@ class Add_emp_sal extends Model
     public function categories()
     {
         return $this->belongsToMany('App\add_emp_sal');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

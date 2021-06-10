@@ -21,5 +21,9 @@ class AddStream extends Model
    public function comments()
    {
        return $this->hasMany('App\class_stream');
-   }
+   } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

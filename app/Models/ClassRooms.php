@@ -16,5 +16,9 @@ class ClassRooms extends Model
     public function categories()
     {
         return $this->belongsToMany('App\class_room');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

@@ -17,5 +17,9 @@ class ExamMark extends Model
     public function categories()
     {
         return $this->belongsToMany('App\exam_mark');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

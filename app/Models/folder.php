@@ -17,4 +17,9 @@ class Folder extends Model
     {
         return $this->belongsToMany('App\folder');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

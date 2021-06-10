@@ -16,5 +16,9 @@ class AddRoute extends Model
     public function categories()
     {
         return $this->belongsToMany('App\add_route');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

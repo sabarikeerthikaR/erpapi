@@ -16,5 +16,9 @@ class Event_announcement extends Model
     public function categories()
     {
         return $this->belongsToMany('App\event_announcement');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

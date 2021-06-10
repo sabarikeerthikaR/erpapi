@@ -18,4 +18,9 @@ class GrantType extends Model
     {
         return $this->belongsToMany('App\grant_type');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

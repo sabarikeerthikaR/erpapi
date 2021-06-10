@@ -16,5 +16,9 @@ class Fee_arrears extends Model
     public function categories()
     {
         return $this->belongsToMany('App\fee_arrears');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

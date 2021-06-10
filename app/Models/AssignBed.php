@@ -17,5 +17,9 @@ class AssignBed extends Model
     public function categories()
     {
         return $this->belongsToMany('App\assign_bed');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

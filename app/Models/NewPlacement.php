@@ -18,4 +18,9 @@ class NewPlacement extends Model
     {
         return $this->belongsToMany('App\new_placement');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

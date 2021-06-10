@@ -16,4 +16,9 @@ class Petty_cash extends Model
     {
         return $this->belongsToMany('App\petty_cash');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

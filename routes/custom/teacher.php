@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 //teacher module
+Route::group(['prefix' => 'teacher'], function () {
 
-  Route::middleware('is_teacher')->group(function(){
+ Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
 
     //dashboard
     route::get('teacherDashBoard','school\DashboardController@teacherDashBoard');
@@ -78,6 +79,8 @@ use Illuminate\Support\Facades\Route;
     
     
     });
+    
+});
 
 
 Route::get('testCode', function () {

@@ -18,4 +18,9 @@ class Give_items extends Model
     {
         return $this->belongsToMany('App\give_items');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

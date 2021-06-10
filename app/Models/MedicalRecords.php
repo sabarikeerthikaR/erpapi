@@ -18,4 +18,9 @@ class MedicalRecords extends Model
     {
         return $this->belongsToMany('App\medical_records');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

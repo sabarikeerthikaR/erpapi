@@ -28,7 +28,7 @@ class First_parentController extends Controller
 {
    public function store(Request $parent)
     {
-      $validator =  Validator::make($parent->all(), [
+      $valiDationArray =  Validator::make($parent->all(), [
             
             'first_name_f'  => ['required', 'string'],
             'last_name_f'   => ['required', 'string'],
@@ -36,15 +36,64 @@ class First_parentController extends Controller
             'phone_e'  => ['required', 'numeric', 'digits:10'],
             'email'  => ['required', 'email', 'unique:users'],
           ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
+          if($parent->passport_photo_f)
+      {
+        $valiDationArray["passport_photo_f"]='required|file';
+      }
+      if($parent->national_id_f)
+      {
+        $valiDationArray["national_id_f"]='required|file';
+      }
+      if($parent->passport_photo_s)
+      {
+        $valiDationArray["passport_photo_s"]='required|file';
+      }
+      if($parent->national_id_s)
+      {
+        $valiDationArray["national_id_s"]='required|file';
+      }
+      $validator =  Validator::make($parent->all(),$valiDationArray); 
+       if ($validator->fails()) {
+           return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+       }
+       $p=$parent->all();
+       $id=$p['p_id'];
+       DB::enableQueryLog();
+        $parent1 = First_parent::where('parent1_id ',$id)->first(); 
+        
+        $parent2 = Second_parent::where("parent1_id",$id)->first();
+     
+        if($parent->file('passport_photo_f')){
+            $passport_photo_f = $parent->file('passport_photo_f');
+            $imgName = time() . '.' . pathinfo($passport_photo_f->getClientOriginalName(), PATHINFO_EXTENSION);
+            Storage::disk('public_uploads')->put('/parent-photo/' . $imgName, file_get_contents($passport_photo_f));
+            $passport_photo_f=config('app.url').'/public/uploads/parent-photo/' . $imgName;
+            $parent1->passport_photo_f=$passport_photo_f;
+            }
+            if($parent->file('national_id_f')){
+              $national_id_f= $parent->file('national_id_f');
+              $cerName = time() . '.' . pathinfo($national_id_f->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/parent-national-id/' . $cerName, file_get_contents($national_id_f));
+              $national_id_f=config('app.url').'/public/uploads/parent-national-id/' . $cerName;
+              $parent1->national_id_f=$national_id_f;
+              }
+              if($parent->file('passport_photo_s')){
+                $passport_photo_s = $parent->file('passport_photo_s');
+                $imgName = time() . '.' . pathinfo($passport_photo_s->getClientOriginalName(), PATHINFO_EXTENSION);
+                Storage::disk('public_uploads')->put('/parent-photo/' . $imgName, file_get_contents($passport_photo_s));
+                $passport_photo_s=config('app.url').'/public/uploads/parent-photo/' . $imgName;
+                $parent2->passport_photo_s=$passport_photo_s;
+                }
+                if($parent->file('national_id_s')){
+                  $national_id_s= $parent->file('national_id_s');
+                  $cerName = time() . '.' . pathinfo($national_id_s->getClientOriginalName(), PATHINFO_EXTENSION);
+                  Storage::disk('public_uploads')->put('/parent-national-id/' . $cerName, file_get_contents($national_id_s));
+                  $national_id_s=config('app.url').'/public/uploads/parent-national-id/' . $cerName;
+                  $parent2->national_id_s=$national_id_s;
+                  }
        
-        $p=$parent->all();
-        $id=$p['admission_id'];
-        DB::enableQueryLog();
-        $parent1 = First_parent::where('admission_id',$id)->first(); 
-         $parent1->title_f=$parent->title_f;
+       
+          $parent1->title_f=$parent->title_f;
          $parent1->relation_f=$parent->relation_f;
          $parent1->first_name_f=$parent->first_name_f;
          $parent1->middle_name_f=$parent->middle_name_f;
@@ -55,11 +104,11 @@ class First_parentController extends Controller
          $parent1->occupation_f=$parent->occupation_f;
          $parent1->address_f=$parent->address_f;
          $parent1->postal_code_f=$parent->postal_code_f;
-         $parent1->passport_photo_f=$parent->passport_photo_f;
-         $parent1->national_id_f=$parent->national_id_f;
-          $parent1->save();
+        //  $parent1->passport_photo_f=$passport_photo_f;
+        //  $parent1->national_id_f=$national_id_f;
+         $parent1->save();
 
-        $parent2 = Second_parent::where("admission_id",$id)->first();
+
         $parent2->admission_id=$id;
         $parent2->title_s=$parent->title_s;
         $parent2->relation_s=$parent->relation_s;
@@ -72,11 +121,11 @@ class First_parentController extends Controller
         $parent2->occupation_s=$parent->occupation_s;
         $parent2->address_s=$parent->address_s;
         $parent2->postal_code_s=$parent->postal_code_s;
-        $parent2->passport_photo_s=$parent->passport_photo_s;
-        $parent2->national_id_s=$parent->national_id_s;
+        // $parent2->passport_photo_s=$passport_photo_s;
+        // $parent2->national_id_s=$national_id_s;
          $parent2->save();
 
-     $emergencycontact = Emergency_contact::where("admission_id",$id)->first();
+     $emergencycontact = Emergency_contact::where("parent",$id)->first();
          $emergencycontact->admission_id=$id;
          $emergencycontact->first_name_e=$parent->first_name_e;
           $emergencycontact->middle_name_e=$parent->middle_name_e;
@@ -88,27 +137,14 @@ class First_parentController extends Controller
          $emergencycontact->address_e=$parent->address_e;
          $emergencycontact->info_provided_by=$parent->info_provided_by;
          
-         $fname = Admission::select('first_name','middle_name','last_name')->where('admission_id','=',$id)
-        ->first();
-                 $email=$parent->email;
-         $password = randomFunctionNumber(8);
-         $objUser = User::create([  'user_role'=>4,
-                                    'first_name' => ($fname)? $fname->first_name : null,
-                                    'middle_name' => ($fname)? $fname->middle_name : null,
-                                    'last_name' => ($fname)? $fname->last_name : null,
-                                    'email' => $email,
-                                    'admission_id' => $id,
-                                    'password' => Hash::make($password),
-                                ]);
-
-        $objUser->save();
+       
         if($emergencycontact->save()){
                   return response()->json([
                  'message'  => 'parent_details saved successfully',
                  'First_parent'  => $parent1,
                  'Second_parent' => $parent2, 
                  'Emergency_contact'=>$emergencycontact,
-                 'User'=>$objUser
+                
                   ]);
               }else {
                   return response()->json([
@@ -122,7 +158,11 @@ class First_parentController extends Controller
 public function show(request $request)
     { 
              $id=$request->admission_id;
-             $parent = admission::join('first_parent','admission.admission_id','=','first_parent.admission_id')->join('second_parent','admission.admission_id','=','second_parent.admission_id')->join('emergency_contact','admission.admission_id','=','emergency_contact.admission_id')->where('admission.admission_id',$id)->first();
+             $parent = admission::
+             join('first_parent','admission.admission_id','=','first_parent.admission_id')
+             ->join('second_parent','admission.admission_id','=','second_parent.admission_id')
+             ->join('emergency_contact','admission.admission_id','=','emergency_contact.admission_id')
+             ->where('admission.admission_id',$id)->first();
              if(!empty($parent)){
                     return response()->json([
                         'admission_id'=>$id,
@@ -149,7 +189,7 @@ public function show(request $request)
 public function update(Request $parent)
 
    {
-    $validator =  Validator::make($parent->all(), [
+    $valiDationArray =  Validator::make($parent->all(), [
             
         'first_name_f'  => ['required', 'string'],
         'last_name_f'   => ['required', 'string'],
@@ -157,14 +197,64 @@ public function update(Request $parent)
         'phone_e'  => ['required', 'numeric', 'digits:10'],
         'email'  => ['required', 'email', 'unique:users,email,'.$parent->parent1_id],
       ]); 
-      if ($validator->fails()) {
-        return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-    }
- 
+
+
+      if($parent->passport_photo_f)
+      {
+        $valiDationArray["passport_photo_f"]='required|file';
+      }
+      if($parent->national_id_f)
+      {
+        $valiDationArray["national_id_f"]='required|file';
+      }
+      if($parent->passport_photo_s)
+      {
+        $valiDationArray["passport_photo_s"]='required|file';
+      }
+      if($parent->national_id_s)
+      {
+        $valiDationArray["national_id_s"]='required|file';
+      }
+      $validator =  Validator::make($parent->all(),$valiDationArray); 
+       if ($validator->fails()) {
+           return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+       }
        $p=$parent->all();
-        $id=$p['admission_id'];
+        $id=$p['p_id'];
         DB::enableQueryLog();
-        $parent1 = First_parent::where('admission_id',$id)->first();
+        $parent1 = First_parent::where('parent1_id',$id)->first();
+
+        $parent2 = Second_parent::where("parent1_id",$id)->first();
+ 
+        if($parent->file('passport_photo_f')){
+            $passport_photo_f = $parent->file('passport_photo_f');
+            $imgName = time() . '.' . pathinfo($passport_photo_f->getClientOriginalName(), PATHINFO_EXTENSION);
+            Storage::disk('public_uploads')->put('/parent-photo/' . $imgName, file_get_contents($passport_photo_f));
+            $passport_photo_f=config('app.url').'/public/uploads/parent-photo/' . $imgName;
+            $parent1->passport_photo_f=$passport_photo_f;
+            }
+            if($parent->file('national_id_f')){
+              $national_id_f= $parent->file('national_id_f');
+              $cerName = time() . '.' . pathinfo($national_id_f->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/parent-national-id/' . $cerName, file_get_contents($national_id_f));
+              $national_id_f=config('app.url').'/public/uploadsparent-national-id/' . $cerName;
+              $parent1->national_id_f=$national_id_f;
+              }
+              if($parent->file('passport_photo_s')){
+                $passport_photo_s = $parent->file('passport_photo_s');
+                $imgName = time() . '.' . pathinfo($passport_photo_s->getClientOriginalName(), PATHINFO_EXTENSION);
+                Storage::disk('public_uploads')->put('/parent-photo/' . $imgName, file_get_contents($passport_photo_s));
+                $passport_photo_s=config('app.url').'/public/uploads/parent-photo/' . $imgName;
+                $parent2->passport_photo_s=$passport_photo_s;
+                }
+                if($parent->file('national_id_s')){
+                  $national_id_s= $parent->file('national_id_s');
+                  $cerName = time() . '.' . pathinfo($national_id_s->getClientOriginalName(), PATHINFO_EXTENSION);
+                  Storage::disk('public_uploads')->put('/parent-national-id/' . $cerName, file_get_contents($national_id_s));
+                  $national_id_s=config('app.url').'/public/uploads/parent-national-id/' . $cerName;
+                  $parent2->national_id_s=$national_id_s;
+                  }
+       
         $parent1->title_f=$parent->title_f;
         $parent1->relation_f=$parent->relation_f;
         $parent1->first_name_f=$parent->first_name_f;
@@ -176,12 +266,12 @@ public function update(Request $parent)
         $parent1->occupation_f=$parent->occupation_f;
         $parent1->address_f=$parent->address_f;
         $parent1->postal_code_f=$parent->postal_code_f;
-        $parent1->passport_photo_f=$parent->passport_photo_f;
-        $parent1->national_id_f=$parent->national_id_f;
+        // $parent1->passport_photo_f=$passport_photo_f;
+        // $parent1->national_id_f=$national_id_f;
          $parent1->save();
         
  
-       $parent2 = Second_parent::where("admission_id",$id)->first();
+
         $parent2->admission_id=$id;
         $parent2->title_s=$parent->title_s;
         $parent2->relation_s=$parent->relation_s;
@@ -194,11 +284,11 @@ public function update(Request $parent)
         $parent2->occupation_s=$parent->occupation_s;
         $parent2->address_s=$parent->address_s;
         $parent2->postal_code_s=$parent->postal_code_s;
-        $parent2->passport_photo_s=$parent->passport_photo_s;
-        $parent2->national_id_s=$parent->national_id_s;
+        $parent2->passport_photo_s=$passport_photo_s;
+        $parent2->national_id_s=$national_id_s;
          $parent2->save();
 
-     $emergencycontact = Emergency_contact::where("admission_id",$id)->first();
+     $emergencycontact = Emergency_contact::where("parent",$id)->first();
          $emergencycontact->admission_id=$id;
          $emergencycontact->first_name_e=$parent->first_name_e;
           $emergencycontact->middle_name_e=$parent->middle_name_e;

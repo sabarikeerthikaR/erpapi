@@ -17,5 +17,9 @@ class Add_event extends Model
     public function categories()
     {
         return $this->belongsToMany('App\add_event');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

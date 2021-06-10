@@ -22,7 +22,7 @@ class StaffController extends Controller
 {
     public function store(Request $Staff)
     {
-    	 $validator =  Validator::make($Staff->all(), [
+    	 $valiDationArray =  Validator::make($Staff->all(), [
             'first_name' => ['required'],
             'last_name' => ['required'],
             'gender' => ['required'],
@@ -43,10 +43,52 @@ class StaffController extends Controller
             'kuppet_member' => ['required'],
            
         ]); 
-           if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($Staff->passport_photo)
+        {
+          $valiDationArray["passport_photo"]='required|file';
         }
-       
+        if($Staff->credential_certificate)
+        {
+          $valiDationArray["credential_certificate"]='required|file';
+        }
+        if($Staff->national_id_copy)
+        {
+          $valiDationArray["national_id_copy"]='required|file';
+        }
+        if($Staff->tsc_letter)
+        {
+          $valiDationArray["tsc_letter"]='required|file';
+        }
+        $validator =  Validator::make($Staff->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
+         $passport_photo='';$credential_certificate='';
+         if($Staff->file('passport_photo')){
+         $passport_photo = $Staff->file('passport_photo');
+         $imgName = time() . '.' . pathinfo($passport_photo->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/staff-photo/' . $imgName, file_get_contents($passport_photo));
+         $passport_photo=config('app.url').'/public/uploads/staff-photo/' . $imgName;
+         }
+         if($Staff->file('credential_certificate')){
+           $credential_certificate= $Staff->file('credential_certificate');
+           $cerName = time() . '.' . pathinfo($credential_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+           Storage::disk('public_uploads')->put('/credential-certificate/' . $cerName, file_get_contents($credential_certificate));
+           $credential_certificate=config('app.url').'/public/uploads/credential-certificate/' . $cerName;
+         }
+         $national_id_copy='';$tsc_letter='';
+         if($Staff->file('national_id_copy')){
+         $national_id_copy = $Staff->file('national_id_copy');
+         $imgName = time() . '.' . pathinfo($national_id_copy->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/staff-national-id/' . $imgName, file_get_contents($national_id_copy));
+         $national_id_copy=config('app.url').'/public/uploads/staff-national-id/' . $imgName;
+         }
+         if($Staff->file('tsc_letter')){
+           $tsc_letter= $Staff->file('tsc_letter');
+           $cerName = time() . '.' . pathinfo($tsc_letter->getClientOriginalName(), PATHINFO_EXTENSION);
+           Storage::disk('public_uploads')->put('/tsc-letter/' . $cerName, file_get_contents($tsc_letter));
+           $tsc_letter=config('app.url').'/public/uploads/tsc-letter/' . $cerName;
+         }
         $Staff=Staff::create([
         'employee_type'=>1,
         'first_name'    =>$Staff->first_name,
@@ -81,10 +123,10 @@ class StaffController extends Controller
         'email_1'        =>$Staff->email_1,
         'address_1'        =>$Staff->address_1,
         'additional'        =>$Staff->additional,
-        'passport_photo'        =>$Staff->passport_photo,
-        'credential_certificate'        =>$Staff->credential_certificate,
-        'national_id_copy'        =>$Staff->national_id_copy,
-        'tsc_letter'        =>$Staff->tsc_letter,
+        'passport_photo'        =>$passport_photo,
+        'credential_certificate'        =>$credential_certificate,
+        'national_id_copy'        =>$national_id_copy,
+        'tsc_letter'        =>$tsc_letter,
          ]);        $Staff->save();
          $name=$Staff->first_name.' '.$Staff->middle_name .' '. $Staff->last_name;
         $settings=Settings::create([
@@ -174,7 +216,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-   	 $validator =  Validator::make($request->all(), [
+   	 $valiDationArray =  Validator::make($request->all(), [
         'first_name' => ['required'],
         'last_name' => ['required'],
         'gender' => ['required'],
@@ -194,11 +236,56 @@ public function update(Request $request)
         'tsc_employee' => ['required'],
         'kuppet_member' => ['required'],
         ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($request->passport_photo)
+        {
+          $valiDationArray["passport_photo"]='required|file';
         }
-       
+        if($request->credential_certificate)
+        {
+          $valiDationArray["credential_certificate"]='required|file';
+        }
+        if($request->national_id_copy)
+        {
+          $valiDationArray["national_id_copy"]='required|file';
+        }
+        if($request->tsc_letter)
+        {
+          $valiDationArray["tsc_letter"]='required|file';
+        }
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
     $Staff = Staff::find($request->employee_id);
+          if($request->file('passport_photo')){
+              $passport_photo = $request->file('passport_photo');
+              $imgName = time() . '.' . pathinfo($passport_photo->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/staff-photo/' . $imgName, file_get_contents($passport_photo));
+              $passport_photo=config('app.url').'/public/uploads/staff-photo/' . $imgName;
+              $Staff->passport_photo=$passport_photo;
+              }
+              if($request->file('credential_certificate')){
+                $credential_certificate= $request->file('credential_certificate');
+                $cerName = time() . '.' . pathinfo($credential_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+                Storage::disk('public_uploads')->put('/credential-certificate/' . $cerName, file_get_contents($credential_certificate));
+                $credential_certificate=config('app.url').'/public/uploads/credential-certificate/' . $cerName;
+                $Staff->credential_certificate=$credential_certificate;
+                }
+                if($request->file('national_id_copy')){
+                  $national_id_copy = $request->file('national_id_copy');
+                  $imgName = time() . '.' . pathinfo($national_id_copy->getClientOriginalName(), PATHINFO_EXTENSION);
+                  Storage::disk('public_uploads')->put('/staff-national-id/' . $imgName, file_get_contents($national_id_copy));
+                  $national_id_copy=config('app.url').'/public/uploads/staff-national-id/' . $imgName;
+                  $Staff->national_id_copy=$national_id_copy;
+                  }
+                  if($request->file('tsc_letter')){
+                    $tsc_letter= $request->file('tsc_letter');
+                    $cerName = time() . '.' . pathinfo($tsc_letter->getClientOriginalName(), PATHINFO_EXTENSION);
+                    Storage::disk('public_uploads')->put('/tsc-letter/' . $cerName, file_get_contents($tsc_letter));
+                    $tsc_letter=config('app.url').'/public/uploads/tsc-letter/' . $cerName;
+                    $Staff->tsc_letter=$tsc_letter;
+                    }
+
        
        $Staff->first_name= $request->first_name;
        $Staff->middle_name= $request->middle_name;
@@ -232,10 +319,6 @@ public function update(Request $request)
        $Staff->email_1= $request->email_1;
        $Staff->address_1= $request->address_1;
        $Staff->additional= $request->additional;
-       $Staff->passport_photo=$request->passport_photo;
-       $Staff->credential_certificate= $request->credential_certificate;
-       $Staff->national_id_copy= $request->national_id_copy;
-       $Staff->tsc_letter=$request->tsc_letter;
        $name=$request->first_name.' '. $request->middle_name .' '. $request->last_name;
        $settings=Settings::where('group_name','=','teaching_staff')->where('key_value',$request->employee_id)->first();
        $settings->key_name= $name;

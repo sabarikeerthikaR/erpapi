@@ -17,5 +17,9 @@ class Fee_waivers extends Model
     public function categories()
     {
         return $this->belongsToMany('App\fee_waivers');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

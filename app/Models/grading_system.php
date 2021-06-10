@@ -18,4 +18,9 @@ class Grading_system extends Model
     {
         return $this->belongsToMany('App\grading_system');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

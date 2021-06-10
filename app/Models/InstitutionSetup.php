@@ -21,4 +21,9 @@ class InstitutionSetup extends Model
    {
        return $this->belongsToMany('App\institution_setup');
    }
+    
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

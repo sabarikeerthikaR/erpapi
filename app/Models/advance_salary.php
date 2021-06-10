@@ -17,5 +17,9 @@ class Advance_salary extends Model
     public function categories()
     {
         return $this->belongsToMany('App\advance_salary');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

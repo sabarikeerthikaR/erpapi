@@ -16,4 +16,9 @@ class Sales_item extends Model
     {
         return $this->belongsToMany('App\sales_item');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

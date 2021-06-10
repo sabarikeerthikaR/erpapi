@@ -16,4 +16,9 @@ class User_group extends Model
     {
         return $this->belongsToMany('App\user_group');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

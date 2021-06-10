@@ -16,4 +16,9 @@ class Studnt_certificate extends Model
     {
         return $this->belongsToMany('App\studnt_certificate');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

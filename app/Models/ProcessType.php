@@ -16,4 +16,9 @@ class ProcessType extends Model
     {
         return $this->belongsToMany('App\process_type');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

@@ -20,7 +20,7 @@ class SupportingStaffController extends Controller
 {
     public function store(Request $Staff)
     {
-    	 $validator =  Validator::make($Staff->all(), [
+    	 $valiDationArray =  Validator::make($Staff->all(), [
             'first_name' => ['required'],
             'last_name' => ['required'],
             'gender' => ['required'],
@@ -38,10 +38,33 @@ class SupportingStaffController extends Controller
            
 
         ]); 
-           if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($Staff->passport_photo)
+        {
+          $valiDationArray["passport_photo"]='required|file';
         }
-          
+        if($Staff->national_id_copy)
+        {
+          $valiDationArray["national_id_copy"]='required|file';
+        }
+        $validator =  Validator::make($Staff->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $passport_photo='';$national_id_copy='';
+         if($Staff->file('passport_photo')){
+         $passport_photo = $Staff->file('passport_photo');
+         $imgName = time() . '.' . pathinfo($passport_photo->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/staff-photo/' . $imgName, file_get_contents($passport_photo));
+         $passport_photo=config('app.url').'/public/uploads/staff-photo/' . $imgName;
+         }
+         
+         if($Staff->file('national_id_copy')){
+         $national_id_copy = $Staff->file('national_id_copy');
+         $imgName = time() . '.' . pathinfo($national_id_copy->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/staff-national-id/' . $imgName, file_get_contents($national_id_copy));
+         $national_id_copy=config('app.url').'/public/uploads/staff-national-id/' . $imgName;
+         } 
+
         $Staff=Staff::create([
         'employee_type'=>3,
         'first_name'    =>$Staff->first_name,
@@ -68,8 +91,8 @@ class SupportingStaffController extends Controller
         'email_1'        =>$Staff->email_1,
         'address_1'        =>$Staff->address_1,
         'additional'        =>$Staff->additional,
-        'passport_photo'        =>$Staff->passport_photo,
-        'national_id_copy'        =>$Staff->national_id_copy,
+        'passport_photo'        =>$passport_photo,
+        'national_id_copy'        =>$national_id_copy,
          ]);        $Staff->save();
          $name=$Staff->first_name.' '.$Staff->middle_name .' '. $Staff->last_name;
          $settings=Settings::create([
@@ -148,7 +171,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-   	 $validator =  Validator::make($request->all(), [
+   	 $valiDationArray =  Validator::make($request->all(), [
    	 'first_name' => ['required'],
             'last_name' => ['required'],
             'gender' => ['required'],
@@ -164,11 +187,33 @@ public function update(Request $request)
             'phone' => ['required', 'numeric', 'digits:10'],
             'email' => ['required', 'email', 'unique:users,email,'.$request->employee_id],
         ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($request->passport_photo)
+        {
+          $valiDationArray["passport_photo"]='required|file';
+        }
+        if($request->national_id_copy)
+        {
+          $valiDationArray["national_id_copy"]='required|file';
         }
        
     $Staff = Staff::find($request->employee_id);
+    
+    if($request->file('passport_photo')){
+        $passport_photo = $request->file('passport_photo');
+        $imgName = time() . '.' . pathinfo($passport_photo->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/staff-photo/' . $imgName, file_get_contents($passport_photo));
+        $passport_photo=config('app.url').'/public/uploads/staff-photo/' . $imgName;
+        $Staff->passport_photo=$passport_photo;
+        }
+
+        if($request->file('national_id_copy')){
+            $national_id_copy = $request->file('national_id_copy');
+            $imgName = time() . '.' . pathinfo($national_id_copy->getClientOriginalName(), PATHINFO_EXTENSION);
+            Storage::disk('public_uploads')->put('/staff-national-id/' . $imgName, file_get_contents($national_id_copy));
+            $national_id_copy=config('app.url').'/public/uploads/staff-national-id/' . $imgName;
+            $Staff->national_id_copy=$national_id_copy;
+            }
+
        
        $Staff->first_name= $request->first_name;
        $Staff->middle_name= $request->middle_name;
@@ -194,8 +239,8 @@ public function update(Request $request)
        $Staff->email_1= $request->email_1;
        $Staff->address_1= $request->address_1;
        $Staff->additional= $request->additional;
-       $Staff->passport_photo= $request->passport_photo;
-       $Staff->national_id_copy=$request->national_id_copy;
+    //    $Staff->passport_photo= $passport_photo;
+    //    $Staff->national_id_copy=$national_id_copy;
        $name=$request->first_name.' '. $request->middle_name .' '. $request->last_name;
        $settings=Settings::where('group_name','=','staff')->where('key_value',$request->employee_id)->first();
        $settings->key_name= $name;
