@@ -19,15 +19,27 @@ class SyllabusController extends Controller
 {
     public function makeSyllabus(request $request)
     {
-        // $file = time() . '-' . $request->file->extension();
-        // $request->file->move(public_path('images'),$file);
-      
+        if($request->file)
+        {
+          $valiDationArray["file"]='required|file';
+        }
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $file='';
+         if($request->file('file')){
+         $file = $request->file('file');
+         $imgName = time() . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/syllabus-file/' . $imgName, file_get_contents($file));
+         $file=config('app.url').'/public/uploads/syllabus-file/' . $imgName;
+         }
         $syllabus=Syllabus::create([
           'date'=>$request->date,
           'class'=>$request->class,
           'subject'=>$request->subject,
           'description'=>$request->description,
-          'file'=>$request->file
+          'file'=>$file
 
         ]);
         if($syllabus->save())
@@ -60,9 +72,22 @@ class SyllabusController extends Controller
     }
     public function teachermakeSyllabus(request $request)
     {
-        // $file = time() . '-' . $request->file->extension();
-        // $request->file->move(public_path('images'),$file);
-      
+        if($request->file)
+        {
+          $valiDationArray["file"]='required|file';
+        }
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $file='';
+         if($request->file('file')){
+         $file = $request->file('file');
+         $imgName = time() . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/syllabus-file/' . $imgName, file_get_contents($file));
+         $file=config('app.url').'/public/uploads/syllabus-file/' . $imgName;
+         }
+       
         $syllabus=Syllabus::create([
           'date'=>$request->date,
           'class'=>$request->class,
@@ -107,7 +132,7 @@ class SyllabusController extends Controller
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->join('subjects','syllabus.subject','=','subjects.subject_id')
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',
-        'date','syllabus.description','file')
+        'syllabus.date','syllabus.description','file')
         ->get();
         return response()->json([
             'message'=>'success',

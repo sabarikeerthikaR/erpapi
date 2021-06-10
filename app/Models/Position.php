@@ -16,4 +16,9 @@ class Position extends Model
     {
         return $this->belongsToMany('App\position');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

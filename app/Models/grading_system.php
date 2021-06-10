@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class Grading_system extends Model
 {
-   use HasFactory;
-   use Loggable; 
+
      protected $fillable = [
        'title','pass_mark','description','created_by','created_on'
     ];
@@ -19,5 +17,10 @@ class Grading_system extends Model
     public function categories()
     {
         return $this->belongsToMany('App\grading_system');
+    }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

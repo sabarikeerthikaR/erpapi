@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Add_emp_sal extends Model
 {
-    use HasFactory;
-    use Loggable;  
+  
      protected $fillable = [
         'employee','salary_method','basic_salary', 'NHIF_Amount','NSSF_Amount','deductions','allowances','staff_with_student_deduction','bank_name','acc_no','NHIF_Number','NSSF_Number'
     ];
@@ -19,5 +16,9 @@ class Add_emp_sal extends Model
     public function categories()
     {
         return $this->belongsToMany('App\add_emp_sal');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

@@ -16,4 +16,9 @@ class StudentTimetable extends Model
     {
         return $this->belongsToMany('App\student_timetable');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

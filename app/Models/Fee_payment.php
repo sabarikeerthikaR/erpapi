@@ -17,5 +17,9 @@ class Fee_payment extends Model
     public function categories()
     {
         return $this->belongsToMany('App\fee_payment');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

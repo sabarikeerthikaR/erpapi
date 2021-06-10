@@ -16,4 +16,9 @@ class Std_class extends Model
     {
         return $this->belongsToMany('App\std_class');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

@@ -15,8 +15,12 @@ use Illuminate\Support\Facades\Route;
 
 // parent
 
-//Route::middleware('is_student')->group(function(){
+Route::group(['prefix' => 'parent'], function () {
 
+//Route::group(["middleware"=>["auth:api","auth.student"]], function () {
+//switch student
+
+route::post('switchstudent','school\AdminController@switchStudent');
 //student dashboard
 route::get('dashboardstudent','school\DashboardController@dashboard');
 route::get('getweeklyattendance','school\DashboardController@getweeklyattendance');
@@ -44,7 +48,7 @@ route::get('classTeacher', 'school\AdmissionController@classTeacher');
 route::get('AssignmetShowStudent','school\AssignmentController@AssignmetShowStudent');
 
  ///syllabus
- route::post('studentselectsyllabus','school\SyllabusController@studentselectsyllabus');
+ route::get('studentselectsyllabus','school\SyllabusController@studentselectsyllabus');
 
 
 //past paper
@@ -96,6 +100,8 @@ route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit
 route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
 route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+
+});
 
 //});
 

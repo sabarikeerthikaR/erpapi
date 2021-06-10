@@ -21,7 +21,7 @@ use App\Models\Staff;
 use App\Models\Assignment;
 use App\Models\Fee_payment;
 use App\Models\Item_stock;
-use App\Models\Online_registration;
+use App\Models\OnlineRegistration;
 use App\Models\Settings;
 use App\Models\Sms;
 use App\Models\Std_class;
@@ -125,7 +125,7 @@ class DashboardController extends Controller
         $student=Admission::count();
         $staff=Staff::count();
         $sock=Item_stock::count();
-        $registerd=Online_registration::join('std_class','online_registration.admission_for','=','std_class.class_id')->join('setings','online_registration.gender','=','setings.s_d')->select('online_reg_id','date','setings.key_name as gender','std_class.name as admission_for',
+        $registerd=OnlineRegistration::join('std_class','online_registration.admission_for','=','std_class.class_id')->join('setings','online_registration.gender','=','setings.s_d')->select('online_reg_id','date','setings.key_name as gender','std_class.name as admission_for',
         db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))->get();
         $feePayment=Fee_payment::join('admission','fee_payment.student','=','admission.admission_id')->select('amount','fee_payment.date','created_by',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"))->get();
        $message=Sms::get();

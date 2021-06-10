@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class NewPlacement extends Model
 {
-    use HasFactory;
-    use Loggable; 
+
      protected $fillable = [
         'student','date','position', 'rep_of','date_upto','description'
     ];
@@ -19,5 +17,10 @@ class NewPlacement extends Model
     public function categories()
     {
         return $this->belongsToMany('App\new_placement');
+    }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

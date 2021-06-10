@@ -17,4 +17,9 @@ class Suspend extends Model
     {
         return $this->belongsToMany('App\add_suspended');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

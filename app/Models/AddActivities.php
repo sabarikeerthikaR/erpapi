@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class AddActivities extends Model
 {
-    use HasFactory;
-    use Loggable; 
+
      protected $fillable = [
         'name'
     ];
@@ -19,5 +17,9 @@ class AddActivities extends Model
     public function categories()
     {
         return $this->belongsToMany('App\add_activities');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

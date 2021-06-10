@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
 
 class HostelBed extends Model
 {
-    use HasFactory;
-    use Loggable; 
+
      protected $fillable = [
         'hostel_room','bed_no','status'
     ];
@@ -19,5 +16,10 @@ class HostelBed extends Model
     public function categories()
     {
         return $this->belongsToMany('App\hostel_bed');
+    }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

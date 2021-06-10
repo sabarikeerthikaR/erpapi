@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class Email extends Model
 {
-    use HasFactory;
-    use Loggable; 
+
      protected $fillable = [
         'send_to','subject','cc','file','description','date','status'
     ];
@@ -19,5 +17,9 @@ class Email extends Model
     public function categories()
     {
         return $this->belongsToMany('App\email');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

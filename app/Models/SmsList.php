@@ -16,4 +16,9 @@ class SmsList extends Model
    {
        return $this->belongsToMany('App\sms_list');
    }
+    
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

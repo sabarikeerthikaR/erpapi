@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class Email_template extends Model
 {
-   use HasFactory;
-   use Loggable; 
+
      protected $fillable = [
        'title','slug','description','email_body','status'
     ];
@@ -19,5 +17,9 @@ class Email_template extends Model
     public function categories()
     {
         return $this->belongsToMany('App\email_template');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

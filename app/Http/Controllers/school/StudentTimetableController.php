@@ -83,7 +83,7 @@ public function show(request $request)
         ->join('std_class','add_stream.class','=','std_class.class_id')
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->join('subjects','student_timetable.subject','=','subjects.subject_id')
-        ->join('setings as day','student_timetable.day','=','setings.s_d')
+        ->join('setings as day','student_timetable.day','=','day.s_d')
         ->where('day',$request->class)
         ->select('std_class.name as class','class_stream.name as stream',
         'subjects.name as subject','start_time','end_time','day.key_name as day')

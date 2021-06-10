@@ -11,13 +11,13 @@ use Illuminate\Validation\Rule;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
-use App\Models\Online_registration;
+use App\Models\OnlineRegistration;
 
 class OnlineRegistrationController extends Controller
 {
      public function store(Request $Online_registration)
     {
-    	 $validator =  Validator::make($Online_registration->all(), [
+    	 $valiDationArray =  Validator::make($Online_registration->all(), [
             'first_name' => ['required'],
             'last_name' => ['required'],
             'admission_for' => ['required'],
@@ -31,11 +31,22 @@ class OnlineRegistrationController extends Controller
             'grade_completed' => ['required'],
             'disability_if_any'=> ['required'],
         ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($Online_registration->image)
+        {
+          $valiDationArray["image"]='required|file';
         }
-
-        $Online_registration=Online_registration::create([
+        $validator =  Validator::make($Online_registration->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $image='';
+        if($Online_registration->file('image')){
+            $image = $Online_registration->file('image');
+            $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
+            Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($image));
+            $image=config('app.url').'/public/uploads/students-photo/' . $imgName;
+            }
+        $Online_registration=OnlineRegistration::create([
         	'date'    =>date('Y-m-d'),
         'first_name'    =>$Online_registration->first_name,
         'middle_name'          =>$Online_registration->middle_name,
@@ -63,7 +74,7 @@ class OnlineRegistrationController extends Controller
         'disability_if_any'=>$Online_registration->disability_if_any,
         'local_guardian'  =>$Online_registration->local_guardian,
         'comments'        =>$Online_registration->comments,
-        'image'        =>$Online_registration->image,
+        'image'        =>$image,
          'address'        =>$Online_registration->address,
           'phone'        =>$Online_registration->phone,
          ]);
@@ -80,7 +91,7 @@ class OnlineRegistrationController extends Controller
     }
 public function show(request $request)
     { 
-    	       $Online_registration = Online_registration::where('online_reg_id',$request->online_reg_id)
+    	       $Online_registration = OnlineRegistration::where('online_reg_id',$request->online_reg_id)
                ->leftjoin('add_stream','online_registration.admission_for','=','add_stream.id')
                ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
                ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
@@ -105,15 +116,15 @@ public function show(request $request)
     }
    public function index()
     {
-        $Online_registration = Online_registration::where('status',NULL)->get();
-        return response()->json(['message' => 'Success', 'data' => $Online_registration]);
+        $Online_registrations = OnlineRegistration::where('status',NULL)->get();
+        return response()->json(['message' => 'Success', 'data' => $Online_registrations]);
     }
 
 
 public function update(Request $request)
 
    {
-   	 $validator =  Validator::make($request->all(), [
+   	 $valiDationArray =  Validator::make($request->all(), [
         'first_name' => ['required'],
             'last_name' => ['required'],
             'admission_for' => ['required'],
@@ -127,12 +138,25 @@ public function update(Request $request)
             'grade_completed' => ['required'],
             'disability_if_any'=> ['required'],
             'image' => ['required']
-        ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        ]);
+        if($request->image)
+     {
+       $valiDationArray["image"]='required|file';
+     } 
+     $validator =  Validator::make($request->all(),$valiDationArray); 
+     if ($validator->fails()) {
+         return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+     }
+     $Online_registration = OnlineRegistration::find($request->online_reg_id); 
+  
+     if($request->file('image')){
+        $image = $request->file('image');
+        $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($image));
+        $image=config('app.url').'/public/uploads/students-photo/' . $imgName;
+        $Online_registration->image=$image;
         }
-    $Online_registration = Online_registration::find($request->online_reg_id); dd($Online_registration);
-      $Online_registration->first_name= $request->first_name;
+       $Online_registration->first_name= $request->first_name;
        $Online_registration->middle_name= $request->middle_name;
        $Online_registration->last_name= $request->last_name;
        $Online_registration->admission_for= $request->admission_for;
@@ -174,7 +198,7 @@ public function update(Request $request)
     }
 public function destroy(Request $request)
     {
-        $Online_registration = Online_registration::find($request->online_reg_id);
+        $Online_registration = OnlineRegistration::find($request->online_reg_id);
         if(!empty($Online_registration))
 
                 {

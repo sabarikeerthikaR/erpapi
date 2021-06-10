@@ -21,4 +21,9 @@ class Settings extends Model
     {
         return $this->belongsToMany('App\setings');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

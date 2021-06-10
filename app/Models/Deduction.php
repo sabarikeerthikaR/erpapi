@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Haruncpi\LaravelUserActivity\Traits\Loggable;
+
 
 class Deduction extends Model
 {
-    use HasFactory;
-    use Loggable; 
+
      protected $fillable = [
         'name','amount'
     ];
@@ -19,5 +17,9 @@ class Deduction extends Model
     public function categories()
     {
         return $this->belongsToMany('App\deduction');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }
