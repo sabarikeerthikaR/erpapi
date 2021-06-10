@@ -13,9 +13,51 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\User;
-
+use App\Models\Admission;
+use Illuminate\Support\Facades\Auth;
+use App\Models\ParentStudents;
 class AdminController extends Controller
 {
+    public function switchStudent(request $request)
+    {
+        $admission_id=$request->admission_id;
+        $adminData=Admission::find($admission_id);
+        if($adminData)
+        {
+          $user=Auth::user();
+          $user->admission_id=$admission_id;
+          $user->save();
+          
+           return response()->json([
+              "message"=>"success"
+              
+          ]);
+        }
+        else
+        {
+          return response()->json([
+              "message"=>"data not found"
+          ]);
+        }
+    }
+    public function listStudents(request $request)
+    {
+        $admission_id=$request->parent_id;
+        $adminData=ParentStudents::where("p_id",$admission_id)->get();
+        if($adminData)
+        {
+          return response()->json([
+              "data"=>$adminData
+              
+          ]);
+        }
+        else
+        {
+          return response()->json([
+              "message"=>"data not found"
+          ]);
+        }
+    }
     public function Admindata(request $request)
     {
       $id=$request->id;

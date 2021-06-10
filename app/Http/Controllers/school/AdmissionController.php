@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\school;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use App\Models\user;
+use App\Models\User;
 use App\Exceptions;
 use Whoops\Handler;
 use App\Models\Setting;
@@ -11,12 +11,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Mail\BirthdayRemainder;
+use App\Models\ParentStudents;
 use App\Models\Admission;
 use App\Models\Online_registration;
 use App\Models\First_parent;
@@ -37,17 +39,19 @@ use App\Models\Student_house;
 use App\Models\Position;
 use App\Models\Hostel;
 use App\Models\Staff;
+
 use App\Models\PaymentMethod;
 use App\Models\Bank_name;
 use App\Models\Bank_account;
 use Config\Config;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Hash;
 class AdmissionController extends Controller
 {
 
      public function store(Request $Admission)
     {
+      $adminValidaton=$Admission;
       $valiDationArray=[
         'boarding' => ['required'],
         'first_name' => ['required'],
@@ -64,42 +68,43 @@ class AdmissionController extends Controller
         'residence'=> ['required'],
         'emergency_phone' => ['required', 'numeric','digits:10'],
        
-        'email' => ['required', 'email','unique:users'],
   
        ];
-      //  if($Admission->image)
-      //  {
-      //    $valiDationArray["image"]='required|file';
-      //  }
-      //  if($Admission->birth_certificate)
-      //  {
-      //    $valiDationArray["birth_certificate"]='required|file';
-      //  }
+       if($Admission->image)
+       {
+         $valiDationArray["image"]='required|file';
+       }
+       if($Admission->birth_certificate)
+       {
+         $valiDationArray["birth_certificate"]='required|file';
+       }
        $validator =  Validator::make($Admission->all(),$valiDationArray); 
         if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
         }
-        // if($Admission->file('image')){
-        // $image = $Admission->file('image');
-        // $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-        // Storage::disk('public')->put('students-photo/' . $imgName, file_get_contents($image));
-        // $image=config('app.url').'students-photo/' . $imgName;
-        // }
-        // if($Admission->file('birth_certificate')){
-        //   $birth_certificate= $Admission->file('birth_certificate');
-        //   $cerName = time() . '.' . pathinfo($birth_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
-        //   Storage::disk('public')->put('students-certificate/' . $cerName, file_get_contents($birth_certificate));
-        //   $birth_certificate=config('app.url').'students-certificate/' . $cerName;
-        // }
+        $image='';$birth_certificate='';
+        if($Admission->file('image')){
+        $image = $Admission->file('image');
+        $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($image));
+        $image=config('app.url').'/public/uploads/students-photo/' . $imgName;
+        }
+        if($Admission->file('birth_certificate')){
+          $birth_certificate= $Admission->file('birth_certificate');
+          $cerName = time() . '.' . pathinfo($birth_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+          Storage::disk('public_uploads')->put('/students-certificate/' . $cerName, file_get_contents($birth_certificate));
+          $birth_certificate=config('app.url').'/public/uploads/students-certificate/' . $cerName;
+        }
         $dummy=NULL;
   
         $count=Admission::count();
-        $date=date("Y").date('m');
-        $admission_id=$date.$count;
-        $value = config('app.name');
-        $Admission_no=$value.$count;
+        $date=date("Y").date('m').date("d");
+        $value = 11;
+       
+        $parent_id=$Admission->parent_id;
+        
         $Admission=Admission::create([
-        'admission_id'=>$admission_id,
+      
         'boarding'    =>$Admission->boarding,
         'first_name'    =>$Admission->first_name,
         'middle_name'          =>$Admission->middle_name,
@@ -123,84 +128,128 @@ class AdmissionController extends Controller
         'location' =>$Admission->location,
         'contact_person'=>$Admission->contact_person,
         'citizenship'=>$Admission->citizenship,
-        'home_country'        =>$Admission->home_country,
-        'sub_country'        =>$Admission->sub_country,
+        'home_country'=>$Admission->home_country,
+        'sub_country'  =>$Admission->sub_country,
         'residence' =>$Admission->residence,
         'emergency_phone'=>$Admission->emergency_phone,
         'student_phone'=>$Admission->student_phone,
         'email'        =>$Admission->email,
-        'image'        =>$Admission->image,
-        'birth_certificate' =>$Admission->birth_certificate,
-        'Admission_no' =>$Admission_no,
+        'image'        =>$image,
+        'birth_certificate' =>$birth_certificate,
+        'Admission_no' =>time(),
          'year' =>date("Y"),
          'admitted_by' =>'admin'
          ]);
        
         $Admission->save();
-        $name=$Admission->first_name.' '. $Admission-> middle_name .' '. $Admission-> last_name;
-        $settings=Settings::create([
-          'key_name'=>$name,
-          'group_name'=>'student',
-          'key_value'=>$admission_id
-        ]);
-$settings->save();
-        $parent1=First_parent::create([
-        'admission_id'  =>$admission_id,
-        'title_f'           =>$dummy,
-        'relation_f'        =>$dummy,
-        'first_name_f'      =>$dummy,
-        'middle_name_f'      =>$dummy,
-        'last_name_f'       =>$dummy,
-        'phone_f'           =>$dummy,
-        'email_f'           =>$dummy,
-        'id_passport_f'     =>$dummy,
-        'occupation_f'      =>$dummy,
-        'address_f'         =>$dummy,
-        'postal_code_f'     =>$dummy,
-        'passport_photo_f'  =>$dummy,
-        'national_id_f'       =>$dummy,
-         ]);
-         $parent1->save();
         
-        $parent2=Second_parent::create([
-        'admission_id'  =>$admission_id,
-        'title_s'           =>$dummy,
-        'relation_s'        =>$dummy,
-        'first_name_s'      =>$dummy,
-        'middle_name_s'      =>$dummy,
-        'last_name_s'       =>$dummy,
-        'phone_s'           =>$dummy,
-        'email_s'           =>$dummy,
-        'id_passport_s'     =>$dummy,
-        'occupation_s'      =>$dummy,
-        'address_s'         =>$dummy,
-        'postal_code_s'     =>$dummy,
-        'passport_photo_s'  =>$dummy,
-        'national_id_s'       =>$dummy,
-         ]);
+        $admission_id= $Admission->admission_id;
+       
+        $name=$Admission->first_name.' '. $Admission-> middle_name .' '. $Admission->last_name;
+        if($parent_id)
+        {
+         
+           $parent1=First_parent::where("parent1_id",$parent_id)->first();
+           if(!$parent1)
+           {
+            return response()->json(apiResponseHandler([], "Parent is invalid", 400), 400);
+           }
+           
+          $ParentStudents=ParentStudents::create([
+          'p_id'=>$parent_id,
+          'admission_id'=>$admission_id
+          ]);
+           $ParentStudents->save();
+           $parent1=First_parent::where("parent1_id",$parent_id)->first();
+           $parent2=Second_parent::where("parent1_id",$parent_id)->first();
+           $Emergency_contact =Emergency_contact::where("parent",$parent_id)->first();
+           $userData=User::where("parent",$parent_id)->first();
+           $user=1;
+        }
+        else
+        {
+        $validator =  Validator::make($adminValidaton->all(),[
+          'email' => ['required','unique:users']
+        ]); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        
+        $user=0;
+          
+         $parent1=new First_parent;
+
+         $parent1->admission_id=$admission_id;
+         $parent1->save();
+        $first_parent=$parent1->parent1_id;
+        $ParentStudents=new ParentStudents([
+          'p_id'=>$parent1->parent1_id,
+          'admission_id'=>$admission_id
+          ]);
+        $ParentStudents->save();
+        $parent2=new Second_parent;
+       
+        $parent2->admission_id=$admission_id;
+        
+        $parent2->parent1_id=$parent1->parent1_id;
+         
         $parent2->save();
-        $Emergency_contact=Emergency_contact::create([
-        'admission_id' =>$admission_id,
-        'first_name_e'          =>$dummy,
-        'middle_name_e'          =>$dummy,
-        'last_name_e'          =>$dummy,
-        'relation_e'      =>$dummy,
-        'phone_e'         =>$dummy,
-        'email_e'        =>$dummy,
-        'id_no_e'        =>$dummy,
-        'address_e'        =>$dummy,
-        'info_provided_by'=>$dummy,
-         ]);
-        if($Emergency_contact->save()){
-                  return response()->json([
+        $Emergency_contact=new Emergency_contact;
+        $Emergency_contact->admission_id=$admission_id;
+       
+        $Emergency_contact->parent=$parent1->parent1_id;
+       
+        $Emergency_contact->save();
+        
+        //move user registration
+         $fname = $Admission;
+         $email=$Admission->email;
+         //$password = randomFunctionNumber(8);
+         $password="12345678";
+         $objUser = new User;
+         $objUser->user_role=4;
+         $objUser->first_name= ($fname)?  $fname->first_name : null;
+         $objUser->middle_name=($fname)? $fname->middle_name : null;
+         $objUser->last_name= ($fname)? $fname->last_name : null;
+         $objUser->email=$email;
+         $objUser->admission_id=$Admission->admission_id;
+         $objUser->parent=$parent1->parent1_id;
+         $objUser->password= Hash::make($password);
+                                
+
+         $objUser->save();
+        $userData=$objUser;
+        // email functions
+        // send email with the template
+    $email_data=[
+      "url"=>config("app.url"),
+      "email"=>$email,
+      "password"=>$password,
+      "name"=>$fname->first_name." ".$fname->middle_name." ".$fname->last_name
+    ];
+    Mail::send('email.welcome', $email_data, function ($message) use ($email_data) {
+        $message->to($email_data['email'], $email_data['name'])
+            ->subject('Welcome to RICO ERP')
+            ->from('no-reply@arulphpdeveloper.com', 'RICO ERP');
+    });
+        
+      }
+      if($parent1 && $parent2 && $Emergency_contact)
+      {
+        
+                 return response()->json([
                  'message'  => 'Admission saved successfully',
-                 'data'=>['admission_id'=>$admission_id,"parent_id"=>$parent1->parent1_id,"parent_two_id"=>$parent2->parent2_id,"emergencycontact"=>$Emergency_contact->emergency_id]
+                 'data'=>[
+                  'user'=>$user,
+                  "userData"=>$userData,
+                   'admission_id'=>$admission_id,"parent_id"=>$parent1->parent1_id,"parent_two_id"=>$parent2->parent2_id,"emergencycontact"=>$Emergency_contact->emergency_id]
                   ]);
-              }else {
+      } else 
+      {
                   return response()->json([
                  'message'  => 'failed'
                  ]);
-          }
+      }
     }
 public function show(request $request)
     { 
@@ -358,8 +407,7 @@ public function destroy(Request $request)
   {
    
         $count=Admission::count();
-        $date=date("Y").date('m');
-        $admission_id=$date.$count;
+        $admission_id=date("Ymd").$count;
         $Online_registration = Online_registration::find($request->online_reg_id);
         $Online_registration->status=1;
         $Online_registration->save();
@@ -380,7 +428,7 @@ public function destroy(Request $request)
            'image'             =>$Online_registration->image,
          ]);
        
-            $admission->save();
+         $admission->save();
          $parent1=First_parent::create([
         'admission_id'  =>$admission_id,
         'relation_f'        =>$Online_registration->relation_f,
@@ -391,7 +439,8 @@ public function destroy(Request $request)
         'address_f'         =>$Online_registration->address_f,
          ]);
          $parent1->save();
-          $parent2=Second_parent::create([
+         $parent1_id=$parent1->parent1_id;
+         $parent2=Second_parent::create([
         'admission_id'  =>$admission_id,
         'relation_s'        =>$Online_registration->relation_s,
         'first_name_s'      =>$Online_registration->second_parent,
@@ -399,8 +448,9 @@ public function destroy(Request $request)
         'email_s'           =>$Online_registration->email_s,
         'occupation_s'      =>$Online_registration->second_parent_occupation,
         'address_s'         =>$Online_registration->address_s,
+        'parent1_id'=>$parent1_id
          ]);
-       
+         
         if($parent2->save())
              {
                   return response()->json([
@@ -422,7 +472,7 @@ public function destroy(Request $request)
      
   }
   public function birthday(request $email)
-{ 
+ { 
     $i = 0;
    // $emails = Admission::whereMonth('dob', '=', date('m'))->whereDay('dob', '=', date('d'))->select('email')->first(); 
    $users = Admission::whereMonth('dob', '=', date('m'))->whereDay('dob', '=', date('d'))->select( DB::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name) as full_name"),

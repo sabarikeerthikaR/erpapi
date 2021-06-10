@@ -17,4 +17,9 @@ class HostelRooms extends Model
     {
         return $this->belongsToMany('App\hostel_rooms');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

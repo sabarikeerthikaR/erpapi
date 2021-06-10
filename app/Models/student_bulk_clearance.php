@@ -16,4 +16,9 @@ class Student_bulk_clearance extends Model
     {
         return $this->belongsToMany('App\student_bulk_clearance');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

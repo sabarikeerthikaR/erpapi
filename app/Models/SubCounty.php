@@ -16,4 +16,9 @@ class SubCounty extends Model
     {
         return $this->belongsToMany('App\sub_county');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

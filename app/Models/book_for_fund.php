@@ -17,5 +17,9 @@ class Book_for_fund extends Model
     public function categories()
     {
         return $this->belongsToMany('App\book_for_fund');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

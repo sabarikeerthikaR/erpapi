@@ -19,7 +19,9 @@ class CommonController extends Controller
    public function settings(Request $Request)
    {
    	 $settings = settings::all();
+      
         return response()->json(['status' => 'Success', 'data' => $settings]);
+      
    }
 
    public function userStatus(Request $request)

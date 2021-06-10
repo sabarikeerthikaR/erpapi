@@ -18,4 +18,9 @@ class Notice_board extends Model
     {
         return $this->belongsToMany('App\notice_board');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

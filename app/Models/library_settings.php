@@ -18,4 +18,9 @@ class Library_settings extends Model
     {
         return $this->belongsToMany('App\library_settings');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

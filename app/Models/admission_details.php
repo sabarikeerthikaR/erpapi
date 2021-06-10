@@ -15,5 +15,9 @@ class Admission_details extends Model
     public function categories()
     {
         return $this->belongsToMany('App\admission_details');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

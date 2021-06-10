@@ -8,6 +8,7 @@ use App\Exceptions;
 use Whoops\Handler;
 use App\Models\Setting;
 use Carbon\Carbon;
+use App\Models\ParentStudents;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Controller;
 use App\Notifications\PasswordResetRequest;
 use App\Notifications\PasswordResetSuccess;
 use App\PasswordReset;
+use App\Models\First_Parent;
 
 
 class AuthController extends Controller
@@ -63,8 +65,7 @@ class AuthController extends Controller
          $validator =  Validator::make($request->all(), [
             'first_name' => ['required'],
             'last_name' => ['required'],
-            'email' => ['required', 'string', 'email','unique:users,email,'.$request->email],
-            'password'=>['string','min:8', 'confirmed']
+            'email' => ['required', 'string', 'email','unique:users,email,'.$request->email]
             
             
            
@@ -78,7 +79,7 @@ class AuthController extends Controller
                                    $user->last_name = $request->last_name;
                                     $user->email = $request->email;
                                    $user->phone = $request->phone;
-                                   $user->password =Hash::make($request['password']);
+                                   
                               
 
         $user->save();
@@ -103,15 +104,18 @@ public function Login(Request $request)
 
         if (Auth::attempt($credentials)) {
 
-           
-              $check = User::where('email', '=', $request->input('email'))
-                ->first(); 
+          
             $admin = User::where(['email' => $request->input('email')])->first();
 
             $token = $admin->createToken('myApp')->accessToken;
             $name=$admin->first_name.' '.$admin->middle_name.' '.$admin->last_name;
-
-            return response()->json(apiResponseHandler(['token' => $token, 'user_role' => $admin->user_role, 'admission_id' => $admin->admission_id, 'staff_id' => $admin->staff_id, 'name' =>$name,'id'=>$admin->id ], 'success'));
+            $students_list=[];
+            if($admin->user_role=="4")
+            {
+              
+              $students_list=ParentStudents::where("p_id",$admin->parent)->get();
+            }
+            return response()->json(apiResponseHandler(['token' => $token, 'user_role' => $admin->user_role, 'admission_id' => $admin->admission_id, 'staff_id' => $admin->staff_id, 'name' =>$name,'id'=>$admin->id,'students'=>$students_list ], 'success'));
        } else {
         
             return response()->json(apiResponseHandler([], 'Wrong Credentials', 400), 400);

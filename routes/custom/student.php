@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\Route;
 
 // parent
 
-//Route::middleware('is_student')->group(function(){
+Route::group(["middleware"=>["auth:api","auth.student"]], function () {
+//switch student
 
+route::post('switchstudent','school\AdminController@switchStudent');
+route::post('liststudents','school\AdminController@listStudents');
 //student dashboard
 route::get('dashboardstudent','school\DashboardController@dashboard');
 route::get('getweeklyattendance','school\DashboardController@getweeklyattendance');
@@ -97,7 +100,7 @@ route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdel
 route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
 
-//});
+});
 
 
 Route::get('testCode', function () {

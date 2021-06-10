@@ -16,13 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 
 
-route::get('settings', 'school\CommonController@settings');
-route::get('userStatus', 'school\CommonController@userStatus');
 
 Route::group(["middleware"=>["auth:api","auth.admin"]], function () {
-
-
-    route::post('register','school\AuthController@register');
+route::post('liststudents','school\AdminController@listStudents');
+route::get('list-parents', 'school\AuthController@destroy');
+route::post('register','school\AuthController@register');
     route::get('login_list', 'school\AuthController@index');
    route::post('update', 'school\AuthController@update');
    route::get('destroy', 'school\AuthController@destroy');

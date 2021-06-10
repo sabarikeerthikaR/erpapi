@@ -16,5 +16,9 @@ class ClearanceDepartments extends Model
     public function categories()
     {
         return $this->belongsToMany('App\department');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

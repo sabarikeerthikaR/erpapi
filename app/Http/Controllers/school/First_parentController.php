@@ -43,7 +43,7 @@ class First_parentController extends Controller
         $p=$parent->all();
         $id=$p['admission_id'];
         DB::enableQueryLog();
-        $parent1 = First_parent::where('admission_id',$id)->first(); 
+         $parent1 = First_parent::where('admission_id',$id)->first(); 
          $parent1->title_f=$parent->title_f;
          $parent1->relation_f=$parent->relation_f;
          $parent1->first_name_f=$parent->first_name_f;
@@ -57,7 +57,7 @@ class First_parentController extends Controller
          $parent1->postal_code_f=$parent->postal_code_f;
          $parent1->passport_photo_f=$parent->passport_photo_f;
          $parent1->national_id_f=$parent->national_id_f;
-          $parent1->save();
+         $parent1->save();
 
         $parent2 = Second_parent::where("admission_id",$id)->first();
         $parent2->admission_id=$id;
@@ -88,20 +88,7 @@ class First_parentController extends Controller
          $emergencycontact->address_e=$parent->address_e;
          $emergencycontact->info_provided_by=$parent->info_provided_by;
          
-         $fname = Admission::select('first_name','middle_name','last_name')->where('admission_id','=',$id)
-        ->first();
-                 $email=$parent->email;
-         $password = randomFunctionNumber(8);
-         $objUser = User::create([  'user_role'=>4,
-                                    'first_name' => ($fname)? $fname->first_name : null,
-                                    'middle_name' => ($fname)? $fname->middle_name : null,
-                                    'last_name' => ($fname)? $fname->last_name : null,
-                                    'email' => $email,
-                                    'admission_id' => $id,
-                                    'password' => Hash::make($password),
-                                ]);
-
-        $objUser->save();
+       
         if($emergencycontact->save()){
                   return response()->json([
                  'message'  => 'parent_details saved successfully',

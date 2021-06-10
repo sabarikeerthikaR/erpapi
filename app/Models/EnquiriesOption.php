@@ -17,5 +17,9 @@ class EnquiriesOption extends Model
     public function categories()
     {
         return $this->belongsToMany('App\enquiries_option');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

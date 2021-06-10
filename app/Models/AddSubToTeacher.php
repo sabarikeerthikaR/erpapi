@@ -16,5 +16,9 @@ class AddSubToTeacher extends Model
    public function categories()
    {
        return $this->belongsToMany('App\add_sub_to_teacher');
-   }
+   } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

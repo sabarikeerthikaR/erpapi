@@ -15,7 +15,11 @@ class InstitutionDetails extends Model
    ];
    protected $table = 'institution_details';
    protected $primaryKey = 'id';
-
+    
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
    public function categories()
    {
        return $this->belongsToMany('App\institution_details');

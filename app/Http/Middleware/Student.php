@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class Driver
+class Student
 {
     /**
      * Handle an incoming request.
@@ -16,8 +16,8 @@ class Driver
      */
     public function handle($request, Closure $next)
     {
-        if ($request->user()->type != 2) {
-            return response()->json('You are not a Driver', 400);
+        if ($request->user()->user_role != 4) {
+            return response()->json('You are not a Parent', 400);
         }
         return $next($request);
     }

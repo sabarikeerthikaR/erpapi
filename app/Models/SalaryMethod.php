@@ -16,4 +16,9 @@ class SalaryMethod extends Model
     {
         return $this->belongsToMany('App\salary_method');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

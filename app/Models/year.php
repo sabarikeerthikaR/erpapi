@@ -16,4 +16,9 @@ class Year extends Model
     {
         return $this->belongsToMany('App\year');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

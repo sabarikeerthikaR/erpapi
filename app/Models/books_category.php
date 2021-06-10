@@ -16,5 +16,9 @@ class Books_category extends Model
     public function categories()
     {
         return $this->belongsToMany('App\books_category');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

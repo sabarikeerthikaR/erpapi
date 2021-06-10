@@ -16,5 +16,9 @@ class Class_stream extends Model
     public function categories()
     {
         return $this->belongsToMany('App\class_stream');
+    } 
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
     }
 }

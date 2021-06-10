@@ -17,4 +17,9 @@ class Second_parent extends Model
     {
         return $this->belongsToMany('App\second_parent');
     }
+     
+    public function getDateFormat()
+    {
+      return 'Y-m-d H:i:s';
+    }
 }

@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
-use App\Models\Online_registration;
+use App\Models\OnlineRegistration;
 
 class OnlineRegistrationController extends Controller
 {
@@ -105,8 +105,8 @@ public function show(request $request)
     }
    public function index()
     {
-        $Online_registration = Online_registration::where('status',NULL)->get();
-        return response()->json(['message' => 'Success', 'data' => $Online_registration]);
+        $Online_registrations = OnlineRegistration::where('status',NULL)->get();
+        return response()->json(['message' => 'Success', 'data' => $Online_registrations]);
     }
 
 
