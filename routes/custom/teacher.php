@@ -79,6 +79,8 @@ Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
     
     
     });
+    
+});
 
 });
 Route::get('testCode', function () {

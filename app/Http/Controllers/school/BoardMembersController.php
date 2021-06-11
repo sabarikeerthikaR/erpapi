@@ -18,7 +18,7 @@ class BoardMembersController extends Controller
 {
     public function store(Request $Board_members)
     {
-      $validator =  Validator::make($Board_members->all(), [
+      $valiDationArray =  Validator::make($Board_members->all(), [
             'title' => ['required'],
             'first_name' => ['required'],
             'other_name'    => ['required'],
@@ -27,9 +27,33 @@ class BoardMembersController extends Controller
             'position'       => ['required'],
             'date_joined' => ['required'],
           ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+          if($Board_members->passport_photo)
+        {
+          $valiDationArray["passport_photo"]='required|file';
         }
+        if($Board_members->copy_id)
+        {
+          $valiDationArray["copy_id"]='required|file';
+        }
+        $validator =  Validator::make($Board_members->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $passport_photo='';$copy_id='';
+         if($Board_members->file('passport_photo')){
+         $passport_photo = $Board_members->file('passport_photo');
+         $imgName = time() . '.' . pathinfo($passport_photo->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/staff-photo/' . $imgName, file_get_contents($passport_photo));
+         $passport_photo=config('app.url').'/public/uploads/staff-photo/' . $imgName;
+         }
+         
+         if($Board_members->file('copy_id')){
+         $copy_id = $Board_members->file('copy_id');
+         $imgName = time() . '.' . pathinfo($copy_id->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/staff-national-id/' . $imgName, file_get_contents($copy_id));
+         $copy_id=config('app.url').'/public/uploads/staff-national-id/' . $imgName;
+         } 
+
        
       
         $Board_members=Board_members::create([
@@ -44,8 +68,8 @@ class BoardMembersController extends Controller
         'date_joined'        =>$Board_members->date_joined,
         'work_place'        =>$Board_members->work_place,
         'profile_details'        =>$Board_members->profile_details,
-        'passport_photo'        =>$Board_members->passport_photo,
-        'copy_id'        =>$Board_members->copy_id,
+        'passport_photo'        =>$passport_photo,
+        'copy_id'        =>$copy_id,
          ]);
         if($Board_members->save()){
                   return response()->json([
@@ -99,7 +123,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
+    $valiDationArray =  Validator::make($request->all(), [
         'title' => ['required'],
         'first_name' => ['required'],
         'other_name'    => ['required'],
@@ -108,11 +132,35 @@ public function update(Request $request)
         'position'       => ['required'],
         'date_joined' => ['required'],
         ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($request->passport_photo)
+        {
+          $valiDationArray["passport_photo"]='required|file';
+        }
+        if($request->copy_id)
+        {
+          $valiDationArray["copy_id"]='required|file';
         }
        
-    $Board_members = Board_members::find($request->board_mem_id);
+        $Board_members = Board_members::find($request->board_mem_id);
+    
+    if($request->file('passport_photo')){
+        $passport_photo = $request->file('passport_photo');
+        $imgName = time() . '.' . pathinfo($passport_photo->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/staff-photo/' . $imgName, file_get_contents($passport_photo));
+        $passport_photo=config('app.url').'/public/uploads/staff-photo/' . $imgName;
+        $Board_members->passport_photo=$passport_photo;
+        }
+
+        if($request->file('copy_id')){
+            $copy_id = $request->file('copy_id');
+            $imgName = time() . '.' . pathinfo($copy_id->getClientOriginalName(), PATHINFO_EXTENSION);
+            Storage::disk('public_uploads')->put('/staff-national-id/' . $imgName, file_get_contents($copy_id));
+            $copy_id=config('app.url').'/public/uploads/staff-national-id/' . $imgName;
+            $Board_members->copy_id=$copy_id;
+            }
+
+       
+ 
         $Board_members->title= $request->title;
         $Board_members->first_name= $request->first_name;
                 $Board_members->other_name= $request->other_name;
@@ -123,8 +171,8 @@ public function update(Request $request)
         $Board_members->date_joined= $request->date_joined;
         $Board_members->work_place= $request->work_place;
         $Board_members->profile_details= $request->profile_details;
-        $Board_members->passport_photo= $request->passport_photo;
-        $Board_members->copy_id= $request->copy_id;
+        // $Board_members->passport_photo= $passport_photo;
+        // $Board_members->copy_id= $copy_id;
         if($Board_members->save()){
             return response()->json([
                  'message'  => 'updated successfully',

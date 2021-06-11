@@ -43,8 +43,6 @@ use App\Models\Staff;
 use App\Models\PaymentMethod;
 use App\Models\Bank_name;
 use App\Models\Bank_account;
-use App\Models\AddStream;
-use App\Models\Subject;
 use Config\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
@@ -88,14 +86,14 @@ class AdmissionController extends Controller
         if($Admission->file('image')){
         $image = $Admission->file('image');
         $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-        Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($image));
-        $image=config('app.url').'/public/uploads/students-photo/' . $imgName;
+        Storage::disk('public')->put('students-photo/' . $imgName, file_get_contents($image));
+        $image=config('app.url').'students-photo/' . $imgName;
         }
         if($Admission->file('birth_certificate')){
           $birth_certificate= $Admission->file('birth_certificate');
           $cerName = time() . '.' . pathinfo($birth_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
-          Storage::disk('public_uploads')->put('/students-certificate/' . $cerName, file_get_contents($birth_certificate));
-          $birth_certificate=config('app.url').'/public/uploads/students-certificate/' . $cerName;
+          Storage::disk('public')->put('students-certificate/' . $cerName, file_get_contents($birth_certificate));
+          $birth_certificate=config('app.url').'students-certificate/' . $cerName;
         }
         $dummy=NULL;
   
@@ -165,7 +163,7 @@ class AdmissionController extends Controller
            $parent1=First_parent::where("parent1_id",$parent_id)->first();
            $parent2=Second_parent::where("parent1_id",$parent_id)->first();
            $Emergency_contact =Emergency_contact::where("parent",$parent_id)->first();
-           $userData=User::where("parent",$parent_id)->first();
+           $userData=User::where("parent",$parent_id);
            $user=1;
         }
         else
@@ -179,28 +177,61 @@ class AdmissionController extends Controller
         
         $user=0;
           
-         $parent1=new First_parent;
-
-         $parent1->admission_id=$admission_id;
-         $parent1->save();
+        $parent1=First_parent::create([
+        'admission_id'  =>$admission_id,
+        'title_f'           =>$dummy,
+        'relation_f'        =>$dummy,
+        'first_name_f'      =>$dummy,
+        'middle_name_f'      =>$dummy,
+        'last_name_f'       =>$dummy,
+        'phone_f'           =>$dummy,
+        'email_f'           =>$dummy,
+        'id_passport_f'     =>$dummy,
+        'occupation_f'      =>$dummy,
+        'address_f'         =>$dummy,
+        'postal_code_f'     =>$dummy,
+        'passport_photo_f'  =>$dummy,
+        'national_id_f'       =>$dummy,
+         ]);
+        
+        $parent1->save();
         $first_parent=$parent1->parent1_id;
-        $ParentStudents=new ParentStudents([
+        $ParentStudents=ParentStudents::create([
           'p_id'=>$parent1->parent1_id,
           'admission_id'=>$admission_id
           ]);
         $ParentStudents->save();
-        $parent2=new Second_parent;
-       
-        $parent2->admission_id=$admission_id;
-        
-        $parent2->parent1_id=$parent1->parent1_id;
-         
+        $parent2=Second_parent::create([
+        'admission_id'  =>$admission_id,
+        'title_s'           =>$dummy,
+        'relation_s'        =>$dummy,
+        'first_name_s'      =>$dummy,
+        'middle_name_s'      =>$dummy,
+        'last_name_s'       =>$dummy,
+        'phone_s'           =>$dummy,
+        'email_s'           =>$dummy,
+        'id_passport_s'     =>$dummy,
+        'occupation_s'      =>$dummy,
+        'address_s'         =>$dummy,
+        'postal_code_s'     =>$dummy,
+        'passport_photo_s'  =>$dummy,
+        'national_id_s'       =>$dummy,
+        'parent1_id' =>$parent1->parent1_id
+         ]);
         $parent2->save();
-        $Emergency_contact=new Emergency_contact;
-        $Emergency_contact->admission_id=$admission_id;
-       
-        $Emergency_contact->parent=$parent1->parent1_id;
-       
+        $Emergency_contact=Emergency_contact::create([
+        'admission_id' =>$admission_id,
+        'first_name_e'          =>$dummy,
+        'middle_name_e'          =>$dummy,
+        'last_name_e'          =>$dummy,
+        'relation_e'      =>$dummy,
+        'phone_e'         =>$dummy,
+        'email_e'        =>$dummy,
+        'parent'=>$parent1->parent1_id,
+        'id_no_e'        =>$dummy,
+        'address_e'        =>$dummy,
+        'info_provided_by'=>$dummy,
+         ]);
         $Emergency_contact->save();
         
         //move user registration
@@ -208,18 +239,17 @@ class AdmissionController extends Controller
          $email=$Admission->email;
          //$password = randomFunctionNumber(8);
          $password="12345678";
-         $objUser = new User;
-         $objUser->user_role=4;
-         $objUser->first_name= ($fname)?  $fname->first_name : null;
-         $objUser->middle_name=($fname)? $fname->middle_name : null;
-         $objUser->last_name= ($fname)? $fname->last_name : null;
-         $objUser->email=$email;
-         $objUser->admission_id=$Admission->admission_id;
-         $objUser->parent=$parent1->parent1_id;
-         $objUser->password= Hash::make($password);
-                                
+         $objUser = User::create([  'user_role'=>4,
+                                    'first_name' => ($fname)? $fname->first_name : null,
+                                    'middle_name' => ($fname)? $fname->middle_name : null,
+                                    'last_name' => ($fname)? $fname->last_name : null,
+                                    'email' => $email,
+                                    'admission_id' => $Admission->admission_id,
+                                    'parent'=>$parent1->parent1_id,
+                                    'password' => Hash::make($password),
+                                ]);
 
-         $objUser->save();
+        $objUser->save();
         $userData=$objUser;
         // email functions
         // send email with the template
@@ -310,15 +340,15 @@ public function update(Request $request)
       if($request->file('image')){
       $image = $request->file('image');
       $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-      Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($image));
-      $image=config('app.url').'/public/uploads/students-photo/' . $imgName;
+      Storage::disk('public')->put('/students-photo/' . $imgName, file_get_contents($image));
+      $image=config('app.url').'/students-photo/' . $imgName;
       $Admission->image=$image;
       }
       if($request->file('birth_certificate')){
         $birth_certificate= $request->file('birth_certificate');
         $cerName = time() . '.' . pathinfo($birth_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
-        Storage::disk('public_uploads')->put('/students-certificate/' . $cerName, file_get_contents($birth_certificate));
-        $birth_certificate=config('app.url').'/public/uploads/students-certificate/' . $cerName;
+        Storage::disk('public')->put('students-certificate/' . $cerName, file_get_contents($birth_certificate));
+        $birth_certificate=config('app.url').'/students-certificate/' . $cerName;
         $Admission->birth_certificate=$birth_certificate;
         }
 
@@ -416,43 +446,42 @@ public function destroy(Request $request)
         if(!empty($Online_registration))
 
        {
-         $admission= new Admission;
-         $admission->admission_id=$admission_id;
-         $admission->first_name=$Online_registration->first_name;
-         $admission->middle_name=$Online_registration->middle_name;
-         $admission->last_name=$Online_registration->last_name;
-         $admission->dob=$Online_registration->dob;
-         $admission->gender=$Online_registration->gender;
-         $admission->disabled=$Online_registration->disability_if_any;
-         $admission->religion=$Online_registration->religion;
-         $admission->former_Scl=$Online_registration->former_school;
-         $admission->citizenship=$Online_registration->nationality;
-         $admission->image=$Online_registration->image;
-        
+         $admission=Admission::create([
+           'admission_id'=>$admission_id,
+           'first_name'=>$Online_registration->first_name,
+           'middle_name'       =>$Online_registration->middle_name,
+           'last_name'         =>$Online_registration->last_name,
+           'dob'               =>$Online_registration->dob,
+           'gender'            =>$Online_registration->gender,
+           'disabled'          =>$Online_registration->disability_if_any,
+           'religion'          =>$Online_registration->religion,
+           'former_Scl'        =>$Online_registration->former_school,
+           'citizenship'       =>$Online_registration->nationality,
+           'image'             =>$Online_registration->image,
+         ]);
+       
          $admission->save();
-
-         $parent1=new First_parent;
-         $parent1->admission_id=$admission_id;
-         $parent1->relation_f=$Online_registration->relation_f;
-         $parent1->first_name_f=$Online_registration->first_parent;
-         $parent1->phone_f=$Online_registration->phone_f;
-         $parent1->email_f=$Online_registration->email_f;
-         $parent1->occupation_f=$Online_registration->first_parent_occupation;
-         $parent1->address_f=$Online_registration->address_f;
-        
+         $parent1=First_parent::create([
+        'admission_id'  =>$admission_id,
+        'relation_f'        =>$Online_registration->relation_f,
+        'first_name_f'      =>$Online_registration->first_parent,
+        'phone_f'           =>$Online_registration->phone_f,
+        'email_f'           =>$Online_registration->email_f,
+        'occupation_f'      =>$Online_registration->first_parent_occupation,
+        'address_f'         =>$Online_registration->address_f,
+         ]);
          $parent1->save();
-
          $parent1_id=$parent1->parent1_id;
-
-         $parent2=new Second_parent;
-         $parent2->admission_id=$admission_id;
-         $parent2->relation_s=$Online_registration->relation_s;
-         $parent2->first_name_s=$Online_registration->second_parent;
-         $parent2->phone_s=$Online_registration->phone_s;
-         $parent2->email_s=$Online_registration->email_s;
-         $parent2->occupation_s=$Online_registration->second_parent_occupation;
-         $parent2->address_s=$Online_registration->address_s;
-         $parent2->parent1_id=$parent1_id;
+         $parent2=Second_parent::create([
+        'admission_id'  =>$admission_id,
+        'relation_s'        =>$Online_registration->relation_s,
+        'first_name_s'      =>$Online_registration->second_parent,
+        'phone_s'           =>$Online_registration->phone_s,
+        'email_s'           =>$Online_registration->email_s,
+        'occupation_s'      =>$Online_registration->second_parent_occupation,
+        'address_s'         =>$Online_registration->address_s,
+        'parent1_id'=>$parent1_id
+         ]);
          
         if($parent2->save())
              {
@@ -539,7 +568,7 @@ $id=$request->admission_id;
     ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
     'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
     'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
-    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship','admitted_by','admission.date as admitted_on','image')->first();
+    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship','admitted_by','date as admitted_on','image')->first();
     $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.admission_id',$id)->select('re1.key_name as relation_f','phone_f',
     'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_name_f,' ',
     COALESCE(middle_name_f,''),' ',last_name_f)as first_parent"))->first();
@@ -624,127 +653,9 @@ $id=$request->admission_id;
         return response()->json(['status' => 'No data found']);
       }
   }
-
-  public function studentProfileStudent(request $request)
-
+  public function myStaff(request $request)
   {
-$id=$request->admission_id;
-    $student= Admission::leftjoin('setings as blood','admission.blood_group','=','blood.s_d')-> 
-    leftjoin('setings as dis','admission.disabled','=','dis.s_d')->
-    leftjoin('setings as ge','admission.gender','=','ge.s_d')->
-    leftjoin('setings as st','admission.student_status','=','st.s_d')->
-    leftjoin('setings as ci','admission.citizenship','=','ci.s_d')->
-    leftjoin('setings as bo','admission.boarding','=','bo.s_d')->
-    leftjoin('setings as re','admission.religion','=','re.s_d')-> 
-    leftjoin('setings as sc','admission.scholarship','=','sc.s_d')->
-    leftjoin('counties','admission.home_country','=','counties.id')->
-    leftjoin('sub_county','admission.sub_country','=','sub_county.id')-> 
-    leftjoin('add_stream','admission.class','=','add_stream.id')
-    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')->
-    leftjoin('std_class','add_stream.class','=','std_class.class_id')-> 
-    leftjoin('student_house','admission.house','=','student_house.house_id')
-
-    ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
-    'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
-    'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
-    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship','admitted_by','admission.date as admitted_on','image')->first();
-    $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.admission_id',$id)->select('re1.key_name as relation_f','phone_f',
-    'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_name_f,' ',
-    COALESCE(middle_name_f,''),' ',last_name_f)as first_parent"))->first();
-    $parent2=Second_parent::leftjoin('setings as re2','second_parent.relation_s','=','re2.s_d')
-    ->select('re2.key_name as relation_s','phone_s','email_s',
-    'id_passport_s','occupation_s','address_s','postal_code_s',db::raw("concat(first_name_s,' ',
-    COALESCE(middle_name_s,''),' ',last_name_s)as second_parent"))->where('second_parent.admission_id',$id)->first();
-    $emergencycontact=Emergency_contact::leftjoin('setings as re3','emergency_contact.relation_e','=','re3.s_d')
-    ->select('re3.key_name as relation_e','phone_e','email_e',
-    'id_no_e','address_e','info_provided_by')->where('emergency_contact.admission_id',$id)->first();
     
-    $leadershipPosition=NewPlacement::leftjoin('position','new_placement.position','=','position.id')
-    ->leftjoin('admission','new_placement.student','=','admission.admission_id')
-    ->leftjoin('std_class','new_placement.rep_of','=','std_class.class_id')
-    ->select('new_placement.date','date_upto','new_placement.description','position.name as position',
-    'std_class.name as rep_of',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))->where('student',$id)->first();
-
-    $discipline=Discipline::leftjoin('staff','discipline.reported_by','=','staff.employee_id')
-    ->select('discipline.date',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as reported_by"),'others','notify_parent',
-    'description','action_taken','comment','action_taken_on','created_by')->where('culprit',$id)->first();
-
-    $transport=Transport::leftjoin('add_route','transport.route','=','add_route.id')
-    ->leftjoin('admission','transport.stud_name','=','admission.admission_id')
-    ->leftjoin('setings','admission.year','=','setings.s_d')
-    ->leftjoin('add_stream','admission.class','=','add_stream.id')
-    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
-    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
-    ->select('admission_no','setings.key_name as year','std_class.name as class','class_stream.name','add_route.name as route',
-    db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))
-    ->where('stud_name',$id)->first();
-
-    $assign=AssignBed::leftjoin('setings as te','assign_bed.term','=','te.s_d')
-    ->leftjoin('setings as ye','assign_bed.year','=','ye.s_d')
-    ->leftjoin('hostel_bed','assign_bed.bed','=','hostel_bed.id')
-    ->leftjoin('admission','assign_bed.student','=','admission.admission_id')
-    ->leftjoin('hostel_rooms','hostel_bed.hostel_room', '=', 'hostel_rooms.id')
-    ->leftjoin('hostel','hostel_rooms.hostel','=','hostel.id')
-    ->leftjoin('staff','hostel.janitor','=','staff.employee_id')
-    ->select('assign_bed.date',db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"),
-    'te.key_name as term','ye.key_name as year','hostel_bed.bed_no as bed','assign_bed.assigned_by',
-    'hostel_rooms.room_name as room','hostel.title as hostel',db::raw("CONCAT(staff.first_name,' ',staff.middle_name,' ',staff.last_name)as janitor"))
-    ->where('assign_bed.student',$id)->first();
-   
-    $PaymentHist=Fee_payment::leftjoin('bank_account','fee_payment.bank','=','bank_account.id')
-     ->leftjoin('bank_name','bank_account.bank_name','=','bank_name.id')
-     ->leftjoin('admission','fee_payment.student','=','admission.admission_id')
-     ->leftjoin('payment_method','fee_payment.payment_method','=','payment_method.id')
-     ->select('fee_payment.date','amount','transaction_no','tuition_fee','payment_method.name as payment_method',
-     'bank_name.name as bank_name',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))
-    ->where('student',$id)->first();
-            if(!empty($student))
-      {
-      return response()->json(['status' => 'Success', 'student' => $student,
-'leadershipPosition' => $leadershipPosition,
-'parent1' => $parent1,
-'parent2' => $parent2,
-'emergency contact' => $emergencycontact,
-'roomBeds' => $assign,
-'discipline' => $discipline,
-'transport' => $transport,
-'PaymentHist' => $PaymentHist]);
-      }else
-      {
-        return response()->json(['status' => 'No data found']);
-      }
   }
- 
-    public function classTeacher(request $request)
-  {
-    $teacher=AddStream::leftjoin('staff','add_stream.teacher','=','staff.employee_id')
-    ->where('add_stream.id',$request->class)
-    ->select('qualification','phone','email',
-    db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"))
-    ->first();
-    $subjectTeacher=Subject::leftjoin('teacher_timetable','subjects.class','=','teacher_timetable.class')
-    ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
-     ->where('subjects.class',$request->class)
-     ->select('subjects.name as subject',
-     db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"))
-   ->get();
-   if(!empty($teacher))
-   {
-   return response()->json([
-     'message'=>'success',
-     'teacher'=>$teacher,
-     'subject_teacher'=>$subjectTeacher
-        ]);
-   }
-        else
-        {
-          return response()->json([
-            'message'=>'not found',
-            
-               ]);
-
-        }
-  }
-  
   
 }

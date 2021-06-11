@@ -178,6 +178,7 @@ public function destroy(Request $request)
     }
     public function studentAttenCalenderView(request $request)
     {
+     
       
     }
 }

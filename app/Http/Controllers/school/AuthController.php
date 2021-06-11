@@ -115,7 +115,7 @@ public function Login(Request $request)
               
               $students_list=ParentStudents::where("p_id",$admin->parent)->get();
             }
-            return response()->json(apiResponseHandler(['token' => $token, 'user_role' => $admin->user_role, 'admission_id' => $admin->admission_id, 'staff_id' => $admin->staff_id, 'name' =>$name,'id'=>$admin->id,'students'=>$students_list ], 'success'));
+            return response()->json(apiResponseHandler(['token' => $token, 'user_role' => $admin->user_role, 'admission_id' => $admin->admission_id, 'parent_id' => $admin->parent,'staff_id'=>$admin->staff_id, 'name' =>$name,'id'=>$admin->id,'students'=>$students_list ], 'success'));
        } else {
         
             return response()->json(apiResponseHandler([], 'Wrong Credentials', 400), 400);

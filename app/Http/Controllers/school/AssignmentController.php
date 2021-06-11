@@ -25,19 +25,28 @@ class AssignmentController extends Controller
             'end_date' => ['required'],
            
           ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+          if($Assignment->upload_document)
+        {
+          $valiDationArray["upload_document"]='required|upload_document';
         }
-        // $upload_document = time() . '-' . $Assignment->upload_document->extension();
-        // $Assignment->upload_document->move(public_path('images'),$upload_document);
-      
+        $validator =  Validator::make($Assignment->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $upload_document='';
+        if($Assignment->upload_document('upload_document')){
+        $upload_document = $Assignment->upload_document('upload_document');
+        $imgName = time() . '.' . pathinfo($upload_document->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/assignment-upload-document/' . $imgName, file_get_contents($upload_document));
+        $upload_document=config('app.url').'/public/uploads/assignment-upload-document/' . $imgName;
+        }
         $Assignment=Assignment::create([
 
         'title'  =>$Assignment->title ,
         'start_date'  =>$Assignment->start_date ,
         'end_date'  =>$Assignment->end_date ,
         'class'  =>$Assignment->class ,
-        'upload_document'  =>$Assignment->upload_document ,
+        'upload_document'  =>$upload_document ,
          'assignment'  =>$Assignment->assignment ,
           'comment'  =>$Assignment->comment ,
           'created_on'  =>date("Y-m-d") ,
@@ -103,18 +112,27 @@ public function update(Request $request)
         'end_date' => ['required'],
        
         ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        if($request->upload_document)
+        {
+          $valiDationArray["upload_document"]='required|file';
         }
-        // $upload_document = time() . '-' . $request->upload_document->extension();
-        // $request->upload_document->move(public_path('images'),$upload_document);
-      
-    $Assignment = Assignment::find($request->assignment_id);
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
+         $Assignment = Assignment::find($request->assignment_id);
+          if($request->file('upload_document')){
+              $upload_document = $request->file('upload_document');
+              $imgName = time() . '.' . pathinfo($upload_document->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/assignment-upload-document/' . $imgName, file_get_contents($upload_document));
+              $upload_document=config('app.url').'/public/uploads/assignment-upload-document/' . $imgName;
+              $Assignment->upload_document=$upload_document;
+              }
+
         $Assignment->title = $request->title ;
         $Assignment->start_date = $request->start_date ;
         $Assignment->end_date = $request->end_date ;
         $Assignment->class = $request->class;
-        $Assignment->upload_document =$request->upload_document ;
         $Assignment->assignment = $request->assignment ;
         $Assignment->comment = $request->comment ;
        
@@ -160,12 +178,21 @@ public function destroy(Request $request)
             'end_date' => ['required'],
            
           ]); 
+          if($Assignment->upload_document)
+          {
+            $valiDationArray["upload_document"]='required|upload_document';
+          }
+          $validator =  Validator::make($Assignment->all(),$valiDationArray); 
           if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
-        // $upload_document = time() . '-' . $Assignment->upload_document->extension();
-        // $Assignment->upload_document->move(public_path('images'),$upload_document);
-      
+              return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+          }
+          $upload_document='';
+          if($Assignment->upload_document('upload_document')){
+          $upload_document = $Assignment->upload_document('upload_document');
+          $imgName = time() . '.' . pathinfo($upload_document->getClientOriginalName(), PATHINFO_EXTENSION);
+          Storage::disk('public_uploads')->put('/assignment-upload-document/' . $imgName, file_get_contents($upload_document));
+          $upload_document=config('app.url').'/public/uploads/assignment-upload-document/' . $imgName;
+          }
         $Assignment=Assignment::create([
 
         'title'  =>$Assignment->title ,

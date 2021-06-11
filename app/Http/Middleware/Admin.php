@@ -15,13 +15,10 @@ class Admin
      */
     public function handle($request, Closure $next)
     {
-
-        if( $request->user() && $request->user()->user_role==2)
-        {
-            return $next($request);
+        if ($request->user()->user_role != 2) {
+            return response()->json('You are not a Admin', 400);
         }
-
-        return response()->json('You are not Admin',400);
+        return $next($request);
     }
 
   }
