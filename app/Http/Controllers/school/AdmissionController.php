@@ -39,7 +39,6 @@ use App\Models\Student_house;
 use App\Models\Position;
 use App\Models\Hostel;
 use App\Models\Staff;
-
 use App\Models\PaymentMethod;
 use App\Models\Bank_name;
 use App\Models\Bank_account;
@@ -100,13 +99,13 @@ class AdmissionController extends Controller
         $dummy=NULL;
   
         $count=Admission::count();
-        $date=date("Y").date('m').date("d");
+        $date=date("Y-m-d");
         $value = 11;
        
         $parent_id=$Admission->parent_id;
         
         $Admission=Admission::create([
-      
+         
         'boarding'    =>$Admission->boarding,
         'first_name'    =>$Admission->first_name,
         'middle_name'          =>$Admission->middle_name,
@@ -191,7 +190,7 @@ class AdmissionController extends Controller
         $ParentStudents->save();
         $parent2=new Second_parent;
        
-        $parent2->admission_id=$admission_id;
+        $parent2->admission_id-=$admission_id;
         
         $parent2->parent1_id=$parent1->parent1_id;
          

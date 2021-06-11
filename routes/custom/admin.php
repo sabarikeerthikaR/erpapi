@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(["middleware"=>["auth:api","auth.admin"]], function () {
 
-route::get('list-parents', 'school\AuthController@destroy');
 route::post('register','school\AuthController@register');
     route::get('login_list', 'school\AuthController@index');
    route::post('update', 'school\AuthController@update');

@@ -92,11 +92,8 @@ class First_parentController extends Controller
                   $parent2->national_id_s=$national_id_s;
                   }
        
-        $p=$parent->all();
-        $id=$p['admission_id'];
-        DB::enableQueryLog();
-         $parent1 = First_parent::where('admission_id',$id)->first(); 
-         $parent1->title_f=$parent->title_f;
+       
+          $parent1->title_f=$parent->title_f;
          $parent1->relation_f=$parent->relation_f;
          $parent1->first_name_f=$parent->first_name_f;
          $parent1->middle_name_f=$parent->middle_name_f;
@@ -107,9 +104,10 @@ class First_parentController extends Controller
          $parent1->occupation_f=$parent->occupation_f;
          $parent1->address_f=$parent->address_f;
          $parent1->postal_code_f=$parent->postal_code_f;
-         $parent1->passport_photo_f=$parent->passport_photo_f;
-         $parent1->national_id_f=$parent->national_id_f;
+        //  $parent1->passport_photo_f=$passport_photo_f;
+        //  $parent1->national_id_f=$national_id_f;
          $parent1->save();
+
 
         $parent2->admission_id=$id;
         $parent2->title_s=$parent->title_s;

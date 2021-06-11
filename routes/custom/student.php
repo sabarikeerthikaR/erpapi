@@ -48,7 +48,7 @@ route::get('classTeacher', 'school\AdmissionController@classTeacher');
 route::get('AssignmetShowStudent','school\AssignmentController@AssignmetShowStudent');
 
  ///syllabus
- route::get('studentselectsyllabus','school\SyllabusController@studentselectsyllabus');
+ route::post('studentselectsyllabus','school\SyllabusController@studentselectsyllabus');
 
 
 //past paper
@@ -100,6 +100,8 @@ route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit
 route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
 route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+
+});
 
 });
 

@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 */
 //teacher module
 Route::group(['prefix' => 'teacher'], function () {
-    
-Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
+
+ Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
 
     //dashboard
     route::get('teacherDashBoard','school\DashboardController@teacherDashBoard');
@@ -82,7 +82,7 @@ Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
     
 });
 
-});
+
 Route::get('testCode', function () {
     dd(config('jetstream.middleware', ['web']));
 });

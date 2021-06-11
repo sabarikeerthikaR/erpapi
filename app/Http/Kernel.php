@@ -125,8 +125,11 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
         'auth.admin' => \App\Http\Middleware\Admin::class,
+
         'auth.student' => \App\Http\Middleware\Student::class,
+        
         'auth.teacher' => \App\Http\Middleware\Teacher::class,
+
         'auth.user' => \App\Http\Middleware\IsUser::class,
 
         'module_permission' => \App\Http\Middleware\CheckSubAdminModulePermission::class,
