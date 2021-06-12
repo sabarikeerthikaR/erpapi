@@ -7,7 +7,7 @@ class Syllabus extends Model
 {
     
     protected $fillable = [
-       'date','class','subject','description','file'
+       'date','class','subject','description','file','created_by'
    ];
    protected $table = 'syllabus';
    protected $primaryKey = 'id';

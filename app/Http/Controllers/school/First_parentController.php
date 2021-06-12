@@ -28,14 +28,15 @@ class First_parentController extends Controller
 {
    public function store(Request $parent)
     {
-      $valiDationArray =  Validator::make($parent->all(), [
+     
+      $valiDationArray =  [
             
             'first_name_f'  => ['required', 'string'],
             'last_name_f'   => ['required', 'string'],
             'phone_f'       => ['required','numeric','digits:10'],
             'phone_e'  => ['required', 'numeric', 'digits:10'],
             'email'  => ['required', 'email', 'unique:users'],
-          ]); 
+          ]; 
           if($parent->passport_photo_f)
       {
         $valiDationArray["passport_photo_f"]='required|file';
@@ -57,9 +58,9 @@ class First_parentController extends Controller
            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
        }
        $p=$parent->all();
-       $id=$p['p_id'];
+       $id=$p['parent_id'];
        DB::enableQueryLog();
-        $parent1 = First_parent::where('parent1_id ',$id)->first(); 
+        $parent1 = First_parent::where('parent1_id',$id)->first(); 
         
         $parent2 = Second_parent::where("parent1_id",$id)->first();
      
@@ -157,12 +158,11 @@ class First_parentController extends Controller
     }
 public function show(request $request)
     { 
-             $id=$request->admission_id;
-             $parent = admission::
-             join('first_parent','admission.admission_id','=','first_parent.admission_id')
-             ->join('second_parent','admission.admission_id','=','second_parent.admission_id')
-             ->join('emergency_contact','admission.admission_id','=','emergency_contact.admission_id')
-             ->where('admission.admission_id',$id)->first();
+             $id=$request->parent_id;
+             $parent =First_parent::
+             join('second_parent','first_parent.parent1_id','=','second_parent.parent1_id')
+             ->join('emergency_contact','first_parent.parent1_id','=','emergency_contact.parent')
+             ->where('first_parent.parent1_id',$id)->first();
              if(!empty($parent)){
                     return response()->json([
                         'admission_id'=>$id,
@@ -181,7 +181,7 @@ public function show(request $request)
         join('second_parent','first_parent.admission_id','=','second_parent.admission_id')
         ->select(DB::raw("CONCAT(first_parent.first_name_f,' ',first_parent.middle_name_f,' ',first_parent.last_name_f) as parent"),
         'passport_photo_f','phone_f','occupation_f','address_f','email_f',DB::raw("CONCAT(second_parent.first_name_s,' ',second_parent.middle_name_s,' ',second_parent.last_name_s) as second_parent"),
-        'status','second_parent.admission_id')->get();
+        'status','second_parent.admission_id','first_parent.parent1_id')->get();
         return response()->json(['status' => 'Success', 'data' => $First_parent]);
     }
 
@@ -189,14 +189,14 @@ public function show(request $request)
 public function update(Request $parent)
 
    {
-    $valiDationArray =  Validator::make($parent->all(), [
+    $valiDationArray =[
             
         'first_name_f'  => ['required', 'string'],
         'last_name_f'   => ['required', 'string'],
         'phone_f'       => ['required','numeric','digits:10'],
         'phone_e'  => ['required', 'numeric', 'digits:10'],
         'email'  => ['required', 'email', 'unique:users,email,'.$parent->parent1_id],
-      ]); 
+    ];
 
 
       if($parent->passport_photo_f)
@@ -220,7 +220,7 @@ public function update(Request $parent)
            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
        }
        $p=$parent->all();
-        $id=$p['p_id'];
+        $id=$p['parent_id'];
         DB::enableQueryLog();
         $parent1 = First_parent::where('parent1_id',$id)->first();
 

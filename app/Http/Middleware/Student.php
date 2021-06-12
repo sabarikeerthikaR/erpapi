@@ -17,7 +17,7 @@ class Student
     public function handle($request, Closure $next)
     {
         if ($request->user()->user_role != 4) {
-            return response()->json('You are not a Parent', 400);
+            return response()->json('You are not a parent', 400);
         }
         return $next($request);
     }

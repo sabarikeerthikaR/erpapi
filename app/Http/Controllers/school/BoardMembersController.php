@@ -18,7 +18,7 @@ class BoardMembersController extends Controller
 {
     public function store(Request $Board_members)
     {
-      $valiDationArray =  Validator::make($Board_members->all(), [
+      $valiDationArray =[
             'title' => ['required'],
             'first_name' => ['required'],
             'other_name'    => ['required'],
@@ -26,7 +26,7 @@ class BoardMembersController extends Controller
             'phone'   => ['required', 'numeric', 'digits:10'],
             'position'       => ['required'],
             'date_joined' => ['required'],
-          ]); 
+          ]; 
           if($Board_members->passport_photo)
         {
           $valiDationArray["passport_photo"]='required|file';
@@ -123,7 +123,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $valiDationArray =  Validator::make($request->all(), [
+    $valiDationArray =  [
         'title' => ['required'],
         'first_name' => ['required'],
         'other_name'    => ['required'],
@@ -131,7 +131,7 @@ public function update(Request $request)
         'phone'   => ['required', 'numeric', 'digits:10'],
         'position'       => ['required'],
         'date_joined' => ['required'],
-        ]); 
+        ]; 
         if($request->passport_photo)
         {
           $valiDationArray["passport_photo"]='required|file';

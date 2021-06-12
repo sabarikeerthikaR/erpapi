@@ -17,7 +17,7 @@ class OnlineRegistrationController extends Controller
 {
      public function store(Request $Online_registration)
     {
-    	 $valiDationArray =  Validator::make($Online_registration->all(), [
+    	 $valiDationArray = [
             'first_name' => ['required'],
             'last_name' => ['required'],
             'admission_for' => ['required'],
@@ -30,7 +30,7 @@ class OnlineRegistrationController extends Controller
             'former_school' => ['required'],
             'grade_completed' => ['required'],
             'disability_if_any'=> ['required'],
-        ]); 
+        ]; 
         if($Online_registration->image)
         {
           $valiDationArray["image"]='required|file';
@@ -124,7 +124,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-   	 $valiDationArray =  Validator::make($request->all(), [
+   	 $valiDationArray =  [
         'first_name' => ['required'],
             'last_name' => ['required'],
             'admission_for' => ['required'],
@@ -138,7 +138,7 @@ public function update(Request $request)
             'grade_completed' => ['required'],
             'disability_if_any'=> ['required'],
             'image' => ['required']
-        ]);
+        ];
         if($request->image)
      {
        $valiDationArray["image"]='required|file';

@@ -20,7 +20,7 @@ class SupportingStaffController extends Controller
 {
     public function store(Request $Staff)
     {
-    	 $valiDationArray =  Validator::make($Staff->all(), [
+    	 $valiDationArray =  [
             'first_name' => ['required'],
             'last_name' => ['required'],
             'gender' => ['required'],
@@ -37,7 +37,7 @@ class SupportingStaffController extends Controller
           'email' => ['required', 'email', 'unique:users'],
            
 
-        ]); 
+        ]; 
         if($Staff->passport_photo)
         {
           $valiDationArray["passport_photo"]='required|file';
@@ -171,7 +171,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-   	 $valiDationArray =  Validator::make($request->all(), [
+   	 $valiDationArray =  [
    	 'first_name' => ['required'],
             'last_name' => ['required'],
             'gender' => ['required'],
@@ -186,7 +186,7 @@ public function update(Request $request)
             'qualification' => ['required'],
             'phone' => ['required', 'numeric', 'digits:10'],
             'email' => ['required', 'email', 'unique:users,email,'.$request->employee_id],
-        ]); 
+        ]; 
         if($request->passport_photo)
         {
           $valiDationArray["passport_photo"]='required|file';
