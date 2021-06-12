@@ -15,13 +15,13 @@ use Illuminate\Support\Facades\Route;
 //teacher module
 Route::group(['prefix' => 'teacher'], function () {
 
- Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
+    Route::group(["middleware"=>["auth:api","auth.teacher"]], function () {
 
     //dashboard
     route::get('teacherDashBoard','school\DashboardController@teacherDashBoard');
 
     //teaching staff
-    route::post('teachingstafffullprofile','school\StaffController@teachingstafffullprofile');
+    route::get('teachingstafffullprofile','school\StaffController@teachingstafffullprofile');
     route::get('teachingstaffprofile','school\StaffController@teachingstaffprofile');
 
 
@@ -42,6 +42,7 @@ Route::group(['prefix' => 'teacher'], function () {
     // student
     route::get('myclass','school\TeacherTimetableController@myclass');
     route::get('listStudent','school\SubjectController@listStudent');
+    route::get('studentPro','school\AdmissionController@studentProfile');
     
     //assignment
     route::post('assignmentstoreTeacher','school\AssignmentController@assignmentstoreTeacher');

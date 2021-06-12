@@ -165,16 +165,36 @@ public function destroy(Request $request)
     }
     public function AttendanceListByDate(request $request)
     {
-      $atten=ClassAttendance::join('admission','class_attendance.student','=','admission.admission_id')
-        ->where('class_attendance.date',$request->date)
-        ->join('add_stream','class_attendance.class','=','add_stream.id')
+      $date=$request->date;
+      $dateD=date("Y-m-d");
+      if($date<=date("Y-m-d"))
+      {
+        $atten=ClassAttendance::leftjoin('admission','class_attendance.student','=','admission.admission_id')
+        
+        ->leftjoin('add_stream','class_attendance.class','=','add_stream.id')
         ->where('add_stream.teacher',$request->staff)
+        ->where($dateD,$request->date)
       ->select('admission_id as student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
       'present')->get();
       return response()->json([
         'message'=>'success',
         'data'=>$atten
       ]);
+        }else{
+        $atten=ClassAttendance::leftjoin('admission','class_attendance.student','=','admission.admission_id')
+        
+        ->leftjoin('add_stream','class_attendance.class','=','add_stream.id')
+        ->where('add_stream.teacher',$request->staff)
+        ->where('class_attendance.date',$request->date)
+      ->select('admission_id as student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
+      'present')->get();
+      return response()->json([
+        'message'=>'success',
+        'data'=>$atten
+      ]);
+      }
+
+      
     }
     public function studentAttenCalenderView(request $request)
     {

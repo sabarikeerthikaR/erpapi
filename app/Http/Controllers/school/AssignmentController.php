@@ -14,28 +14,29 @@ use Illuminate\Database\Migrations\Migration;
 use App\Models\Assignment;
 use App\Models\AddStream;
 use App\Models\Class_stream;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Std_class;
 class AssignmentController extends Controller
 {
      public function store(Request $Assignment)
     {
-      $validator =  Validator::make($Assignment->all(), [
+      $valiDationArray =[
             'title' => ['required'],
             'start_date' => ['required'],
             'end_date' => ['required'],
            
-          ]); 
+          ]; 
           if($Assignment->upload_document)
         {
-          $valiDationArray["upload_document"]='required|upload_document';
+          $valiDationArray["upload_document"]='required|file';
         }
         $validator =  Validator::make($Assignment->all(),$valiDationArray); 
         if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
         }
         $upload_document='';
-        if($Assignment->upload_document('upload_document')){
-        $upload_document = $Assignment->upload_document('upload_document');
+        if($Assignment->file('upload_document')){
+        $upload_document = $Assignment->file('upload_document');
         $imgName = time() . '.' . pathinfo($upload_document->getClientOriginalName(), PATHINFO_EXTENSION);
         Storage::disk('public_uploads')->put('/assignment-upload-document/' . $imgName, file_get_contents($upload_document));
         $upload_document=config('app.url').'/public/uploads/assignment-upload-document/' . $imgName;
@@ -50,7 +51,7 @@ class AssignmentController extends Controller
          'assignment'  =>$Assignment->assignment ,
           'comment'  =>$Assignment->comment ,
           'created_on'  =>date("Y-m-d") ,
-          'created_by'  =>'admin' , 
+          'created_by'  =>auth::user()->id, 
          ]);
         if($Assignment->save()){
                   return response()->json([
@@ -106,12 +107,12 @@ public function assignmentview(Request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
+    $valiDationArray =  [
         'title' => ['required'],
         'start_date' => ['required'],
         'end_date' => ['required'],
        
-        ]); 
+        ]; 
         if($request->upload_document)
         {
           $valiDationArray["upload_document"]='required|file';
@@ -172,23 +173,23 @@ public function destroy(Request $request)
 
     public function assignmentstoreTeacher(Request $Assignment)
     {
-      $validator =  Validator::make($Assignment->all(), [
+      $valiDationArray =  [
             'title' => ['required'],
             'start_date' => ['required'],
             'end_date' => ['required'],
            
-          ]); 
+          ]; 
           if($Assignment->upload_document)
           {
-            $valiDationArray["upload_document"]='required|upload_document';
+            $valiDationArray["upload_document"]='required|file';
           }
           $validator =  Validator::make($Assignment->all(),$valiDationArray); 
           if ($validator->fails()) {
               return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
           }
           $upload_document='';
-          if($Assignment->upload_document('upload_document')){
-          $upload_document = $Assignment->upload_document('upload_document');
+          if($Assignment->file('upload_document')){
+          $upload_document = $Assignment->file('upload_document');
           $imgName = time() . '.' . pathinfo($upload_document->getClientOriginalName(), PATHINFO_EXTENSION);
           Storage::disk('public_uploads')->put('/assignment-upload-document/' . $imgName, file_get_contents($upload_document));
           $upload_document=config('app.url').'/public/uploads/assignment-upload-document/' . $imgName;
@@ -203,7 +204,7 @@ public function destroy(Request $request)
          'assignment'  =>$Assignment->assignment ,
           'comment'  =>$Assignment->comment ,
           'created_on'  =>date("Y-m-d") ,
-          'created_by'  =>'admin' , 
+          'created_by'  =>Auth::user()->id, 
          ]);
         if($Assignment->save()){
                   return response()->json([
@@ -216,13 +217,17 @@ public function destroy(Request $request)
                  ]);
           }
     }
-    public function AssignmetShowTeacher()
+    public function AssignmetShowTeacher(Request $request)
     {
         $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
         ->join('std_class','add_stream.class','=','std_class.class_id')
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->join('users','assignment.created_by','=','users.id')
+        ->where('users.staff_id',$request->staff_id)
         ->select('std_class.name as class','class_stream.name as stream','title',
-    'start_date','end_date','upload_document','assignment','comment','assignment_id')->get();
+    'start_date','end_date','upload_document','assignment','comment','assignment_id','add_stream.id as class_id',
+    'assignment.created_at'
+    )->get();
         return response()->json(['status' => 'Success', 'data' => $Assignment]);
     }
 
@@ -242,13 +247,17 @@ public function destroy(Request $request)
         return response()->json(['status' => 'failed']);
     }
 }
-public function AssignmetShowStudent()
+public function AssignmetShowStudent(Request $request)
 {
     $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
     ->join('std_class','add_stream.class','=','std_class.class_id')
     ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-    ->select('std_class.name as class','class_stream.name as stream','title',
-'start_date','end_date','upload_document','assignment','comment','assignment_id')->get();
+    ->join('admission','add_stream.id','=','admission.class')
+    ->join('users','assignment.created_by','=','users.id')
+    ->where('admission.admission_id',$request->admission_id)
+    ->select(DB::raw("CONCAT (users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)As created_by"),
+        'std_class.name as class','class_stream.name as stream','title',
+'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on','assignment.created_at')->get();
     return response()->json(['status' => 'Success', 'data' => $Assignment]);
 }
 }

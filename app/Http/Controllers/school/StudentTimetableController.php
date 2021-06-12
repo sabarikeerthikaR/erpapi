@@ -79,15 +79,25 @@ public function show(request $request)
 
     public function studentMyTimetable(request $request)
     {
-        $StudentTimetable = StudentTimetable::join('add_stream','student_timetable.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+        $StudentTimetable = StudentTimetable::leftjoin('add_stream','student_timetable.class','=','add_stream.id')
+        ->leftjoin('admission','student_timetable.class','=','admission.class')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->join('subjects','student_timetable.subject','=','subjects.subject_id')
-        ->join('setings as day','student_timetable.day','=','day.s_d')
-        ->where('day',$request->class)
+        ->join('teacher_timetable','student_timetable.class','=','teacher_timetable.class')
+        ->join('staff','teacher_timetable.staff','=','staff.employee_id')
+        ->leftjoin('setings as day','student_timetable.day','=','day.s_d')
+        ->where('student_timetable.day',$request->day)->where('admission.admission_id',$request->admission_id)
         ->select('std_class.name as class','class_stream.name as stream',
-        'subjects.name as subject','start_time','end_time','day.key_name as day')
+        db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as staff_name"),
+        'subjects.name as subject','student_timetable.start_time','student_timetable.end_time','day.key_name as day')
+        ->groupBy('student_timetable.id')
         ->get();
+        foreach ($StudentTimetable as $group) {
+          $grouped[] =  $group->groupBy();
+      }
+        // ->
+        
         return response()->json([
             'message'=>'success',
             'data'=>$StudentTimetable
