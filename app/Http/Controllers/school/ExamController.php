@@ -13,9 +13,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Exam;
 use App\Models\ExamMark;
-use App\Models\AddStream;
+use App\Models\User;
 use App\Models\Admission;
+use App\Models\ExamTimetable;
 use App\Models\Subject;
+use App\Models\Settings;
+use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
 {
@@ -155,33 +158,33 @@ public function destroy(Request $request)
     {
         $data=$request->data;
         $errors=[];
+        $subjects=Subject::where('subject_id',$request->subject)
+        ->select('sub_units')
+        ->first();
         foreach($data as $g)
         {
-            $subject=Subject::where('subject_id',$request->subject)
-            ->select('sub_units')
-            ->first();
-
-        if($subject->sub_units=339)
-        {
-        $exam = new ExamMark(array(
-          'student'=>$g['student'],
-          'mark_one'=>$g['mark_one'],  
-          'mark_two'  =>$g['mark_two'],
-          'total_mark'  =>$g['mark_one'] + $g['mark_two'],
-          'exam'=>$request->exam_id,
-          'subject '=>$request->subject,
-          'grading_system'=>$request->grading_system,
-         ));
-        }else
-        {
-            $exam = new ExamMark(array(
-                'student'=>$g['student'],
-                'total_mark'  =>$g['total_mark'],
-                'exam'=>$request->exam_id,
-                'subject '=>$request->subject,
-                'grading_system'=>$request->grading_system,
-               ));
-        }
+            if($subjects->sub_units=339)
+            {
+                    $exam = new ExamMark(array(
+                    'student'=>$g['student'],
+                    'mark_one'=>$g['mark_one'],  
+                    'mark_two'  =>$g['mark_two'],
+                    'total_mark'  =>$g['mark_one'] + $g['mark_two'],
+                    'exam'=>$request->exam_id,
+                    'subject'=>$request->subject,
+                    'grading_system'=>$request->grading_system,
+                    ));
+            }
+            else
+            {
+                $exam = new ExamMark(array(
+                    'student'=>$g['student'],
+                    'total_mark'  =>$g['total_mark'],
+                    'exam'=>$request->exam_id,
+                    'subject'=>$request->subject,
+                    'grading_system'=>$request->grading_system,
+                ));
+            }
           if(!$exam->save())
           {
             $errors[]=$g;
@@ -205,37 +208,109 @@ public function destroy(Request $request)
                    'errors'=>$errors
                  ]);
                }
-    }
-    public function ExamMarkView(request $request)
-    {
+    } 
 
-    }
-    public function ExamCertificate(request $request)
-    {
-        
-    }
-    public function ExamCertificateview(request $request)
-    {
-        
-    }
-    public function ExamCertificateedit(request $request)
-    {
-        
-    }
-    public function ExamCertificatedelete(request $request)
-    {
-        
-    }
-    public function ExamCertificateselect(request $request)
-    {
-        
-    }
+    // public function ExamMarkView(request $request)
+    // {
+
+    // }
     public function examTimetable(request $request)
     {
+        $data=$request->data;
+        $errors=[];
+       
+        foreach($data as $g)
+        {
+           
+                    $timetable = new ExamTimetable(array(
+                    'total_mark'=>$g['total_mark'],
+                    'minimum_mark'=>$g['minimum_mark'],  
+                    'date'  =>$g['date'],
+                    'start_time'  =>$g['start_time'],
+                    'end_time'  =>$g['end_time'],
+                    'exam'=>$request->exam,
+                    'subject'=>$request->subject,
+                    'class'=>$request->class,
+                    ));
+            
+          if(!$timetable->save())
+          {
+            $errors[]=$g;
+          }
+        } 
+             
+              if(count($errors)==0)
+              {
+              return response()->json([
+              'message'  => 'request saved successfully',
+              'data'  => $data,
+              'exam'=>$request->exam,
+              'subject'=>$request->subject,
+              'class'=>$request->class,
+                  ]);
+              }
+              else 
+              {
+                  return response()->json([
+                   'message'  => 'failed',
+                   'errors'=>$errors
+                 ]);
+               }
         
     }
-    public function ExamResults(request $request)
+    public function termForExam()
     {
-        
+        $term=Settings::where('group_name','term')
+        ->get();
+        return response()->json([
+            'message'  => 'success',
+            'errors'=>$term
+          ]);
+
     }
+    public function viewExamTimetableStudent(request $request)
+    {
+        $id=Auth::user()->id;
+        $class=User::where('users.id',$id)
+        ->join('admission','users.parent','=','admission.parent')
+        ->join('add_stream','admission.class','=','add_stream.id')
+        ->select('admission.class')->first();
+        $timetable=Exam::where('exam.term',$request->term)
+        ->join('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
+        ->where('exam_timetable.class',$class->class)
+        ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
+        'date','start_time','end_time','subjects.name as subject')
+        ->get();
+        return response()->json([
+            'message'  => 'success',
+            'errors'=>$timetable
+          ]);
+
+    }
+    // public function ExamCertificate(request $request)
+    // {
+        
+    // }
+    // public function ExamCertificateview(request $request)
+    // {
+        
+    // }
+    // public function ExamCertificateedit(request $request)
+    // {
+        
+    // }
+    // public function ExamCertificatedelete(request $request)
+    // {
+        
+    // }
+    // public function ExamCertificateselect(request $request)
+    // {
+        
+    // }
+    
+    // public function ExamResults(request $request)
+    // {
+        
+    // }
 }

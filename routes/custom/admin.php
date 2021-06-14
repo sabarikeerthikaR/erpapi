@@ -369,12 +369,16 @@ route::post('exm_update','school\ExamController@update');
 route::get('exm_destroy','school\ExamController@destroy');
 route::get('exm_select','school\ExamController@show');
 route::post('markEntry','school\ExamController@markEntry');
+route::post('markentryPost','school\ExamController@markentryPost');
+
+//exam timetable
+route::post('examTimetable','school\ExamController@examTimetable');
+
 route::get('ExamMarkView','school\ExamController@ExamMarkView');
 route::get('ExamCertificate','school\ExamController@ExamCertificate');
 route::get('ExamCertificateview','school\ExamController@ExamCertificateview');
 route::post('ExamCertificateedit','school\ExamController@ExamCertificateedit');
 route::get('ExamCertificateselect','school\ExamController@ExamCertificateselect');
-route::post('examTimetable','school\ExamController@examTimetable');
 route::get('ExamResults','school\ExamController@ExamResults');
 
 // student class

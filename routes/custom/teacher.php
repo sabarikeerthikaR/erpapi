@@ -66,7 +66,7 @@ Route::group(['prefix' => 'teacher'], function () {
         route::get('teacherExams','school\ExamController@teacherExams');
 
      //sms
-    route::post('teacherSms','school\SmsController@teacherSms');
+     route::post('sms_store','school\SmsController@store');
     route::get('showteacherSms','school\SmsController@showteacherSms');
     
      //leave

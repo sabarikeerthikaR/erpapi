@@ -57,35 +57,15 @@ use Illuminate\Support\Facades\Route;
 
     //sms
     route::post('sms_store','school\SmsController@store');
-    route::get('sms_show','school\SmsController@index');
-    route::post('sms_update','school\SmsController@update');
-    route::get('sms_destroy','school\SmsController@destroy');
-    route::get('sms_select','school\SmsController@show');
-    route::get('listStudentsms','school\SmsController@listStudent');
-    route::post('customSms','school\SmsController@customSms');
-    route::post('SmsRandomNo','school\SmsController@SmsRandomNo');
-    route::get('MessageFeedback','school\SmsController@MessageFeedback');
-    route::post('leaveRequest','school\SmsController@leaveRequest');
-
-
-
-
-
+   
+     //leave Request
+     route::post('sendRequestStudent','school\LeaveRequestController@sendRequestStudent');
+     route::get('ShowLeaveRequestStudent','school\LeaveRequestController@ShowLeaveRequestStudent');
 
     // exam
-    route::post('exm_store','school\ExamController@store');
-    route::get('exm_show','school\ExamController@index');
-    route::post('exm_update','school\ExamController@update');
-    route::get('exm_destroy','school\ExamController@destroy');
-    route::get('exm_select','school\ExamController@show');
-    route::post('markEntry','school\ExamController@markEntry');
-    route::get('ExamMarkView','school\ExamController@ExamMarkView');
-    route::get('ExamCertificate','school\ExamController@ExamCertificate');
-    route::get('ExamCertificateview','school\ExamController@ExamCertificateview');
-    route::post('ExamCertificateedit','school\ExamController@ExamCertificateedit');
-    route::get('ExamCertificateselect','school\ExamController@ExamCertificateselect');
-    route::post('examTimetable','school\ExamController@examTimetable');
-    route::get('ExamResults','school\ExamController@ExamResults');
+    route::get('termForExam','school\ExamController@termForExam');
+    route::get('viewExamTimetableStudent','school\ExamController@viewExamTimetableStudent');
+   
 
     //fee payments
     route::post('feePayment_store','school\FeePaymentController@store');

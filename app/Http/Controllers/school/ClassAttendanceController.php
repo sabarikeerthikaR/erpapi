@@ -173,7 +173,7 @@ public function destroy(Request $request)
         
         ->leftjoin('add_stream','class_attendance.class','=','add_stream.id')
         ->where('add_stream.teacher',$request->staff)
-        ->where($dateD,$request->date)
+        ->where('class_attendance.date','!=',$request->date)
       ->select('admission_id as student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
       'present')->get();
       return response()->json([

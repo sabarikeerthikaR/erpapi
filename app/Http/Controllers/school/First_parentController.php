@@ -178,7 +178,7 @@ public function show(request $request)
    public function index()
     {
         $First_parent = First_parent::
-        join('second_parent','first_parent.admission_id','=','second_parent.admission_id')
+        join('second_parent','first_parent.parent1_id','=','second_parent.parent1_id')
         ->select(DB::raw("CONCAT(first_parent.first_name_f,' ',first_parent.middle_name_f,' ',first_parent.last_name_f) as parent"),
         'passport_photo_f','phone_f','occupation_f','address_f','email_f',DB::raw("CONCAT(second_parent.first_name_s,' ',second_parent.middle_name_s,' ',second_parent.last_name_s) as second_parent"),
         'status','second_parent.admission_id','first_parent.parent1_id')->get();
@@ -338,11 +338,11 @@ public function destroy(Request $request)
     }
     public function profile(request $request)
     {
-        $id=$request->admission_id;
-        $student=Admission::select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'class','admission_id','admission_no')->where('admission_id',$id)->first();
-        $fparent=First_parent::select(DB::raw("CONCAT(first_name_f,' ',middle_name_f,' ',last_name_f) as full_name"),'relation_f','phone_f','email_f','occupation_f','address_f','id_passport_f')->where('admission_id',$id)->first();
-        $sparent=Second_parent::select(DB::raw("CONCAT(first_name_s,' ',middle_name_s,' ',last_name_s) as full_name"),'relation_s','phone_s','email_s','occupation_s','address_s','id_passport_s')->where('admission_id',$id)->first();
-       $econtact=Emergency_contact::select(DB::raw("CONCAT(first_name_e,' ',middle_name_e,' ',last_name_e) as full_name"),'id_no_e','relation_e','phone_e','email_e','address_e','info_provided_by')->where('admission_id',$id)->first();
+        $id=$request->parent_id;
+        $student=Admission::select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'class','admission_id','admission_no')->where('parent',$id)->first();
+        $fparent=First_parent::select(DB::raw("CONCAT(first_name_f,' ',middle_name_f,' ',last_name_f) as full_name"),'relation_f','phone_f','email_f','occupation_f','address_f','id_passport_f')->where('parent1_id',$id)->first();
+        $sparent=Second_parent::select(DB::raw("CONCAT(first_name_s,' ',middle_name_s,' ',last_name_s) as full_name"),'relation_s','phone_s','email_s','occupation_s','address_s','id_passport_s')->where('parent1_id',$id)->first();
+       $econtact=Emergency_contact::select(DB::raw("CONCAT(first_name_e,' ',middle_name_e,' ',last_name_e) as full_name"),'id_no_e','relation_e','phone_e','email_e','address_e','info_provided_by')->where('parent',$id)->first();
        if(!empty($student))
        {
        return response()->json(['message'=>'sucess', 

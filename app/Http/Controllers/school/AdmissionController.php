@@ -355,9 +355,9 @@ public function update(Request $request)
      
          $Admission->save();
         $name=$request->first_name.' '. $request-> middle_name .' '. $request-> last_name;
-      //   $settings=Settings::where('group_name','=','student')->where('key_value',$request->admission_id)->first();
-      //   $settings->key_name= $name;
-      //   $settings->save();
+        $settings=Settings::where('group_name','=','student')->where('key_value',$request->admission_id)->first();
+        $settings->key_name= $name;
+        $settings->save();
       // $dummy=NULL;
      
         if( $Admission->save()){
@@ -716,14 +716,15 @@ $parent_id=Auth::user()->parent;
     db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"),'staff.passport_photo')
     ->first();
     $subjectTeacher=Subject::leftjoin('admission','subjects.class','=','admission.class')
+    ->where('admission.admission_id',$request->admission_id)
     ->leftjoin('teacher_timetable','admission.class','=','teacher_timetable.class')
     ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
 
-     ->where('admission.admission_id',$request->admission_id)
+    
      ->select('subjects.name as subject','subject_id',
      db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"),'staff.phone','staff.passport_photo')
      //->groupBy()
-      ->groupBy('subject_id','employee_id')
+      ->groupBy('employee_id')
      ->get();
    if(!empty($teacher))
    {
