@@ -236,10 +236,12 @@ public function destroy(Request $request)
     $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
         ->join('std_class','add_stream.class','=','std_class.class_id')
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->join('users','assignment.created_by','=','users.id')
         ->where('assignment_id',$request->assignment_id)
-        ->select('std_class.name as class','class_stream.name as stream','title',
+        ->select(DB::raw("CONCAT (users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)As created_by"),
+            'std_class.name as class','class_stream.name as stream','title',
     'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on',
-    'created_by')->first();
+    )->first();
     if(!empty($Assignment))
     {
         return response()->json(['status' => 'Success', 'data' => $Assignment]);

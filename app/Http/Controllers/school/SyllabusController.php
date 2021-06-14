@@ -95,7 +95,7 @@ class SyllabusController extends Controller
           'class'=>$request->class,
           'subject'=>$request->subject,
           'description'=>$request->description,
-          'file'=>$request->file
+          'file'=>$file
 
         ]);
         if($syllabus->save())
