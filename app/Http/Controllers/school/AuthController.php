@@ -100,13 +100,12 @@ public function Login(Request $request)
              return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
         }
 
+
         $credentials = ['email' => $request->email, 'password' => $request->password];
 
         if (Auth::attempt($credentials)) {
 
-          
             $admin = User::where(['email' => $request->input('email')])->first();
-
             $token = $admin->createToken('myApp')->accessToken;
             $name=$admin->first_name.' '.$admin->middle_name.' '.$admin->last_name;
             $students_list=[];

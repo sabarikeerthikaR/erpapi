@@ -58,10 +58,7 @@ use Illuminate\Support\Facades\Route;
     //sms
     route::post('sms_store','school\SmsController@store');
    
-     //leave Request
-     route::post('sendRequestStudent','school\LeaveRequestController@sendRequestStudent');
-     route::get('ShowLeaveRequestStudent','school\LeaveRequestController@ShowLeaveRequestStudent');
-
+    
     // exam
     route::get('termForExam','school\ExamController@termForExam');
     route::get('viewExamTimetableStudent','school\ExamController@viewExamTimetableStudent');

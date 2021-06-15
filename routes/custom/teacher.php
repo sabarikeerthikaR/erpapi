@@ -31,7 +31,9 @@ Route::group(['prefix' => 'teacher'], function () {
     //teacher timetable
     route::get('myTimetable','school\TeacherTimetableController@myTimetable');
 
-
+    // exam
+    route::get('termForExam','school\ExamController@termForExam');
+    route::get('viewExamTimetableStaff','school\ExamController@viewExamTimetableStaff');
        
     //student attendance
     route::post('studentAtten_storeforteacher','school\ClassAttendanceController@storeforteacher');

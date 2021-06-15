@@ -151,9 +151,10 @@ public function destroy(Request $request)
         ->join('std_class','add_stream.class','=','std_class.class_id')
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->join('subjects','teacher_timetable.subject','=','subjects.subject_id')
-        ->where('staff',$request->staff)
-        ->where('day',$request->day)
-        ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject','start_time','end_time')
+        ->where('teacher_timetable.staff',$request->staff)
+        ->where('teacher_timetable.day',$request->day)
+        ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject','start_time','end_time',
+        'teacher_timetable.id')
         ->get();
         return response()->json([
             'message'=>'success',

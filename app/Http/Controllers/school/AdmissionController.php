@@ -501,7 +501,7 @@ public function destroy(Request $request)
             ->select( DB::raw("CONCAT (admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)As full_name"),
             DB::raw("DATE_FORMAT(FROM_DAYS(DATEDIFF(CURRENT_DATE, dob)),'%y') AS age"), 
             DB::raw("CONCAT(first_parent.first_name_f,' ',COALESCE(first_parent.middle_name_f,''),' ',first_parent.last_name_f) as parent"),
-            'admission.image','setings.key_name as gender','std_class.name as class','class_stream.name as stream','admission.admission_id','admission.admission_no',
+            'admission.image','setings.key_name as gender','std_class.name as class','class_stream.name as stream','admission.admission_id',
             'first_parent.phone_f')->
             get();
              return response()->json(['status' => 'Success', 'data' => $students]);
