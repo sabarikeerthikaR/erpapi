@@ -18,21 +18,32 @@ use App\Models\User;
 class LeaveRequestController extends Controller
 {
     public function sendRequestStudent(request $request)
-    {
-        $id=Auth::user()->admission_id;
-        $Teacher=User::where('users.admission_id',$id)
-        ->join('admission','users.admission_id','=','admission.admission_id')
-        ->join('add_stream','admission.class','=','add_stream.id')
-        ->select('add_stream.teacher')->first();
-        $leaveRequest= LeaveRequest::create([
-
-            'from_date'=>$request->from_date,
-            'to_date'=>$request->to_date,
-            'reason'=>$request->reason,
-            'request_by'=>Auth::user()->admission_id,
-            'request_to'=>$Teacher->teacher,
-            'date'=>date('Y-m-d')
-        ]);
+     {
+       $id=$request->request_id;
+       
+       if(Auth::user()->user_role==4)
+       {
+       
+         $Teacher=User::where('users.admission_id',$id)
+         ->join('admission','users.admission_id','=','admission.admission_id')
+         ->join('add_stream','admission.class','=','add_stream.id')
+         ->select('add_stream.teacher')->first();
+       $request_to=$Teacher->teacher;
+       }
+       else
+       {
+         $adminData=User::where("user_role",2)->first();
+         $request_to=$adminData->id;
+       }
+         $leaveRequest= LeaveRequest::create([
+ 
+             'from_date'=>$request->from_date,
+             'to_date'=>$request->to_date,
+             'reason'=>$request->reason,
+             'request_by'=>$id,
+           'request_to'=>$request_to,
+             'date'=>date('Y-m-d')
+         ]);
         if($leaveRequest->save()){
             return response()->json([
            'message'  => 'leaveRequest saved successfully',
@@ -46,15 +57,20 @@ class LeaveRequestController extends Controller
     }
     public function ShowLeaveRequestStudent(request $request)
     {
-        $id=Auth::user()->id;
+       $id=$request->id;
+       $user=Auth::user();
         $getRequest=LeaveRequest::where('request_by',$id)
-        ->join('users','leave_request.request_by','=','users.id')
-        ->join('admission','users.admission_id','=','admission.admission_id')
-        ->select('leave_request.date','from_date','to_date','leave_request.reason',
-        db::raw('(CASE when accept = "542" then "Accepted"
-                       when accept = "543" then "Rejected"
+        ->where(function($query) use($user){
+           if($user->user_role==4)
+           $query->join('admission as u','users.admission_id','=','u.admission_id');
+           else
+            $query->join('staff as u','users.staff_id','=','u.employee_id');   
+         })->select('leave_request.date','from_date','to_date','leave_request.reason','leave_request.id',
+       db::raw('(CASE when accept = "1" then "Accepted"
+                      when accept = "2" then "Rejected"
                        else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
         )->get();
+
         if(!empty($getRequest)){
             return response()->json([
             'data'  => $getRequest      
@@ -65,5 +81,50 @@ class LeaveRequestController extends Controller
          'message'  => 'No data found'  
           ]);
          }
+    }
+    public function AcceptLeaveRequest(request $request)
+    {
+       $id=$request->id;
+       $user=Auth::user();
+        $getRequest=LeaveRequest::where('request_to',$id)
+        ->where(function($query) use($user) {
+           if($user->user_role==2)
+           $query->join('staff as u','leave_request.request_by','=','u.employee_id');   
+           else
+           $query->join('admission as u','leave_request.request_by','=','u.admission_id');
+         })->select('leave_request.date','from_date','to_date','leave_request.reason','leave_request.id',
+       db::raw("CONCAT(u.first_name,' ',COALESCE(u.middle_name,''),' ',u.last_name) as full_name"),
+       db::raw('(CASE when accept = "1" then "Accepted"
+                      when accept = "2" then "Rejected"
+                       else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
+        )->get();
+
+        if(!empty($getRequest)){
+            return response()->json([
+            'data'  => $getRequest      
+            ]);
+        }else
+        {
+          return response()->json([
+         'message'  => 'No data found'  
+          ]);
+         }
+    }
+    public function AcceptReject(request $request)
+    {
+        
+        $leaveReq=LeaveRequest::find($request->leaveRequest_id);
+        $leaveReq->accept=$request->acceptReject;
+
+        if($leaveReq->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
     }
 }

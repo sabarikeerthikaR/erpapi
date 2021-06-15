@@ -1028,6 +1028,14 @@ route::post('onlineRegistration_update','school\OnlineRegistrationController@upd
 route::get('onlineRegistration_destroy','school\OnlineRegistrationController@destroy');
 route::get('onlineRegistration_list','school\OnlineRegistrationController@index');
 
+Route::group(["middleware"=>["auth:api"]], function () {
+     	 //leave Request
+         route::post('sendRequestStudent','school\LeaveRequestController@sendRequestStudent');
+         route::get('ShowLeaveRequestStudent/{id}','school\LeaveRequestController@ShowLeaveRequestStudent');
+         route::get('AcceptLeaveRequest/{id}','school\LeaveRequestController@AcceptLeaveRequest');
+         route::post('AcceptReject','school\LeaveRequestController@AcceptReject');
+     });
+
 Route::get('testCode', function () {
     dd(config('jetstream.middleware', ['web']));
 });
