@@ -74,10 +74,12 @@ public function show(request $request)
    }
    public function index()
     {
-      $Borrow = Give_out_book_fund::join('admission','give_out_book_fund.student','=','admission.admission_id')
-      ->join('std_class','admission.class','=','std_class.class_id')
-      ->join('book_for_fund','give_out_book_fund.book','=','book_for_fund.book_for_fund_id')
-      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),'std_class.name as class',
+      $Borrow = Give_out_book_fund::leftjoin('admission','give_out_book_fund.student','=','admission.admission_id')
+     ->leftjoin('add_stream','admission.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+      ->leftjoin('book_for_fund','give_out_book_fund.book','=','book_for_fund.book_for_fund_id')
+      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),
       'book_for_fund.title as book','give_out_book_fund.borrow_date','give_out_book_fund.status','remark','give_out_id')
       ->groupBy('give_out_id')
       ->get();
@@ -135,12 +137,14 @@ public function destroy(Request $request)
     }
     public function returnBookforfund()
     {
-      $book=Give_out_book_fund::join('admission','give_out_book_fund.student','=','admission.admission_id')
-    ->join('std_class','admission.class','=','std_class.class_id')
+      $book=Give_out_book_fund::leftjoin('admission','give_out_book_fund.student','=','admission.admission_id')
+    ->leftjoin('add_stream','admission.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
     //->where("return_date","<",date("Y-m-d"))
     ->where('give_out_book_fund.status','Not returned')
-      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-      'std_class.name as class','borrow_date','remark',db::raw('COUNT(give_out_book_fund.give_out_id) as pending_books'),'give_out_id','give_out_book_fund.student')
+      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student_name"),
+      db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),'borrow_date','remark',db::raw('COUNT(give_out_book_fund.give_out_id) as pending_books'),'give_out_id','give_out_book_fund.student')
       ->groupBy("give_out_book_fund.student")
       ->get();
       return response()->json([

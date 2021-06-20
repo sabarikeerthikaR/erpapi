@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\Route;
     route::get('StudentViewFeeStatement', 'school\AdmissionController@StudentViewFeeStatement');
 
     //student attendance
-    route::get('studentAttenCalenderView','school\ClassAttendanceController@studentAttenCalenderView');
+    route::get('studentMyAttendance','school\ClassAttendanceController@studentMyAttendance');
 
     //student timetable
     route::get('studentMyTimetable','school\StudentTimetableController@studentMyTimetable');
@@ -56,8 +56,14 @@ use Illuminate\Support\Facades\Route;
 
 
     //sms
-    route::post('sms_store','school\SmsController@store');
-   
+    route::get('selectStaffForMessage','school\SmsController@selectStaffForMessage');
+    route::post('MessageTeacher','school\SmsController@MessageTeacher');
+    route::get('incommingMessage','school\SmsController@incommingMessage');
+    route::get('outGoingMessage','school\SmsController@outGoingMessage');
+    route::post('messageReplay','school\SmsController@messageReplay');
+
+        //notice board
+        route::get('teachernoticeBoard','school\NoticeBoardController@teachernoticeBoard');
     
     // exam
     route::get('termForExam','school\ExamController@termForExam');

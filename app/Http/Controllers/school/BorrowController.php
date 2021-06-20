@@ -84,10 +84,12 @@ public function show(request $request)
    }
    public function index()
     {
-        $Borrow = Borrow::join('admission','borrow.admission_id','=','admission.admission_id')
-        ->join('std_class','admission.class','=','std_class.class_id')
-        ->join('books','borrow.book_id','=','books.book_id')
-        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),'std_class.name as class',
+        $Borrow = Borrow::leftjoin('admission','borrow.admission_id','=','admission.admission_id')
+        ->leftjoin('add_stream','admission.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('books','borrow.book_id','=','books.book_id')
+        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),
         'books.title as book','borrow.borrow_date','return_date','borrow.status','remarks','b_id')->get();
         return response()->json(['status' => 'Success', 'data' => $Borrow]);
     }
@@ -144,12 +146,14 @@ public function destroy(Request $request)
     }
     public function returnBook()
     {
-      $book=Borrow::join('admission','borrow.admission_id','=','admission.admission_id')
-    ->join('std_class','admission.class','=','std_class.class_id')
+      $book=Borrow::leftjoin('admission','borrow.admission_id','=','admission.admission_id')
+      ->leftjoin('add_stream','admission.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
     //->where("return_date","<",date("Y-m-d"))
     ->where('borrow.status',NULL)
       ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-      'std_class.name as class','borrow_date','remarks',db::raw('COUNT(borrow.book_id) as pending_books'),'b_id','borrow.admission_id')
+      db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),'borrow_date','remarks',db::raw('COUNT(borrow.book_id) as pending_books'),'b_id','borrow.admission_id')
       ->groupBy("borrow.admission_id")
       ->get();
       return response()->json([

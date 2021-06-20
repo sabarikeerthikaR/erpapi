@@ -34,7 +34,8 @@ Route::group(['prefix' => 'teacher'], function () {
     // exam
     route::get('termForExam','school\ExamController@termForExam');
     route::get('viewExamTimetableStaff','school\ExamController@viewExamTimetableStaff');
-       
+    route::get('examReportStaffView','school\ExamController@examReportStaffView');  
+    
     //student attendance
     route::post('studentAtten_storeforteacher','school\ClassAttendanceController@storeforteacher');
     route::get('StudentByclass','school\ClassAttendanceController@StudentByclass');
@@ -61,15 +62,15 @@ Route::group(['prefix' => 'teacher'], function () {
     route::get('teachershowPastPaper','school\PastPaperController@teachershowPastPaper');
    
         // exam
-        route::get('examReport','school\ExamController@examReport');
-        route::get('examReportView','school\ExamController@examReportView');
-        route::get('teacherMarkEntry','school\ExamController@teacherMarkEntry');
-        route::post('teacherMarkEntryPost','school\ExamController@teacherMarkEntryPost');
-        route::get('teacherExams','school\ExamController@teacherExams');
-
+        route::get('markEntry','school\ExamController@markEntry');
+        route::post('markentryPost','school\ExamController@markentryPost');
+       
      //sms
-     route::post('sms_store','school\SmsController@store');
-    route::get('showteacherSms','school\SmsController@showteacherSms');
+     route::get('selectStudentForMessage','school\SmsController@selectStudentForMessage');
+    route::post('MessageTeacher','school\SmsController@MessageTeacher');
+    route::get('incommingMessage','school\SmsController@incommingMessage');
+    route::get('outGoingMessage','school\SmsController@outGoingMessage');
+    route::post('messageReplay','school\SmsController@messageReplay');
     
      //leave
      route::get('showteacherLeaveRequest','school\SmsController@showteacherLeaveRequest');

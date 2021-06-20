@@ -127,4 +127,11 @@ public function destroy(Request $request)
                  ]);
             }
     }
+
+
+    public function academicEventView(request $request)
+    {
+        $Add_event = Add_event::find($request->id);
+        return response()->json(['status' => 'Success', 'data' => $Add_event]);
+    }
 }

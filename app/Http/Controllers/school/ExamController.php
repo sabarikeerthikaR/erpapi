@@ -10,14 +10,17 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
+use App\Models\AddStream;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Exam;
+use App\Models\Settings;
 use App\Models\ExamMark;
 use App\Models\User;
 use App\Models\Admission;
 use App\Models\ExamTimetable;
+use App\Models\Gradings;
 use App\Models\Subject;
-use App\Models\Settings;
+use App\Models\Terms;
 use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
@@ -44,6 +47,12 @@ class ExamController extends Controller
         'end_date'  =>$Exam->end_date ,
         
          ]);
+         $settings= new Settings([
+            'group_name'=>'Exam',
+            'key_name'=>$Exam->title,
+            'key_value'=>$Exam->exam_id,
+            ]);
+            $settings->save();
         if($Exam->save()){
                   return response()->json([
                  'message'  => 'Exam saved successfully',
@@ -71,9 +80,9 @@ public function show(request $request)
    }
    public function index()
     {
-        $Exam = Exam::join('setings as set','exam.term','=','set.s_d')
+        $Exam = Exam::join('terms','exam.term','=','terms.term_id')
         ->join('setings as year','exam.year','=','year.s_d')
-        ->select('exam_id','title','weight','start_date','end_date','set.key_name as term',
+        ->select('exam_id','title','weight','start_date','end_date','terms.name as term',
     'year.key_name as year')->get();
         return response()->json(['status' => 'Success', 'data' => $Exam]);
     }
@@ -99,7 +108,9 @@ public function update(Request $request)
         $Exam->weight = $request->weight ;
         $Exam->start_date = $request->start_date ;
         $Exam->end_date = $request->end_date ;
-       
+        $settings=Settings::where('group_name','=','Exam')->where('key_value',$request->exam_id)->first();
+        $settings->key_name= $request->title;
+        $settings->save();
         if($Exam->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -114,6 +125,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Exam = Exam::find($request->exam_id);
+        $settings=Settings::where('group_name','=','Exam')->where('key_value',$request->exam_id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Exam))
 
                 {
@@ -141,7 +157,7 @@ public function destroy(Request $request)
         )->get();
         $subject=Subject::join('exam','subjects.term','=','exam.term')
         ->where('class',$request->class)
-        ->select('name as subject','subject_id')
+        ->select('name as subject','subject_id','sub_units')
         ->groupBy('subject_id')
         ->get();
         if(!empty($studentsub))
@@ -150,7 +166,8 @@ public function destroy(Request $request)
                 'message'=>'success',
                 'student'=>$studentsub,
                 'subject'=>$subject,
-                'exam_id'=>$exam
+                'exam_id'=>$exam,
+                'class'=>$request->class
             ]);
         }
     }
@@ -161,47 +178,38 @@ public function destroy(Request $request)
         $subjects=Subject::where('subject_id',$request->subject)
         ->select('sub_units')
         ->first();
-        foreach($data as $g)
+        foreach($data as $k => $g)
         {
-            
-                    $exam1[] = array(
-                    'student'=>$g['student'],
-                    'mark_one'=>$g['mark_one'],  
-                    'mark_two'  =>$g['mark_two'],
-                    'total_mark'  =>$g['mark_one'] + $g['mark_two'],
-                    'exam'=>$request->exam_id,
-                    'subject'=>$request->subject,
-                    'grading_system'=>$request->grading_system,
-                    );
-                    $exam2[] = array(
-                        'student'=>$g['student'],
-                        'total_mark'  =>$g['total_mark'],
-                        'exam'=>$request->exam_id,
-                        'subject'=>$request->subject,
-                        'grading_system'=>$request->grading_system,
-                        );
+            if($subjects->sub_units==339)
+            {
+                $exam1[$k]['student'] = $g['student'];
+                $exam1[$k]['mark_one'] = $g['mark_one'];
+                $exam1[$k]['mark_two'] = $g['mark_two'];
+                $exam1[$k]['total_mark'] = $g['mark_one'] + $g['mark_two'];
+                $exam1[$k]['exam'] = $request->exam_id;
+                $exam1[$k]['subject'] = $request->subject;
+                $exam1[$k]['grading_system']=$request->grading_system;
             }
-          
-            if($subjects->sub_units=339)
+            else
             {
-                $exam=new ExamMark(
-                 $exam1
-                ); 
-               
-            } else
-            {
-                $exam=new ExamMark(
-                  $exam2
-                ); 
-               
-            }  
-         
-            if($exam->save()) 
+                $exam1[$k]['student'] = $g['student'];
+                $exam1[$k]['total_mark'] =$g['total_mark'];
+                $exam1[$k]['exam'] = $request->exam_id;
+                $exam1[$k]['subject'] = $request->subject;
+                $exam1[$k]['grading_system']=$request->grading_system;
+            }
+                    
+            
+            
+        }
+        
+        $exam=new ExamMark();   
+            if($exam->insert($exam1)) 
             {
               
                   return response()->json([
                   'message'  => 'Exam mark saved successfully',
-                  'data'=>$exam
+                  'data'=>$exam1
                  
                       ]);
                   }
@@ -212,7 +220,7 @@ public function destroy(Request $request)
                        'errors'=>$errors
                      ]);
                    }
-    } 
+            }
 
     // public function ExamMarkView(request $request)
     // {
@@ -232,8 +240,8 @@ public function destroy(Request $request)
                     'date'  =>$g['date'],
                     'start_time'  =>$g['start_time'],
                     'end_time'  =>$g['end_time'],
+                    'subject'  =>$g['subject'],
                     'exam'=>$request->exam,
-                    'subject'=>$request->subject,
                     'class'=>$request->class,
                     ));
             
@@ -264,11 +272,12 @@ public function destroy(Request $request)
     }
     public function termForExam()
     {
-        $term=Settings::where('group_name','term')
+        $term=Terms::select('terms.*',DB::raw("DATE_FORMAT(terms.from_year, '%Y-%m') as from_date"),
+        DB::raw("DATE_FORMAT(terms.to_year, '%Y-%m') as to_date"))
         ->get();
         return response()->json([
             'message'  => 'success',
-            'errors'=>$term
+            'data'=>$term
           ]);
 
     }
@@ -277,7 +286,7 @@ public function destroy(Request $request)
     {
         $id=Auth::user()->id;
         $class=User::where('users.id',$id)
-        ->join('admission','users.parent','=','admission.parent')
+        ->join('admission','users.admission_id','=','admission.admission_id')
         ->join('add_stream','admission.class','=','add_stream.id')
         ->select('admission.class')->first();
         $timetable=Exam::where('exam.term',$request->term)
@@ -285,33 +294,91 @@ public function destroy(Request $request)
         ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$class->class)
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
-        'date','start_time','end_time','subjects.name as subject')
+        'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
         ->get();
         return response()->json([
             'message'  => 'success',
-            'errors'=>$timetable
+            'data'=>$timetable
           ]);
 
     }
     public function viewExamTimetableStaff(request $request)
     {
-        $id=Auth::user()->id;
-        $class=User::where('users.id',$id)
-        ->join('staff','users.staff_id','=','staff.employee_id')
-        ->join('teacher_timetable','staff.employee_id','=','teacher_timetable.staff')
-        ->select('teacher_timetable.class')->first();
+       
         $timetable=Exam::where('exam.term',$request->term)
         ->join('exam_timetable','exam.exam_id','=','exam_timetable.exam')
         ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
-        ->where('exam_timetable.class',$class->class)
+        ->where('exam_timetable.class',$request->class)
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
-        'date','start_time','end_time','subjects.name as subject')
+        'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
         ->get();
         return response()->json([
             'message'  => 'success',
-            'errors'=>$timetable
+            'data'=>$timetable
           ]);
 
+    }
+    public function viewExamTimetableAdmin(request $request)
+    {
+       
+        $timetable=Exam::
+        join('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
+        ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
+        'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
+        ->get();
+        return response()->json([
+            'message'  => 'success',
+            'data'=>$timetable
+          ]);
+
+    }
+    public function destroyExamTimetable(request $request)
+    {
+        $exam = ExamTimetable::find($request->id);
+        if(!empty($exam))
+
+                {
+                  if($exam->delete()){
+                  return response()->json([
+                  'message'  => 'successfully deleted'
+                   ]);
+               }else {
+                  return response()->json([
+                  'message'  => 'failed'
+                ]);
+               }
+           }else
+           {
+           return response()->json([
+                 'message'  => 'No data found in this id'  
+                 ]);
+            }
+    }
+    public function examReportStaffView(request $request)
+    {
+       
+        $teacher=AddStream::where('add_stream.teacher',$request->staff)
+        ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
+        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
+        ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
+        ->leftjoin('gradings','grading_system.grading_systm_id','=','gradings.grading_system_id')
+        ->leftjoin('grade','gradings.grade','=','grade.gradings_id')
+        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+       // ->whereBetween('exam_mark.total_mark',['max_mark','min_mark'])
+       ->where('exam_mark.total_mark','>=','gradings.min_mark')
+       ->where('exam_mark.total_mark','<=','gradings.max_mark')
+        ->select('exam.title as exam','subjects.name as subject',
+        db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+        'total_mark','grading_system.title as grading_system','grade.title as grade',
+        'grade.remarks')
+        ->groupBy('exam_mark.id')
+        ->get(); 
+        return response()->json([
+            'message'  => 'success',
+            'data'=>$teacher
+          ]);
     }
     // public function ExamCertificate(request $request)
     // {

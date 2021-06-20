@@ -368,11 +368,13 @@ route::get('exm_show','school\ExamController@index');
 route::post('exm_update','school\ExamController@update');
 route::get('exm_destroy','school\ExamController@destroy');
 route::get('exm_select','school\ExamController@show');
-route::post('markEntry','school\ExamController@markEntry');
+route::get('markEntry','school\ExamController@markEntry');
 route::post('markentryPost','school\ExamController@markentryPost');
 
 //exam timetable
 route::post('examTimetable','school\ExamController@examTimetable');
+route::get('viewExamTimetableAdmin','school\ExamController@viewExamTimetableAdmin');
+route::get('destroyExamTimetable','school\ExamController@destroyExamTimetable');
 
 route::get('ExamMarkView','school\ExamController@ExamMarkView');
 route::get('ExamCertificate','school\ExamController@ExamCertificate');
@@ -448,6 +450,7 @@ route::get('ae_show','school\AddEventController@index');
 route::post('ae_update','school\AddEventController@update');
 route::get('ae_destroy','school\AddEventController@destroy');
 route::get('ae_select','school\AddEventController@show');
+route::get('academicEventView','school\AddEventController@academicEventView');
 
 //other event
 route::post('oe_store','school\OtherEventController@store');
@@ -951,6 +954,7 @@ route::post('studentAtten_update','school\ClassAttendanceController@update');
 route::get('studentAtten_destroy','school\ClassAttendanceController@destroy');
 route::get('studentAtten_select','school\ClassAttendanceController@show');
 route::get('classAttendanceView','school\ClassAttendanceController@classAttendanceView');
+route::get('ClassStudentTeacher','school\ClassAttendanceController@ClassStudentTeacher');
 
 
 //discipline

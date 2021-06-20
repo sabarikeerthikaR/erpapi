@@ -34,8 +34,8 @@ class AddItemController extends Controller
         'category_id'          =>$Add_item->category_id,
         'reorder_level'         =>$Add_item->reorder_level,
         'description'        =>$Add_item->description,
-        'created_by'        =>Auth::user()->user_role,
-         ]); dd($Add_item);
+        'created_by'        =>Auth::user()->id,
+         ]); 
          $settings=Settings::create([
             'group_name'=>'item',
             'key_name'=>$Add_item->name,
@@ -69,9 +69,9 @@ public function show(request $request)
    }
    public function index()
     {
-        $Add_item = Add_item::join('item_category','add_item.category_id','=','item_category.item_category_id')
-        ->join('user_group','add_item.created_by','=','user_group.group_id')
-        ->select('add_item.name','reorder_level','add_item.description','user_group.name as created_by','item_category.name as category','item_id')->get();
+        $Add_item = Add_item::leftjoin('item_category','add_item.category_id','=','item_category.item_category_id')
+        ->leftjoin('users','add_item.created_by','=','users.id')
+        ->select('add_item.name','reorder_level','add_item.description',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as created_by"),'item_category.name as category','item_id')->get();
         return response()->json(['status' => 'Success', 'data' => $Add_item]);
     }
 
@@ -88,7 +88,7 @@ public function update(Request $request)
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
     $Add_item = Add_item::find($request->item_id);
-        $Add_item->name= $request->title;
+        $Add_item->name= $request->name;
         $Add_item->category_id= $request->category_id;
                 $Add_item->reorder_level= $request->reorder_level;
         $Add_item->description= $request->description;
@@ -107,6 +107,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Add_item = Add_item::find($request->item_id);
+        $settings=Settings::where('group_name','=','item')->where('key_value',$request->item_id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Add_item))
 
                 {

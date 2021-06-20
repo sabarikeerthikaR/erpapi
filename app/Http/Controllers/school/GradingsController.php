@@ -14,6 +14,7 @@ use Illuminate\Database\Migrations\Migration;
 use App\Models\Gradings;
 use App\Models\Grade;
 use App\Models\Grading_system;
+use Illuminate\Support\Facades\Auth;
 
 class GradingsController extends Controller
 {
@@ -31,7 +32,7 @@ class GradingsController extends Controller
           'max_mark'=>$g['max_mark'],  
           'remark'  =>$g['remark'],
           'grading_system_id'=>$Gradings->grading_system_id,
-          'created_by'=>'admin',
+          'created_by'=>auth::user()->id,
           'created_on'=>date('Y-d-m'),
          ));
           if(!$Gradings->save())

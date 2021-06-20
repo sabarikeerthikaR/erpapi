@@ -39,10 +39,13 @@ class InventoryTrendsController extends Controller
      $name=Item_stock::join('add_item','item_stock.item_name','=','add_item.item_id')
      ->where('item_id',$request->item_id)
      ->select('name')->first();
-     $additm=Item_stock::where('item_name',$request->item_id)->select('date','quantity','unit_price','total','added_by')->first();
+     $additm=Item_stock::where('item_name',$request->item_id)
+     ->leftjoin('users','item_stock.added_by','=','users.id')
+     ->select('date','quantity','unit_price','total',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as added_by"))->first();
      $stockTaking=Stock_takings::join('item_stock','stock_takings.product_name','=','item_stock.item_name')
+     ->leftjoin('users','stock_takings.taken_by','=','users.id')
      ->where('product_name',$request->item_id)
-     ->select('date as stock_date','closing_stock','taken_on','taken_by')->first();
+     ->select('date as stock_date','closing_stock','taken_on',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as taken_by"))->first();
      $totaladd=Item_stock::where('item_name',$request->item_id)->select('quantity')->first();
      $totalRemove=Item_stock::join('stock_takings','item_stock.item_name','=','stock_takings.product_name')
      ->where('item_name',$request->item_id)

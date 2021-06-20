@@ -73,7 +73,7 @@ public function show(request $request)
         $Book_for_fund = Book_for_fund::
         leftjoin('books_category','book_for_fund.category','=','books_category.book_category_id')
         ->leftjoin('give_out_book_fund','book_for_fund.book_for_fund_id','=','give_out_book_fund.give_out_id')
-        ->select('title','author','books_category.name','edition','quantity',
+        ->select('title','author','books_category.name as category','edition','quantity',
         DB::raw("COUNT('give_out_book_fund.book'='book_for_fund.book_for_fund_id')as borrowed"),
         db::raw('quantity - give_out_book_fund.book as remaining_Book_for_fund'),'book_for_fund.book_for_fund_id')
         ->groupBy('book_for_fund_id')
@@ -167,11 +167,22 @@ public function destroy(Request $request)
     }
     public function addfundStock(request $request)
     {
-        $stock = Book_for_fund::find($request->book_for_fund_id);
+         if($request->receipt)
+     {
+       $valiDationArray["receipt"]='required|file';
+     }
+     $stock = Book_for_fund::find($request->book_for_fund_id);
+      if($request->file('receipt')){
+      $receipt = $request->file('receipt');
+      $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+      Storage::disk('public_uploads')->put('/books-receipt/' . $imgName, file_get_contents($receipt));
+      $receipt=config('app.url').'/public/uploads/books-receipt/' . $imgName;
+      $stock->receipt=$receipt;
+      }
+        
             $stock->purchase_date=$request->purchase_date;
             $stock->quantity=$request->quantity;
-            $stock->receipt=$request->receipt;
-
+            
         if($stock->save()){
             return response()->json([
            'message'  => 'stock saved successfully',

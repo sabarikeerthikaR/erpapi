@@ -75,12 +75,12 @@ public function show(request $request)
    }
    public function index()
     {
-        $Enquiries = Enquiries::join('add_stream','enquiries.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('enquiries_option','enquiries.about_us','=','enquiries_option.id')
-        ->join('setings','enquiries.gender','=','setings.s_d')
-        ->select('date',db::raw("CONCAT(first_name,' ',last_name) as name"),
+        $Enquiries = Enquiries::leftjoin('add_stream','enquiries.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('enquiries_option','enquiries.about_us','=','enquiries_option.id')
+        ->leftjoin('setings','enquiries.gender','=','setings.s_d')
+        ->select('enquiries.date',db::raw("CONCAT(first_name,' ',last_name) as name"),
         'setings.key_name as gender','dob','enquiries.status','enquiries_option.name as know_us',
         'std_class.name as class','class_stream.name as stream',db::raw("CONCAT(phone,'   ',email)as contacts"),
         'enquiries.id')->get();

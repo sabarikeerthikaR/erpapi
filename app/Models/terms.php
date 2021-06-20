@@ -7,7 +7,7 @@ class Terms extends Model
 {
     
      protected $fillable = [
-       'name' 
+       'name' ,'from_year','to_year'
     ];
     protected $table = 'terms';
     protected $primaryKey = 'term_id';

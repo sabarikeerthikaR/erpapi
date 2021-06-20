@@ -42,7 +42,7 @@ class ItemStockController extends Controller
         'person_responsible'=>$Item_stock->person_responsible,
         'receipt'        =>$receipt,
         'description'        =>$Item_stock->description,
-        'added_by'        =>'admin',
+        'added_by'        =>Auth::user()->id,
          ]);
         if($Item_stock->save()){
                   return response()->json([
@@ -71,7 +71,8 @@ public function show(request $request)
    }
    public function index()
     {
-        $Item_stock = Item_stock::join('staff','item_stock.person_responsible','=','staff.employee_id')->join('add_item','item_stock.item_name','=','add_item.item_id')->select('item_stock_id','item_stock.date','add_item.name as product','quantity','unit_price','total','receipt',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as person_responsible"))->get();
+        $Item_stock = Item_stock::join('staff','item_stock.person_responsible','=','staff.employee_id')->leftjoin('users','stock_takings.taken_by','=','users.id')->join('add_item','item_stock.item_name','=','add_item.item_id')
+        ->select('item_stock_id','item_stock.date','add_item.name as product','quantity','unit_price','total','receipt',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as person_responsible"))->get();
         return response()->json(['status' => 'Success', 'data' => $Item_stock]);
     }
 
