@@ -200,7 +200,7 @@ public function destroy(Request $request)
         'start_date'  =>$Assignment->start_date ,
         'end_date'  =>$Assignment->end_date ,
         'class'  =>$Assignment->class ,
-        'upload_document'  =>$Assignment->upload_document ,
+        'upload_document'  =>$upload_document ,
          'assignment'  =>$Assignment->assignment ,
           'comment'  =>$Assignment->comment ,
           'created_on'  =>date("Y-m-d") ,

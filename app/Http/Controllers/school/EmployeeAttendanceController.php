@@ -161,30 +161,11 @@ public function destroy(Request $request)
    public function EmployeeMyAttendance(request $request)
    {
           
-    $months = collect();
-
-    foreach (range(-31, 0) AS $i) {
-        $month = Carbon::now()->addDays($i)->format('Y-m-d');
-        $months->put($month, 0);
-    }
-
-        $attendance = EmployeeAttendance::whereMonth('date', $request->month)
-        ->whereYear('date',$request->year)
-        ->whereYear('date',$request->employee)
-            ->groupBy('date')
-            ->orderBy('created_at')
-            ->select('employee as employee_id')
-            ->get([
-              DB::raw('DATE_FORMAT(created_at, "%m") as day'),
-            ])->pluck('employee_id','day');
-            $months = $months->merge($attendance);
-            $res = [];
- dd($attendance);
-            foreach ($months as $key => $t_month) {
-                $data = ["day" => $key, "employee_id" => $t_month];
-                $res[] = $data;
-            }   
-        return response()->json(apiResponseHandler($res, 'success'));
+        $attendance = EmployeeAttendance::where('employee',$request->staff)
+            ->select('date')
+            ->get(); 
+            
+        return response()->json(apiResponseHandler($attendance, 'success'));
 
      
    }

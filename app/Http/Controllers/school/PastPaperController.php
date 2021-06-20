@@ -13,7 +13,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Past_paper;
 use App\Models\Std_class;
-use App\Models\Year;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 
 class PastPaperController extends Controller
@@ -75,9 +76,12 @@ public function show(request $request)
    }
    public function index()
     {
-        $Past_paper = Past_paper::join('std_class','past_papers.class','=','std_class.class_id')
-        ->join('year','past_papers.year','=','year.id')->select('past_papers.name','upload_paper','folder_id',
-    'std_class.name as class','year.year','past_paper_id')->get();
+        $Past_paper = Past_paper::leftjoin('add_stream','past_papers.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+      
+        ->leftjoin('setings','past_papers.year','=','setings.s_d')->select('past_papers.name','upload_paper','folder_id',db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),
+    'setings.key_name as year','past_paper_id')->get();
         return response()->json(['status' => 'Success', 'data' => $Past_paper]);
     }
 
@@ -140,22 +144,36 @@ public function destroy(Request $request)
                  ]);
             }
     }
-    public function teachershowPastPaper()
+    public function teachershowPastPaper(request $request)
     {
-        $Past_paper = Past_paper::join('add_stream','past_papers.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('setings','past_papers.year','=','setings.s_d')->select('past_papers.name','upload_paper','folder_id',
-    'std_class.name as class','class_stream.name as stream','setings.key_name as year','past_paper_id')->get();
+        $Past_paper = Past_paper::where('past_papers.class',$request->class)
+        ->leftjoin('add_stream','past_papers.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('setings','past_papers.year','=','setings.s_d')
+        ->select('past_papers.name','upload_paper','folder_id',
+    'std_class.name as class','class_stream.name as stream','setings.key_name as year','past_paper_id',
+    'add_stream.id as class_id')
+    ->orderBy('add_stream.id')
+    ->get();
         return response()->json(['status' => 'Success', 'data' => $Past_paper]);
     }
     public function studentshowPastPaper()
     {
+        $id=Auth::user()->id;
+        $class=User::where('users.id',$id)
+        ->join('admission','users.admission_id','=','admission.admission_id')
+        ->join('add_stream','admission.class','=','add_stream.id')
+        ->select('admission.class')->first();
         $Past_paper = Past_paper::join('add_stream','past_papers.class','=','add_stream.id')
         ->join('std_class','add_stream.class','=','std_class.class_id')
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('setings','past_papers.year','=','setings.s_d')->select('past_papers.name','upload_paper','folder_id',
-    'std_class.name as class','class_stream.name as stream','setings.key_name as year','past_paper_id')->get();
+        ->join('setings','past_papers.year','=','setings.s_d')
+        ->where('past_papers.class',$class->class)
+        ->select('past_papers.name','upload_paper','folder_id',
+    'std_class.name as class','class_stream.name as stream','setings.key_name as year','past_paper_id','add_stream.id as class_id'
+    )
+    ->get();
         return response()->json(['status' => 'Success', 'data' => $Past_paper]);
     }
 }

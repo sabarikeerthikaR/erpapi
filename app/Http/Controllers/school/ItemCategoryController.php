@@ -30,7 +30,7 @@ class ItemCategoryController extends Controller
 
         'name'  =>$Item_category->name,
         'description'          =>$Item_category->description,
-        'created_by'         =>'admin',
+        'created_by'         =>Auth::user()->id,
         
          ]);
          $settings=Settings::create([
@@ -66,7 +66,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $Item_category = Item_category::all();
+        $Item_category = Item_category::leftjoin('users','item_category.created_by','=','users.id')->select('item_category_id','name','description',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as created_by"))->get();
         return response()->json(['status' => 'Success', 'data' => $Item_category]);
     }
 

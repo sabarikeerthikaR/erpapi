@@ -144,20 +144,20 @@ public function destroy(Request $request)
     public function profile (request $request)
     {
         $id=$request->student;
-        $student=Admission::join('add_stream','admission.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('setings as gen','admission.gender','=','gen.s_d')
-        ->join('setings as dis','admission.disabled','=','dis.s_d')
+        $student=Admission::leftjoin('add_stream','admission.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('setings as gen','admission.gender','=','gen.s_d')
+        ->leftjoin('setings as dis','admission.disabled','=','dis.s_d')
         ->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),
         'admission_id','admission_no','gender','std_class.name as class',
-        'gen.key_name as gender','dis.key_name as disabled','class_stream.name as stream','date')
+        'gen.key_name as gender','dis.key_name as disabled','class_stream.name as stream','admission.date')
         ->where('admission_id',$id)->first();
-        $placement=NewPlacement::join('add_stream','new_placement.rep_of','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('position','new_placement.position','=','position.id')
-        ->select('date','date_upto','position',db::raw("CONCAT(std_class.name,' ',class_stream.name)as rep_of")
+        $placement=NewPlacement::leftjoin('add_stream','new_placement.rep_of','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('position','new_placement.position','=','position.id')
+        ->select('new_placement.date','date_upto','position',db::raw("CONCAT(std_class.name,' ',class_stream.name)as rep_of")
         ,'position.name as position','new_placement.description')
         ->where('student',$id)->first();
         if(!empty($placement)){

@@ -85,19 +85,32 @@ class LeaveRequestController extends Controller
     public function AcceptLeaveRequest(request $request)
     {
        $id=$request->id;
-       $user=Auth::user();
-        $getRequest=LeaveRequest::where('request_to',$id)
-        ->where(function($query) use($user) {
-           if($user->user_role==2)
-           $query->join('staff as u','leave_request.request_by','=','u.employee_id');   
-           else
-           $query->join('admission as u','leave_request.request_by','=','u.admission_id');
-         })->select('leave_request.date','from_date','to_date','leave_request.reason','leave_request.id',
-       db::raw("CONCAT(u.first_name,' ',COALESCE(u.middle_name,''),' ',u.last_name) as full_name"),
-       db::raw('(CASE when accept = "1" then "Accepted"
-                      when accept = "2" then "Rejected"
-                       else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-        )->get();
+    
+            if(Auth::user()->user_role==2)
+            {
+                        $getRequest=LeaveRequest::where('request_to',$id)
+                        ->join('staff as u','leave_request.request_by','=','u.employee_id')   
+                        ->select('leave_request.date','from_date','to_date','leave_request.reason',
+                        'leave_request.id as leave_request_id','employee_id',
+                    db::raw("CONCAT(u.first_name,' ',COALESCE(u.middle_name,''),' ',u.last_name) as full_name"),
+                    db::raw('(CASE when accept = "1" then "Accepted"
+                                    when accept = "2" then "Rejected"
+                                    else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
+                      )->get();
+            }
+        else{
+                  $getRequest=LeaveRequest::where('request_to',$id)   
+                  ->join('admission as u','leave_request.request_by','=','u.admission_id')
+                  ->select('leave_request.date','from_date','to_date','leave_request.reason',
+                  'leave_request.id as leave_request_id','admission_id',
+              db::raw("CONCAT(u.first_name,' ',COALESCE(u.middle_name,''),' ',u.last_name) as full_name"),
+              db::raw('(CASE when accept = "1" then "Accepted"
+                              when accept = "2" then "Rejected"
+                              else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
+                )->get();
+
+           }
+     
 
         if(!empty($getRequest)){
             return response()->json([

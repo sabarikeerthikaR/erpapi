@@ -137,9 +137,9 @@ class AdmissionController extends Controller
         'email'        =>$Admission->email,
         'image'        =>$image,
         'birth_certificate' =>$birth_certificate,
-        'Admission_no' =>time(),
+        'Admission_no' =>config('app.name').count(),
          'year' =>date("Y"),
-         'admitted_by' =>'admin'
+         'admitted_by' =>auth::user()->id,
          ]);
        
         $Admission->save();
@@ -526,11 +526,11 @@ public function destroy(Request $request)
         ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')->
         leftjoin('std_class','add_stream.class','=','std_class.class_id')-> 
         leftjoin('student_house','admission.house','=','student_house.house_id')
-    
-        ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
-        'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
-        'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
-        'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship','admitted_by','admission.date as admitted_on','image')->first();
+    ->leftjoin('users','admission.admitted_by','=','users.id')
+    ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
+    'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
+    'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
+    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','image')->first();
         $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.parent1_id',$parent_id)->select('re1.key_name as relation_f','phone_f',
         'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_name_f,' ',
         COALESCE(middle_name_f,''),' ',last_name_f)as first_parent"))->first();
@@ -635,11 +635,11 @@ $parent_id=Auth::user()->parent;
     ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')->
     leftjoin('std_class','add_stream.class','=','std_class.class_id')-> 
     leftjoin('student_house','admission.house','=','student_house.house_id')
-
+->leftjoin('users','admission.admitted_by','=','users.id')
     ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
     'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
     'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
-    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship','admitted_by','admission.date as admitted_on','image')->first();
+    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','image')->first();
     $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.parent1_id',$parent_id)->select('re1.key_name as relation_f','phone_f',
         'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_name_f,' ',
         COALESCE(middle_name_f,''),' ',last_name_f)as first_parent"))->first();

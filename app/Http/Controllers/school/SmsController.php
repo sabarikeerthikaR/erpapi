@@ -13,11 +13,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Sms;
 use App\Models\SmsList;
-
-use App\Models\User_group;
+use App\Models\Message;
+use App\Models\User;
+use App\Models\Subject;
 use App\Models\Admission;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Std_class;
+use App\Models\AddStream;
 class SmsController extends Controller
 {
     public function store(Request $request)
@@ -209,8 +210,179 @@ public function destroy(Request $request)
          'data'=>$sms
          ]);
           }
-    public function leaveRequest(request $request)
+
+/// STUDENT TEACHER MESSAGE
+
+
+public function selectStudentForMessage(request $request)
+{
+    $student= AddStream::join('admission','add_stream.id','=','admission.class')
+                          ->where('add_stream.id',$request->class)
+                          ->select('add_stream.id as class_id',
+                          'admission_id',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as student"))
+                          ->get();
+                          return response()->json([
+                          'message'=>'success',
+                          'data'=>$student
+                          ]);
+}
+public function selectStaffForMessage(request $request)
+{
+    $id=Auth::user()->admission_id;
+    $classTeacher= User::join('admission','users.admission_id','=','admission.admission_id')
+                          ->join('add_stream','admission.class','=','add_stream.id')
+                          ->join('staff','add_stream.teacher','=','staff.employee_id')
+                          ->where('admission.admission_id',$id)
+                          ->select('add_stream.id as class_id',
+                          'employee_id',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name) as staff"))
+                          ->first();
+    $subjectTeacher=Subject::leftjoin('admission','subjects.class','=','admission.class')
+    ->where('admission.admission_id',$id)
+    ->leftjoin('teacher_timetable','admission.class','=','teacher_timetable.class')
+    ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
+     ->select('subjects.name as subject','subject_id','teacher_timetable.staff',
+     db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"))
+     ->groupBy('teacher_timetable.staff')
+     ->get();
+                          return response()->json([
+                          'message'=>'success',
+                          'class_teacher'=>$classTeacher,
+                          'subject_teacher'=>$subjectTeacher
+                          ]);
+}
+
+    public function MessageTeacher(request $request)
     {
+        $errors=[];
+        $sent_to=$request->sent_to;
+          if(Auth::user()->user_role==3)
+          {
+            $sent_by=Auth::user()->staff_id;
+            foreach($sent_to as $g)
+            {
+            $message= new Message(array(
         
+                'sender'=>$sent_by,
+                'receiver'=>$g['receiver'],
+                'message'=>$request->message,
+            ));
+            if(!$message->save())
+            {
+              $errors[]=$g;
+            }
+            }
+          }
+          else
+          {
+            $sent_by=Auth::user()->admission_id;
+
+                $message= new Message([
+        
+                    'sender'=>$sent_by,
+                    'receiver'=>$sent_to,
+                    'message'=>$request->message,
+                ]);
+          }
+         
+           if($message->save()){
+               return response()->json([
+              'message'  => 'message send successfully',
+              'data'  => $message 
+               ]);
+           }else {
+               return response()->json([
+              'message'  => 'failed',
+              'error'  => $errors
+              ]);
+       }
+       
+    
+        
+    }
+    public function incommingMessage(request $request)
+    {
+         if(Auth::user()->user_role==3)
+         {
+            $receiver=Auth::user()->staff_id;
+            $message=Message::where('receiver',$receiver)
+                           ->join('admission','message.sender','=','admission.admission_id')
+                           ->select('message.created_at','message',
+                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           'message.id as message_id') 
+                           ->get();
+         }
+         else
+         {
+           $receiver=Auth::user()->admission_id;
+           $message=Message::where('receiver',$receiver)
+                           ->join('staff','message.sender','=','staff.employee_id')
+                           ->select('message.created_at','message',
+                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           'message.id as message_id','replay') 
+                           ->get();
+         }
+         if(!empty($message)){
+            return response()->json([
+           'message'  => 'success',
+           'data'  => $message 
+            ]);
+        }else {
+            return response()->json([
+           'message'  => 'no data found',
+        
+           ]);}
+         
+
+    }     
+    public function outGoingMessage(request $request)
+    {
+         if(Auth::user()->user_role==3)
+         {
+            $sender=Auth::user()->staff_id;
+            $message=Message::where('sender',$sender)
+                           ->join('admission','message.receiver','=','admission.admission_id')
+                           ->select('message.created_at','message',
+                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           'message.id as message_id','replay') 
+                           ->get();
+         }
+         else
+         {
+           $sender=Auth::user()->admission_id;
+           $message=Message::where('sender',$sender)
+                           ->join('staff','message.receiver','=','staff.employee_id')
+                           ->select('message.created_at','message',
+                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           'message.id as message_id','replay') 
+                           ->get();
+         }
+         if(!empty($message)){
+            return response()->json([
+           'message'  => 'success',
+           'data'  => $message 
+            ]);
+        }else {
+            return response()->json([
+           'message'  => 'no data found',
+        
+           ]);}
+         
+
+    }     
+    public function messageReplay(request $request)
+    {
+        $message=Message::find($request->message_id);
+        $message->replay=$request->replay;
+
+        if($message->save()){
+            return response()->json([
+                 'message'  => 'sent successfully',
+                 
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
     }
 }

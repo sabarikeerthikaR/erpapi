@@ -13,26 +13,22 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Stock_takings;
 use App\Models\Add_item;
+use Illuminate\Support\Facades\Auth;
+
 
 class StockTakingsController extends Controller
 {
     public function store(Request $Stock_takings)
     {
-      $validator =  Validator::make($Stock_takings->all(), [
-            'taken_on' => ['required'],
-            
-          ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
+      
         $Stock_takings=Stock_takings::create([
 
-       
+      
         'product_name'          =>$Stock_takings->product_name,
         'closing_stock'         =>$Stock_takings->closing_stock,
         'description'         =>$Stock_takings->description,
-        'taken_on'        =>date('d-m-Y'),
-        'taken_by'        =>'admin',
+        'taken_on'        =>date("Y-m-d"),
+        'taken_by'        =>Auth::user()->id,
        
          ]);
         if($Stock_takings->save()){
@@ -62,9 +58,10 @@ public function show(request $request)
    }
    public function index()
     {
-        $Stock_takings = Stock_takings::join('add_item','stock_takings.product_name','=','add_item.item_id')
-        ->join('item_stock','stock_takings.product_name','=','item_stock.item_name')
-        ->select('item_stock.date as stock_date','closing_stock','taken_on','taken_by','stock_taking_id','add_item.name as item')->get();
+        $Stock_takings = Stock_takings::leftjoin('add_item','stock_takings.product_name','=','add_item.item_id')
+         ->leftjoin('users','stock_takings.taken_by','=','users.id')
+        ->leftjoin('item_stock','stock_takings.product_name','=','item_stock.item_name')
+        ->select('item_stock.date as stock_date','closing_stock','taken_on',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as taken_by"),'stock_taking_id','add_item.name as item')->get();
         return response()->json(['status' => 'Success', 'data' => $Stock_takings]);
     }
 
@@ -72,12 +69,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
-        'taken_on' => ['required'],
-        ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
+    
     $Stock_takings = Stock_takings::find($request->stock_taking_id);
        
         $Stock_takings->product_name= $request->product_name;
