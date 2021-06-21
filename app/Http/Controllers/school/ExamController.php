@@ -153,7 +153,7 @@ public function destroy(Request $request)
     {
         $exam=$request->exam_id;
         $studentsub=Admission::where('class',$request->class)
-        ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+        ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student")
         )->get();
         $subject=Subject::join('exam','subjects.term','=','exam.term')
         ->where('class',$request->class)
@@ -189,6 +189,7 @@ public function destroy(Request $request)
                 $exam1[$k]['exam'] = $request->exam_id;
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
+                 $exam1[$k]['convert_percentage']=$request->convert_percentage;
             }
             else
             {
@@ -197,6 +198,7 @@ public function destroy(Request $request)
                 $exam1[$k]['exam'] = $request->exam_id;
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
+                 $exam1[$k]['convert_percentage']=$request->convert_percentage;
             }
                     
             

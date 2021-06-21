@@ -56,7 +56,7 @@ class BoardMembersController extends Controller
 
        
       
-        $Board_members=Board_members::create([
+        $Board_memberss=Board_members::create([
 
         'title'  =>$Board_members->title,
         'first_name'          =>$Board_members->first_name,
@@ -71,10 +71,10 @@ class BoardMembersController extends Controller
         'passport_photo'        =>$passport_photo,
         'copy_id'        =>$copy_id,
          ]);
-        if($Board_members->save()){
+        if($Board_memberss->save()){
                   return response()->json([
                  'message'  => 'Board_members saved successfully',
-                 'data'  => $Board_members 
+                 'data'  => $Board_memberss
                   ]);
               }else {
                   return response()->json([

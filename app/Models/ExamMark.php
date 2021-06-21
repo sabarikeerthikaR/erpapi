@@ -9,7 +9,7 @@ class ExamMark extends Model
 {
 
      protected $fillable = [
-        'exam','subject','student','mark_one','mark_two','total_mark','grading_system','class'
+        'exam','subject','student','mark_one','mark_two','total_mark','grading_system','class','convert_percentage'
     ];
     protected $table = 'exam_mark';
     protected $primaryKey = 'id';

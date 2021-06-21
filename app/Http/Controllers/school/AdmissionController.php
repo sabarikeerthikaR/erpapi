@@ -191,7 +191,7 @@ class AdmissionController extends Controller
         $ParentStudents->save();
         $parent2=new Second_parent;
        
-        $parent2->admission_id-=$admission_id;
+        $parent2->admission_id=$admission_id;
         
         $parent2->parent1_id=$parent1->parent1_id;
          

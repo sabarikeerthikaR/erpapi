@@ -153,7 +153,23 @@ $fname = staff::select('first_name','middle_name','last_name')
                                     'staff_id'=>$Staff->employee_id,
                                     'password' => Hash::make($password),
                                 ]); 
-        if($objUser->save()){
+                                 $objUser->save();
+                                 $userData=$objUser;
+        // email functions
+        // send email with the template
+    $email_data=[
+      "url"=>config("app.url"),
+      "email"=>$Staff->email,
+      "password"=>$password,
+      "name"=>$fname->first_name." ".$fname->middle_name." ".$fname->last_name
+    ];
+    Mail::send('email.welcome', $email_data, function ($message) use ($email_data) {
+        $message->to($email_data['email'], $email_data['name'])
+            ->subject('Welcome to RICO ERP')
+            ->from('no-reply@arulphpdeveloper.com', 'RICO ERP');
+    });
+         
+        if($Staff->save()){
                   return response()->json([
                  'message'  => 'Staff saved successfully',
                  'data'  => $Staff ,
