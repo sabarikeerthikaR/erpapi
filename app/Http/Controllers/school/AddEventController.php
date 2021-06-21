@@ -66,7 +66,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $Add_event = Add_event::all();
+        $Add_event = Add_event::join('setings','add_event.visibility','=','setings.s_d')->select('id','title','start_date','end_date','venue','setings.key_name as visibility','description')->get();
         return response()->json(['status' => 'Success', 'data' => $Add_event]);
     }
 
@@ -131,7 +131,8 @@ public function destroy(Request $request)
 
     public function academicEventView(request $request)
     {
-        $Add_event = Add_event::find($request->id);
+        $Add_event = Add_event::join('setings','add_event.visibility','=','setings.s_d')->select('id','title','start_date','end_date','venue','setings.key_name as visibility','description')
+        ->where('add_event.id',$request->id)->get();
         return response()->json(['status' => 'Success', 'data' => $Add_event]);
     }
 }

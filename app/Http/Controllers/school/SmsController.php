@@ -19,6 +19,8 @@ use App\Models\Subject;
 use App\Models\Admission;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AddStream;
+use \Illuminate\Contracts\Support\Renderable;
+
 class SmsController extends Controller
 {
     public function store(Request $request)
@@ -234,16 +236,18 @@ public function selectStaffForMessage(request $request)
                           ->join('staff','add_stream.teacher','=','staff.employee_id')
                           ->where('admission.admission_id',$id)
                           ->select('add_stream.id as class_id',
-                          'employee_id',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name) as staff"))
+                          'employee_id',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name) as name"))
                           ->first();
     $subjectTeacher=Subject::leftjoin('admission','subjects.class','=','admission.class')
     ->where('admission.admission_id',$id)
     ->leftjoin('teacher_timetable','admission.class','=','teacher_timetable.class')
     ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
-     ->select('subjects.name as subject','subject_id','teacher_timetable.staff',
+     ->select('subjects.name as subject','subject_id','employee_id',
      db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"))
      ->groupBy('teacher_timetable.staff')
      ->get();
+
+    // $merge=$classTeacher->merge($subjectTeacher);
                           return response()->json([
                           'message'=>'success',
                           'class_teacher'=>$classTeacher,

@@ -175,23 +175,24 @@ public function destroy(Request $request)
     public function classsetting()
     {
       $class=Std_class::leftjoin('add_stream','std_class.class_id','=','add_stream.class')
+      ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
       ->leftjoin('admission','std_class.class_id','=','admission.class')
      
-      ->select('std_class.name as class',db::raw("COUNT('admission.class') as total_student"),
+      ->select(db::raw("CONCAT(std_class.name,' ',class_stream.name) as class"),db::raw("COUNT('admission.class') as total_student"),
       'std_class.status as status','std_class.description as description',
-      'class_id','stream')
+      'class_id','stream_id')
       ->groupBy('class_id')
       ->get();
      // $comments = AddStream::find(1)->comments()->where('stream',$class->stream)->first(); 
 
   //    $attrs = [];
       
-   foreach ($class as $key => $value) {
-    $many=DB::table("add_stream")->whereIn("class",[$value->class_id])->select('stream')->get();
-     $streams=DB::table('class_stream')->whereIn("stream_id",[$many->stream])->select('name')
-     ->get(); 
-    $attrs[$value->stream][] = $streams;
-     }
+   // foreach ($class as $key => $value) {
+   //  $many=DB::table("add_stream")->whereIn("class",[$value->class_id])->select('stream')->get();
+   //   $streams=DB::table('class_stream')->whereIn("stream_id",[$many->stream])->select('name')
+   //   ->get(); 
+   //  $attrs[$value->stream][] = $streams;
+   //   }
       return response([
         'message'=>'success',
         'class'=>$class,

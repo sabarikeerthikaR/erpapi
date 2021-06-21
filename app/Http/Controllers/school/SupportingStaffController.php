@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Staff;
 use App\Models\Group_staff;
 use App\Models\User;
@@ -81,7 +82,7 @@ class SupportingStaffController extends Controller
         'department'        =>$Staff->department,
         'position'        =>$Staff->position,
         'qualification'        =>$Staff->qualification,
-        'proposed_leaving_date	'        =>$Staff->proposed_leaving_date,
+        'proposed_leaving_date'        =>$Staff->proposed_leaving_date,
         'phone'        =>$Staff->phone,
         'email'        =>$Staff->email,
         'address'        =>$Staff->address,
@@ -113,7 +114,23 @@ class SupportingStaffController extends Controller
                                     'staff_id'=>$Staff->employee_id,
                                     'password' => Hash::make($password),
                                 ]); 
-        if($objUser->save()){
+                                  $objUser->save();
+                                 $userData=$objUser;
+        // email functions
+        // send email with the template
+    $email_data=[
+      "url"=>config("app.url"),
+      "email"=>$Staff->email,
+      "password"=>$password,
+      "name"=>$fname->first_name." ".$fname->middle_name." ".$fname->last_name
+    ];
+    Mail::send('email.welcome', $email_data, function ($message) use ($email_data) {
+        $message->to($email_data['email'], $email_data['name'])
+            ->subject('Welcome to RICO ERP')
+            ->from('no-reply@arulphpdeveloper.com', 'RICO ERP');
+    });
+         
+        if($Staff->save()){
                   return response()->json([
                  'message'  => 'Staff saved successfully',
                  'data'  => $Staff ,

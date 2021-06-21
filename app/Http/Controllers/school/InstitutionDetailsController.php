@@ -135,19 +135,19 @@ public function show(request $request)
    }
    public function index()
     {
-        $InstitutionDetails = InstitutionDetails::join('setings as ins','institution_details.Institution_Category','=','ins.s_d')
-        ->join('setings as insC','institution_details.Institution_Cluster','=','insC.s_d')
-        ->join('counties','institution_details.County','=','counties.id')
-        ->join('sub_county','institution_details.Sub_County','=','sub_county.id')
-        ->join('setings as instt','institution_details.Institution_Type','=','instt.s_d')
-        ->join('setings as ED','institution_details.Education_System','=','ED.s_d')
-        ->join('setings as EL','institution_details.Education_Level','=','EL.s_d')
-        ->join('setings as IA','institution_details.Institution_Accommodation','=','IA.s_d')
-        ->join('setings as SA','institution_details.Scholars_Gender','=','SA.s_d')
-        ->join('setings as LC','institution_details.Locality','=','LC.s_d')
+        $InstitutionDetails = InstitutionDetails::leftjoin('setings as ins','institution_details.Institution_Category','=','ins.s_d')
+        ->leftjoin('setings as insC','institution_details.Institution_Cluster','=','insC.s_d')
+        ->leftjoin('counties','institution_details.County','=','counties.id')
+        ->leftjoin('sub_county','institution_details.Sub_County','=','sub_county.id')
+        ->leftjoin('setings as instt','institution_details.Institution_Type','=','instt.s_d')
+        ->leftjoin('setings as ED','institution_details.Education_System','=','ED.s_d')
+        ->leftjoin('setings as EL','institution_details.Education_Level','=','EL.s_d')
+        ->leftjoin('setings as IA','institution_details.Institution_Accommodation','=','IA.s_d')
+        ->leftjoin('setings as SA','institution_details.Scholars_Gender','=','SA.s_d')
+        ->leftjoin('setings as LC','institution_details.Locality','=','LC.s_d')
         ->select('School_Name','Registration_Number','School_Code','Registration_Date',
         'ins.key_name as Institution_Category','insC.key_name as Institution_Cluster',
-        'sub_county.name as Sub_County','Ward'
+        'sub_county.sub_county as Sub_County','Ward'
         ,'counties.name as County','instt.key_name as Institution_Type','ED.key_name as Education_System',
         'EL.key_name as Education_Level','KNEC_Code','IA.key_name as Institution_Accommodation',
         'SA.key_name as Scholars_Gender','LC.key_name as Locality','KRA_PIN','institution_details.id')->first();
@@ -223,27 +223,29 @@ public function destroy(Request $request)
     public function institutn(Request $request)
     {
        
-        $ins=InstitutionDetails::join('setings as ins','institution_details.Institution_Category','=','ins.s_d')
-        ->join('setings as insC','institution_details.Institution_Cluster','=','insC.s_d')
-        ->join('counties','institution_details.County','=','counties.id')
-        ->join('sub_county','institution_details.Sub_County','=','sub_county.id')
-        ->join('setings as instt','institution_details.Institution_Type','=','instt.s_d')
-        ->join('setings as ED','institution_details.Education_System','=','ED.s_d')
-        ->join('setings as EL','institution_details.Education_Level','=','EL.s_d')
-        ->join('setings as IA','institution_details.Institution_Accommodation','=','IA.s_d')
-        ->join('setings as SA','institution_details.Scholars_Gender','=','SA.s_d')
-        ->join('setings as LC','institution_details.Locality','=','LC.s_d')
+        $ins=InstitutionDetails::leftjoin('setings as ins','institution_details.Institution_Category','=','ins.s_d')
+        ->leftjoin('setings as insC','institution_details.Institution_Cluster','=','insC.s_d')
+        ->leftjoin('counties','institution_details.County','=','counties.id')
+        ->leftjoin('sub_county','institution_details.Sub_County','=','sub_county.id')
+        ->leftjoin('setings as instt','institution_details.Institution_Type','=','instt.s_d')
+        ->leftjoin('setings as ED','institution_details.Education_System','=','ED.s_d')
+        ->leftjoin('setings as EL','institution_details.Education_Level','=','EL.s_d')
+        ->leftjoin('setings as IA','institution_details.Institution_Accommodation','=','IA.s_d')
+        ->leftjoin('setings as SA','institution_details.Scholars_Gender','=','SA.s_d')
+        ->leftjoin('setings as LC','institution_details.Locality','=','LC.s_d')
         ->select('School_Name','Registration_Number','School_Code','Registration_Date',
         'ins.key_name as Institution_Category','insC.key_name as Institution_Cluster',
         'sub_county.sub_county as Sub_County','Ward'
         ,'counties.name as County','instt.key_name as Institution_Type','ED.key_name as Education_System',
         'EL.key_name as Education_Level','KNEC_Code','IA.key_name as Institution_Accommodation',
         'SA.key_name as Scholars_Gender','LC.key_name as Locality','KRA_PIN','institution_details.id')->first();
-        $owner=Ownership::first();
+        $owner=Ownership::leftjoin('setings as ow','ownership.ownership','=','ow.s_d')
+        ->leftjoin('setings as ot','ownership.ownership_type','=','ot.s_d')
+        ->select('ow.key_name as ownership','proprietor','ot.key_name as ownership_type','certificate_no','town','police_station','health_facility','institution_id')->first();
         $institutiondocs=InstitutionDocs::first();
         $contact=ContactPerson::first();
-        $insset=InstitutionSetup::join('setings as US','institution_setup.UseRemarks','=','US.s_d')
-        ->join('setings as DS','institution_setup.DefaultListsSize','=','DS.s_d')->select('Address',
+        $insset=InstitutionSetup::leftjoin('setings as US','institution_setup.UseRemarks','=','US.s_d')
+        ->leftjoin('setings as DS','institution_setup.DefaultListsSize','=','DS.s_d')->select('Address',
         'Email','Telephone','CellNumber','Fax','EmployeesTimeIn','EmployeesTimeOut','US.key_name as UseRemarks',
         'AdmissionNo','TaxRelief','Website','SocialMediaLink','SchoolMotto','Vision','Mission','DS.key_name as DefaultListsSize',
         'DefaultMessage','DefaultCurrency','MobilePaymentInfo','DefaultSMSSender','MapLocation','institution_id')->first();

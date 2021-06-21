@@ -143,10 +143,8 @@ public function destroy(Request $request)
     }
    public function selectEmployee(request $request)
    {
-    $p=$request->all();
-        $id=$p['employee_type'];
-        DB::enableQueryLog();
-    $emp=db::table('staff')->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'employee_id')->where('employee_type','=',$id)->get(); 
+   
+    $emp=db::table('staff')->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'employee_id','employee_type')->get(); 
      if(!empty($emp)){
                     return response()->json([
                     'data'  => $emp      
