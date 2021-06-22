@@ -27,7 +27,7 @@ class StockTakingsController extends Controller
         'product_name'          =>$Stock_takings->product_name,
         'closing_stock'         =>$Stock_takings->closing_stock,
         'description'         =>$Stock_takings->description,
-        'taken_on'        =>date("Y-m-d"),
+        'taken_on'        =>$Stock_takings->taken_on,
         'taken_by'        =>Auth::user()->id,
        
          ]);

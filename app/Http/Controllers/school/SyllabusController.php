@@ -65,13 +65,76 @@ class SyllabusController extends Controller
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->join('subjects','syllabus.subject','=','subjects.subject_id')
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',
-        'date','syllabus.description','file')
+        'syllabus.date','syllabus.description','syllabus.file','syllabus.id')
         ->get();
         return response()->json([
             'message'=>'success',
             'data'=>$syllabs
         ]);
     }
+    public function update(Request $request)
+
+   {
+   
+         if($request->file)
+        {
+          $valiDationArray["file"]='required|file';
+        }
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
+       $Syllabus = Syllabus::find($request->id);
+          if($request->file('file')){
+              $file = $request->file('file');
+              $imgName = time() . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/syllabus-file/' . $imgName, file_get_contents($file));
+              $file=config('app.url').'/public/uploads/syllabus-file/' . $imgName;
+              $Syllabus->file=$file;
+              }
+   
+        $Syllabus->date= $request->date;
+        $Syllabus->class= $request->class;
+        $Syllabus->subject= $request->subject;
+       
+       
+        if($Syllabus->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $Syllabus
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
+    }
+public function destroy(Request $request)
+    {
+        $Syllabus = Syllabus::find($request->id);
+        if(!empty($Syllabus))
+
+                {
+                  if($Syllabus->delete()){
+                  return response()->json([
+                  'message'  => 'successfully deleted'
+                   ]);
+               }else {
+                  return response()->json([
+                  'message'  => 'failed'
+                ]);
+               }
+           }else
+           {
+           return response()->json([
+                 'message'  => 'No data found in this id'  
+                 ]);
+            }
+    }
+
+
+
+
     public function teachermakeSyllabus(request $request)
     {
         if($request->file)

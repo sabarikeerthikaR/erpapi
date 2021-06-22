@@ -7,7 +7,7 @@ class Stock_takings extends Model
 {
    
      protected $fillable = [
-        'product_name','closing_stock', 'taken_on', 'taken_by'
+        'product_name','closing_stock', 'taken_on', 'taken_by','description'
     ];
     protected $table = 'stock_takings';
     protected $primaryKey = 'stock_taking_id';

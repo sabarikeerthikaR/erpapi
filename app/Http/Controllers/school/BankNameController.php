@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Bank_name;
+use App\Models\Settings;
 
 class BankNameController extends Controller
 {
@@ -29,6 +30,12 @@ class BankNameController extends Controller
         'name'  =>$Bank_name->name,
        
          ]);
+        $settings=Settings::create([
+            'group_name'=>'bank_name',
+            'key_name'=>$Bank_name->bank_name,
+            'key_value'=>$Bank_name->id,
+            ]);
+            $settings->save();
         if($Bank_name->save()){
                   return response()->json([
                  'message'  => 'Bank_name saved successfully',
@@ -73,6 +80,9 @@ public function update(Request $request)
         }
     $Bank_name = Bank_name::find($request->id);
        $Bank_name->name= $request->name;
+       $settings=Settings::where('group_name','=','bank_name')->where('key_value',$request->id)->first();
+        $settings->key_name= $request->name;
+        $settings->save();  
        
         if($Bank_name->save()){
             return response()->json([
@@ -88,6 +98,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Bank_name = Bank_name::find($request->id);
+        $settings=Settings::where('group_name','=','bank_name')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_value=NULL;
+        $settings->key_name=NULL;
+        $settings->save();  
         if(!empty($Bank_name))
 
                 {

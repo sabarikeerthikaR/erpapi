@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $emp=db::table('staff')->join('add_stream','staff.employee_id','=','add_stream.teacher')
         ->where('add_stream.id',$class)
         ->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),
-        'email','employee_id','phone','passport_photo')->get(); 
+        'email','employee_id','phone','passport_photo')->first(); 
         $Assignment=Assignment::where('class',$class)
                                 ->whereDate('end_date','>=',date("Y-m-d"))            
                                 ->count();
@@ -83,8 +83,13 @@ class DashboardController extends Controller
                                 ->whereMonth('created_at','=',date('m'))
                                 ->count(); 
       //  $duefee
-       
-       
+           $date = Carbon::now()->subDays(7);
+       $messageList=Message::where('receiver',$id)
+    ->join('staff','message.sender','=','staff.employee_id')
+    ->where('message.created_at','>=',$date)
+    ->select('message',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
+    DB::raw("DATE_FORMAT(message.created_at, '%Y-%m-%d') as date"))
+     ->get();
     	return response()->json([
                  'message'  => ' success',
                  'Assignment'  => $Assignment,
@@ -93,7 +98,8 @@ class DashboardController extends Controller
                  'timetable'  => $timetable,
                  'classTeacher'  => $emp,
                  'myAttendancePresentCount'=>$studentAttendancePresent,
-                 'myAttendanceAbsentCount'=>$studentAttendanceAbsent
+                 'myAttendanceAbsentCount'=>$studentAttendanceAbsent,
+                 'messageList'=>$messageList
                  ]);
         
     }
@@ -251,12 +257,12 @@ class DashboardController extends Controller
 
         return response()->json([
             'message'  => 'success',
-            'upcoming exam'  => $exam,
-            'today message'  => $message,
-            'student today leave req'  => $leave,
-            'upcoming event'  => $event,
-            'month attendance present'  => $studentAttendancePresent,
-            'month attendance absent'  => $studentAttendanceAbsent,
+            'upcoming_exam'  => $exam,
+            'today_message'  => $message,
+            'student_today_leave_req'  => $leave,
+            'upcoming_event'  => $event,
+            'month_attendance_present'  => $studentAttendancePresent,
+            'month_attendance_absent'  => $studentAttendanceAbsent,
             'timeTable'=>$teacherTimetable,
             'messageList'=>$messageList,
             'ExamList'=>$examList

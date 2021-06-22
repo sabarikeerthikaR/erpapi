@@ -510,7 +510,8 @@ public function destroy(Request $request)
   public function studentProfile(request $request)
 
   {
-    $id=$request->admission_id;
+    
+            if(!empty($student))$id=$request->admission_id;
     $parent_id=Auth::user()->parent;
         $student= Admission::leftjoin('setings as blood','admission.blood_group','=','blood.s_d')-> 
         leftjoin('setings as dis','admission.disabled','=','dis.s_d')->
@@ -527,18 +528,18 @@ public function destroy(Request $request)
         leftjoin('std_class','add_stream.class','=','std_class.class_id')-> 
         leftjoin('student_house','admission.house','=','student_house.house_id')
     ->leftjoin('users','admission.admitted_by','=','users.id')
-    ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
+    ->where('admission.admission_id',$id)->select(db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student_name"),'admission_no as adm_no','admission.admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
     'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
     'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
     'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','image')->first();
         $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.parent1_id',$parent_id)->select('re1.key_name as relation_f','phone_f',
-        'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_name_f,' ',
-        COALESCE(middle_name_f,''),' ',last_name_f)as first_parent"))->first();
+        'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_parent.first_name_f,' ',
+        COALESCE(first_parent.middle_name_f,''),' ',first_parent.last_name_f)as first_parent"))->first();
         $parent2=Second_parent::leftjoin('setings as re2','second_parent.relation_s','=','re2.s_d')
         ->where('second_parent.parent1_id',$parent_id)
         ->select('re2.key_name as relation_s','phone_s','email_s',
-        'id_passport_s','occupation_s','address_s','postal_code_s',db::raw("concat(first_name_s,' ',
-        COALESCE(middle_name_s,''),' ',last_name_s)as second_parent"))->first();
+        'id_passport_s','occupation_s','address_s','postal_code_s',db::raw("concat(second_parent.first_name_s,' ',
+        COALESCE(second_parent.middle_name_s,''),' ',second_parent.last_name_s)as second_parent"))->first();
         $emergencycontact=Emergency_contact::leftjoin('setings as re3','emergency_contact.relation_e','=','re3.s_d')
         ->select('re3.key_name as relation_e','phone_e','email_e',
         'id_no_e','address_e','info_provided_by')->where('emergency_contact.parent',$parent_id)->first();        
@@ -546,7 +547,7 @@ public function destroy(Request $request)
     ->leftjoin('admission','new_placement.student','=','admission.admission_id')
     ->leftjoin('std_class','new_placement.rep_of','=','std_class.class_id')
     ->select('new_placement.date','date_upto','new_placement.description','position.name as position',
-    'std_class.name as rep_of',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))->where('student',$id)->first();
+    'std_class.name as rep_of',db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"))->where('student',$id)->first();
 
     $discipline=Discipline::leftjoin('staff','discipline.reported_by','=','staff.employee_id')
     ->select('discipline.date',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as reported_by"),'others','notify_parent',
@@ -559,7 +560,7 @@ public function destroy(Request $request)
     ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
     ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
     ->select('admission_no','setings.key_name as year','std_class.name as class','class_stream.name','add_route.name as route',
-    db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))
+    db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"))
     ->where('stud_name',$id)->first();
 
     $assign=AssignBed::leftjoin('setings as te','assign_bed.term','=','te.s_d')
@@ -579,15 +580,15 @@ public function destroy(Request $request)
      ->leftjoin('admission','fee_payment.student','=','admission.admission_id')
      ->leftjoin('payment_method','fee_payment.payment_method','=','payment_method.id')
      ->select('fee_payment.date','amount','transaction_no','tuition_fee','payment_method.name as payment_method',
-     'bank_name.name as bank_name',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))
+     'bank_name.name as bank_name',db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"))
     ->where('student',$id)->first();
-            if(!empty($student))
+    if(!empty($student))
       {
       return response()->json(['status' => 'Success', 'student' => $student,
 'leadershipPosition' => $leadershipPosition,
 'parent1' => $parent1,
 'parent2' => $parent2,
-'emergency contact' => $emergencycontact,
+'emergency_contact' => $emergencycontact,
 'roomBeds' => $assign,
 'discipline' => $discipline,
 'transport' => $transport,
@@ -620,34 +621,34 @@ public function destroy(Request $request)
 
   {
 $id=$request->admission_id;
-$parent_id=Auth::user()->parent;
-    $student= Admission::leftjoin('setings as blood','admission.blood_group','=','blood.s_d')-> 
-    leftjoin('setings as dis','admission.disabled','=','dis.s_d')->
-    leftjoin('setings as ge','admission.gender','=','ge.s_d')->
-    leftjoin('setings as st','admission.student_status','=','st.s_d')->
-    leftjoin('setings as ci','admission.citizenship','=','ci.s_d')->
-    leftjoin('setings as bo','admission.boarding','=','bo.s_d')->
-    leftjoin('setings as re','admission.religion','=','re.s_d')-> 
-    leftjoin('setings as sc','admission.scholarship','=','sc.s_d')->
-    leftjoin('counties','admission.home_country','=','counties.id')->
-    leftjoin('sub_county','admission.sub_country','=','sub_county.id')-> 
-    leftjoin('add_stream','admission.class','=','add_stream.id')
-    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')->
-    leftjoin('std_class','add_stream.class','=','std_class.class_id')-> 
-    leftjoin('student_house','admission.house','=','student_house.house_id')
-->leftjoin('users','admission.admitted_by','=','users.id')
-    ->where('admission_id',$id)->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student_name"),'admission_no as adm_no','admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
-    'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
+    $parent_id=Auth::user()->parent;
+        $student= Admission::leftjoin('setings as blood','admission.blood_group','=','blood.s_d')-> 
+        leftjoin('setings as dis','admission.disabled','=','dis.s_d')->
+        leftjoin('setings as ge','admission.gender','=','ge.s_d')->
+        leftjoin('setings as st','admission.student_status','=','st.s_d')->
+        leftjoin('setings as ci','admission.citizenship','=','ci.s_d')->
+        leftjoin('setings as bo','admission.boarding','=','bo.s_d')->
+        leftjoin('setings as re','admission.religion','=','re.s_d')-> 
+        leftjoin('setings as sc','admission.scholarship','=','sc.s_d')->
+        leftjoin('counties','admission.home_country','=','counties.id')->
+        leftjoin('sub_county','admission.sub_country','=','sub_county.id')-> 
+        leftjoin('add_stream','admission.class','=','add_stream.id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')->
+        leftjoin('std_class','add_stream.class','=','std_class.class_id')-> 
+        leftjoin('student_house','admission.house','=','student_house.house_id')
+    ->leftjoin('users','admission.admitted_by','=','users.id')
+    ->where('admission.admission_id',$id)->select(db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student_name"),'admission_no as adm_no','admission.admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
+    'admission.phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
     'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
-    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','image')->first();
-    $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.parent1_id',$parent_id)->select('re1.key_name as relation_f','phone_f',
-        'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_name_f,' ',
-        COALESCE(middle_name_f,''),' ',last_name_f)as first_parent"))->first();
+    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','admission.image')->first();
+        $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.parent1_id',$parent_id)->select('re1.key_name as relation_f','phone_f',
+        'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_parent.first_name_f,' ',
+        COALESCE(first_parent.middle_name_f,''),' ',first_parent.last_name_f)as first_parent"))->first();
         $parent2=Second_parent::leftjoin('setings as re2','second_parent.relation_s','=','re2.s_d')
         ->where('second_parent.parent1_id',$parent_id)
         ->select('re2.key_name as relation_s','phone_s','email_s',
-        'id_passport_s','occupation_s','address_s','postal_code_s',db::raw("concat(first_name_s,' ',
-        COALESCE(middle_name_s,''),' ',last_name_s)as second_parent"))->first();
+        'id_passport_s','occupation_s','address_s','postal_code_s',db::raw("concat(second_parent.first_name_s,' ',
+        COALESCE(second_parent.middle_name_s,''),' ',second_parent.last_name_s)as second_parent"))->first();
         $emergencycontact=Emergency_contact::leftjoin('setings as re3','emergency_contact.relation_e','=','re3.s_d')
         ->select('re3.key_name as relation_e','phone_e','email_e',
         'id_no_e','address_e','info_provided_by')->where('emergency_contact.parent',$parent_id)->first();        
@@ -655,7 +656,7 @@ $parent_id=Auth::user()->parent;
     ->leftjoin('admission','new_placement.student','=','admission.admission_id')
     ->leftjoin('std_class','new_placement.rep_of','=','std_class.class_id')
     ->select('new_placement.date','date_upto','new_placement.description','position.name as position',
-    'std_class.name as rep_of',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))->where('student',$id)->first();
+    'std_class.name as rep_of',db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"))->where('student',$id)->first();
 
     $discipline=Discipline::leftjoin('staff','discipline.reported_by','=','staff.employee_id')
     ->select('discipline.date',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as reported_by"),'others','notify_parent',
@@ -668,7 +669,7 @@ $parent_id=Auth::user()->parent;
     ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
     ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
     ->select('admission_no','setings.key_name as year','std_class.name as class','class_stream.name','add_route.name as route',
-    db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))
+    db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"))
     ->where('stud_name',$id)->first();
 
     $assign=AssignBed::leftjoin('setings as te','assign_bed.term','=','te.s_d')
@@ -688,7 +689,7 @@ $parent_id=Auth::user()->parent;
      ->leftjoin('admission','fee_payment.student','=','admission.admission_id')
      ->leftjoin('payment_method','fee_payment.payment_method','=','payment_method.id')
      ->select('fee_payment.date','amount','transaction_no','tuition_fee','payment_method.name as payment_method',
-     'bank_name.name as bank_name',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student"))
+     'bank_name.name as bank_name',db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"))
     ->where('student',$id)->first();
             if(!empty($student))
       {
@@ -696,7 +697,7 @@ $parent_id=Auth::user()->parent;
 'leadershipPosition' => $leadershipPosition,
 'parent1' => $parent1,
 'parent2' => $parent2,
-'emergency contact' => $emergencycontact,
+'emergency_contact' => $emergencycontact,
 'roomBeds' => $assign,
 'discipline' => $discipline,
 'transport' => $transport,

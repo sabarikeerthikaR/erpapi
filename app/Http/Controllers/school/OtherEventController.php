@@ -18,12 +18,11 @@ class OtherEventController extends Controller
    public function store(Request $Other_event)
     {
       $validator =  Validator::make($Other_event->all(), [
-            'title' => ['required', 'string'],
+            'title' => ['required'],
             'date' => ['required'],
             'start_time' => ['required'],
             'end_time' => ['required'],
             'venue' => ['required','string'],
-            'description' => ['required', 'string'],
           ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -75,13 +74,11 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'title' => ['required', 'string'],
+           'title' => ['required'],
             'date' => ['required'],
             'start_time' => ['required'],
             'end_time' => ['required'],
-            'venue' => ['required','string'],
-            'description' => ['required', 'string'],
-          
+            'venue' => ['required'],
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);

@@ -511,11 +511,11 @@ public function destroy(Request $request)
     public function teachingstaffprofile(request $request)
     {
     
-     $emp=db::table('staff')->join('setings as gen','staff.gender','=','gen.s_d')
-     ->join('setings as st','staff.gender','=','st.s_d')
+     $emp=db::table('staff')->leftjoin('setings as gen','staff.gender','=','gen.s_d')
+     ->leftjoin('setings as st','staff.gender','=','st.s_d')
+     ->leftjoin('group_staff','staff.employee_type','=','group_staff.employee_type')
      ->where('employee_id',$request->employee_id)
-     ->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')->join('group_staff','staff.employee_type','=','group_staff.employee_type')
-     ->where('staff.employee_type','=',1)
+     ->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')
      ->where('staff.disable','=',NULL)
      ->get(); 
       if(!empty($emp)){

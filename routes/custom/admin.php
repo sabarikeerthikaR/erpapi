@@ -360,6 +360,7 @@ route::get('sub_destroy','school\SubjectController@destroy');
 route::get('sub_select','school\SubjectController@show');
 route::get('listteacher','school\SubjectController@listteacher');
 route::post('addSubToTeacher','school\SubjectController@addSubToTeacher');
+route::get('subjectProfile','school\SubjectController@subjectProfile');
 
 
 // exam
@@ -976,7 +977,10 @@ route::get('requisitions_action','school\RequisitionsController@action');
 
  ///syllabus
 route::post('makeSyllabus','school\SyllabusController@makeSyllabus');
-route::get('syllabusselect','school\SyllabusController@select');
+route::get('syllabusshow','school\SyllabusController@select');
+route::post('SyllabusUpdate','school\SyllabusController@update');
+route::get('SyllabusDelete','school\SyllabusController@destroy');
+route::get('SyllabusSelect','school\SyllabusController@SyllabusShow');
 //route::post('requisitions_update','school\SyllabusController@update');
 
 

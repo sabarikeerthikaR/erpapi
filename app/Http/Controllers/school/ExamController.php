@@ -288,12 +288,12 @@ public function destroy(Request $request)
     {
         $id=Auth::user()->id;
         $class=User::where('users.id',$id)
-        ->join('admission','users.admission_id','=','admission.admission_id')
-        ->join('add_stream','admission.class','=','add_stream.id')
+        ->leftjoin('admission','users.admission_id','=','admission.admission_id')
+        ->leftjoin('add_stream','admission.class','=','add_stream.id')
         ->select('admission.class')->first();
         $timetable=Exam::where('exam.term',$request->term)
-        ->join('exam_timetable','exam.exam_id','=','exam_timetable.exam')
-        ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
+        ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$class->class)
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
         'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
@@ -308,8 +308,8 @@ public function destroy(Request $request)
     {
        
         $timetable=Exam::where('exam.term',$request->term)
-        ->join('exam_timetable','exam.exam_id','=','exam_timetable.exam')
-        ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
+        ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$request->class)
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
         'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
@@ -324,8 +324,8 @@ public function destroy(Request $request)
     {
        
         $timetable=Exam::
-        join('exam_timetable','exam.exam_id','=','exam_timetable.exam')
-        ->join('subjects','exam_timetable.subject','=','subjects.subject_id')
+        leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
         'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
         ->get();
