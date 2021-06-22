@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Item_stock;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Add_item;
 use App\Models\Staff;
 
@@ -19,19 +20,29 @@ class ItemStockController extends Controller
 {
     public function store(Request $Item_stock)
     {
-      $validator =  Validator::make($Item_stock->all(), [
+      $valiDationArray =  [
             'date' => ['required'],
             'item_name' => ['required'],
             'quantity'    => ['required'],
             'unit_price'  => ['required'],
             'person_responsible'       => ['required'],
-          ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+          ]; 
+           if($Item_stock->receipt)
+        {
+          $valiDationArray["receipt"]='required|file';
         }
-        $receipt = time() . '-' . $Item_stock->receipt->extension();
-        $Item_stock->receipt->move(public_path('images'),$receipt);
-      
+        $validator =  Validator::make($Item_stock->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $receipt='';
+         if($Item_stock->file('receipt')){
+         $receipt = $Item_stock->file('receipt');
+         $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/receipt/' . $imgName, file_get_contents($receipt));
+         $receipt=config('app.url').'/public/uploads/receipt/' . $imgName;
+         }
+       
         $Item_stock=Item_stock::create([
 
         'date'  =>$Item_stock->date,
@@ -71,8 +82,8 @@ public function show(request $request)
    }
    public function index()
     {
-        $Item_stock = Item_stock::join('staff','item_stock.person_responsible','=','staff.employee_id')->leftjoin('users','stock_takings.taken_by','=','users.id')->join('add_item','item_stock.item_name','=','add_item.item_id')
-        ->select('item_stock_id','item_stock.date','add_item.name as product','quantity','unit_price','total','receipt',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as person_responsible"))->get();
+        $Item_stock = Item_stock::join('staff','item_stock.person_responsible','=','staff.employee_id')->leftjoin('users','item_stock.added_by','=','users.id')->join('add_item','item_stock.item_name','=','add_item.item_id')
+        ->select('item_stock_id','item_stock.date','add_item.name as product','quantity','unit_price','total','receipt',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as person_responsible"),db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as added_by"))->get();
         return response()->json(['status' => 'Success', 'data' => $Item_stock]);
     }
 
@@ -80,27 +91,36 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
+    $valiDationArray =   [
         'date' => ['required'],
         'item_name' => ['required'],
         'quantity'    => ['required'],
         'unit_price'  => ['required'],
         'person_responsible'       => ['required'],
-        ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        ]; 
+         if($request->receipt)
+        {
+          $valiDationArray["receipt"]='required|file';
         }
-        $receipt = time() . '-' . $request->receipt->extension();
-        $request->receipt->move(public_path('images'),$receipt);
-      
-    $Item_stock = Item_stock::find($request->item_stock_id);
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
+       $Item_stock = Item_stock::find($request->item_stock_id);
+          if($request->file('receipt')){
+              $receipt = $request->file('receipt');
+              $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/receipt/' . $imgName, file_get_contents($receipt));
+              $receipt=config('app.url').'/public/uploads/receipt/' . $imgName;
+              $Item_stock->receipt=$receipt;
+              }
+   
         $Item_stock->date= $request->date;
         $Item_stock->item_name= $request->item_name;
                 $Item_stock->quantity= $request->quantity;
         $Item_stock->unit_price= $request->unit_price;
         $Item_stock->total=  $request->quantity*$request->unit_price;
         $Item_stock->person_responsible= $request->person_responsible;
-        $Item_stock->receipt= $receipt;
         $Item_stock->description= $request->description;
        
         if($Item_stock->save()){

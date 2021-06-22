@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Item_category;
 use App\Models\Settings;
+use Illuminate\Support\Facades\Auth;
 
 class ItemCategoryController extends Controller
 {
@@ -66,7 +67,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $Item_category = Item_category::leftjoin('users','item_category.created_by','=','users.id')->select('item_category_id','name','description',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as created_by"))->get();
+        $Item_category = Item_category::leftjoin('users','item_category.created_by','=','users.id')->select('item_category_id','name','description',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as created_by"),DB::raw("DATE_FORMAT(item_category.created_at, '%Y-%m-%d') as created_on"))->get();
         return response()->json(['status' => 'Success', 'data' => $Item_category]);
     }
 

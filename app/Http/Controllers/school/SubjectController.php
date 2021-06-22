@@ -19,6 +19,7 @@ use App\Models\Std_class;
 use App\Models\Class_stream;
 use App\Models\AddStream;
 use App\Models\StudentClass;
+use App\Models\Settings;
 
 class SubjectController extends Controller
 {
@@ -64,7 +65,12 @@ class SubjectController extends Controller
           {
             $errors[]=$g;
           }
-        } 
+        }  $settings=Settings::create([
+            'group_name'=>'subject',
+            'key_name'=>$request->name,
+            'key_value'=>$request->subject_id,
+            ]);
+            $settings->save();
              
               if(count($errors)==0)
               {
@@ -90,7 +96,7 @@ class SubjectController extends Controller
     }
 public function show(request $request)
    {
-     $Subject = Subject::find($request->Subject_id);
+     $Subject = Subject::find($request->subject_id);
              if(!empty($Subject)){
                     return response()->json([
                     'data'  => $Subject      
@@ -104,7 +110,24 @@ public function show(request $request)
    }
    public function index()
     {
-        $Subject = Subject::all();
+        $Subject = Subject::leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
+        ->leftjoin('terms','subjects.term','=','terms.term_id')
+        ->leftjoin('add_stream','subjects.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','stream_id')
+        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->get();
+        return response()->json(['status' => 'Success', 'data' => $Subject]);
+    }
+    public function subjectProfile(request $request)
+    {
+      
+        $Subject = Subject::leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
+        ->leftjoin('terms','subjects.term','=','terms.term_id')
+        ->leftjoin('add_stream','subjects.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','stream_id')
+        ->where('subjects.code',$request->code)
+        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->get();
         return response()->json(['status' => 'Success', 'data' => $Subject]);
     }
 
@@ -124,8 +147,8 @@ public function update(Request $request)
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
-    $Subject = Subject::find($request->Subject_id);
-        $Subject->title = $request->title ;
+    $Subject = Subject::find($request->subject_id);
+        $Subject->name = $request->name ;
         $Subject->term = $request->term ;
         $Subject->name = $request->name ;
         $Subject->code = $request->code ;
@@ -134,7 +157,9 @@ public function update(Request $request)
          $Subject->type = $request->type ;
           $Subject->sub_units = $request->sub_units ;
            $Subject->class = $request->class ;
-       
+       $settings=Settings::where('group_name','=','subject')->where('key_value',$request->subject_id)->first();
+        $settings->key_name= $request->name;
+        $settings->save();  
         if($Subject->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -148,7 +173,12 @@ public function update(Request $request)
     }
 public function destroy(Request $request)
     {
-        $Subject = Subject::find($request->Subject_id);
+        $Subject = Subject::find($request->subject_id);
+         $settings=Settings::where('group_name','=','subject')->where('key_value',$request->subject_id)->first();
+        $settings->group_name=NULL;
+        $settings->key_value=NULL;
+        $settings->key_name=NULL;
+        $settings->save();  
         if(!empty($Subject))
 
                 {

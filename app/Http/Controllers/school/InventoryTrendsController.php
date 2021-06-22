@@ -27,11 +27,11 @@ class InventoryTrendsController extends Controller
      'total as total_cost',db::raw('reorder_level-closing_stock as reorder_status'),
      db::raw('quantity-(quantity-closing_stock) as remaining'),'item_id')
      ->groupBy('item_name')->get();
-     $cost=Item_stock::select(db::raw('SUM(total)as total'))->get();
+     $cost=Item_stock::select(db::raw('SUM(total)as total'))->pluck('total');
      return response()->json([
          'message'=>'success',
          'data'=>$item,
-         'total assets cost'=>$cost
+         'total_assets_cost'=>$cost
      ]);
    }
    public function inventryProfile(request $request)
@@ -56,10 +56,10 @@ class InventoryTrendsController extends Controller
      return response()->json([
        'message'=>'success',
        'trend_for'=>$name,
-       'stock addition'=>$additm,
-       'stock takings'=>$stockTaking,
-       'total added'=>$totaladd,
-       'total removed'=>$totalRemove,
+       'stock_addition'=>$additm,
+       'stock_takings'=>$stockTaking,
+       'total_added'=>$totaladd,
+       'total_removed'=>$totalRemove,
        'remaining'=>$remainingStock
      ]);
    }

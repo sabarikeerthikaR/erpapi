@@ -12,14 +12,17 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Event_announcement;
+use App\Models\Add_event;
+use App\Models\Other_event;
+
 
 class EventAnnouncementController extends Controller
 {
     public function store(Request $Event_announcement)
     {
       $validator =  Validator::make($Event_announcement->all(), [
-            'title' => ['required', 'string'],
-            'description' => ['required', 'string'],
+            'title' => ['required'],
+            'description' => ['required'],
           ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -67,8 +70,8 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'title' => ['required', 'string'],
-            'description' => ['required', 'string'],
+           'title' => ['required'],
+            'description' => ['required'],
           
         ]); 
          if ($validator->fails()) {
@@ -113,6 +116,12 @@ public function destroy(Request $request)
     }
     public function eventCalenderview(request $request)
     {
+        $academicEvent=Add_event::join('setings','add_event.visibility','=','setings.s_d')->select('id as academic_event_id','title','start_date','end_date','venue','setings.key_name as visibility','description')->get();
+        $otherEvent=Other_event::select('id as other_event_id','title','date','start_time','end_time','venue','description')->get();
+        $array = array_merge($academicEvent->toArray(), $otherEvent->toArray());
+           return response()->json([
+                  'data'  => $array
+                   ]);
         
     }
 }

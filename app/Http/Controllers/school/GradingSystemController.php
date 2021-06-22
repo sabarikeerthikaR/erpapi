@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Grading_system;
 use App\Models\Settings;
+use Illuminate\Support\Facades\Auth;
 
 class GradingSystemController extends Controller
 {
@@ -31,7 +32,7 @@ class GradingSystemController extends Controller
         'title'  =>$Grading_system->title ,
         'pass_mark'  =>$Grading_system->pass_mark ,
         'description'  =>$Grading_system->description ,
-        'created_by'  =>'admin' ,
+        'created_by'  =>auth::user()->id,
         'created_on'  =>date('Y-m-d') ,
         
          ]);
@@ -68,7 +69,8 @@ public function show(request $request)
    }
    public function index()
     {
-        $Grading_system = Grading_system::select('title','pass_mark','created_by','created_on','grading_systm_id','description')->get();
+        $Grading_system = Grading_system::join('users','grading_system.created_by','=','users.id')
+        ->select('title','pass_mark',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as created_by"),'created_on','grading_systm_id','description')->get();
         return response()->json(['status' => 'Success', 'data' => $Grading_system]);
     }
 
@@ -130,4 +132,5 @@ public function destroy(Request $request)
                  ]);
             }
     }
+    
 }
