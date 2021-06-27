@@ -388,8 +388,6 @@ route::get('ExamResults','school\ExamController@ExamResults');
 route::post('studentMovement','school\StudentClassController@studentMovement');
 route::get('student_class','school\StudentClassController@listStudent');
 
-
-
 // student certicate
 route::post('stc_store','school\StudntCertificateController@store');
 route::get('stc_show','school\StudntCertificateController@index');
@@ -694,6 +692,7 @@ route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit
 route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
 route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+route::get('feePaymentlistview','school\FeePaymentController@feePaymentlistview');
 
 //fee extrass 
 route::post('storeFeeExtras','school\FeeExtrassController@storeFeeExtras');
@@ -937,6 +936,7 @@ route::get('teacherTimetable_show','school\TeacherTimetableController@index');
 route::post('teacherTimetable_update','school\TeacherTimetableController@update');
 route::get('teacherTimetable_destroy','school\TeacherTimetableController@destroy');
 route::get('teacherTimetable_select','school\TeacherTimetableController@show');
+route::get('StaffSubject','school\TeacherTimetableController@StaffSubject');
 
 
 //employee attendance
@@ -956,7 +956,7 @@ route::get('studentAtten_destroy','school\ClassAttendanceController@destroy');
 route::get('studentAtten_select','school\ClassAttendanceController@show');
 route::get('classAttendanceView','school\ClassAttendanceController@classAttendanceView');
 route::get('ClassStudentTeacher','school\ClassAttendanceController@ClassStudentTeacher');
-
+route::get('attendanceView','school\ClassAttendanceController@attendanceView');
 
 //discipline
 route::post('discipline_store','school\DisciplineController@store');
@@ -980,7 +980,7 @@ route::post('makeSyllabus','school\SyllabusController@makeSyllabus');
 route::get('syllabusshow','school\SyllabusController@select');
 route::post('SyllabusUpdate','school\SyllabusController@update');
 route::get('SyllabusDelete','school\SyllabusController@destroy');
-route::get('SyllabusSelect','school\SyllabusController@SyllabusShow');
+route::get('SyllabusSelect','school\SyllabusController@show');
 //route::post('requisitions_update','school\SyllabusController@update');
 
 

@@ -12,15 +12,17 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Fee_structure;
+use App\Models\Terms;
+use App\Models\AddStream;
 
 class FeeStructureController extends Controller
 {
     public function store(Request $Fee_structure)
     {
       $validator =  Validator::make($Fee_structure->all(), [
-           'term' => ['required', 'string'],
-            'class' => ['required', 'string'],
-            'fee_amount' => ['required', 'numeric'],
+           'term' => ['required'],
+            'class' => ['required'],
+            'fee_amount' => ['required'],
           ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -58,7 +60,11 @@ public function show(request $request)
    }
    public function index()
     {
-        $Fee_structure = Fee_structure::all();
+        $Fee_structure = Fee_structure::join('terms','fee_structure.term','=','terms.term_id')
+        ->join('add_stream','fee_structure.class','=','add_stream.id')
+        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->join('std_class','add_stream.class','=','std_class.class_id')
+        ->select('std_class.name as class','class_stream.name as stream','terms.name as term','fee_amount','fee_structure.id as fee_structure_id')->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_structure]);
     }
 
@@ -67,9 +73,9 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-       'term' => ['required', 'string'],
-            'class' => ['required', 'string'],
-            'fee_amount' => ['required', 'numeric'],
+       'term' => ['required'],
+            'class' => ['required'],
+            'fee_amount' => ['required'],
           
         ]); 
           if ($validator->fails()) {

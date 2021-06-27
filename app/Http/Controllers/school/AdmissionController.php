@@ -44,6 +44,7 @@ use App\Models\Bank_name;
 use App\Models\Bank_account;
 use App\Models\AddStream;
 use App\Models\Subject;
+use App\Models\Message;
 use Config\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
@@ -101,6 +102,7 @@ class AdmissionController extends Controller
         $count=Admission::count();
         $date=date("Y-m-d");
         $value = 11;
+        $app=config('app.name'); 
        
         $parent_id=$Admission->parent_id;
         
@@ -137,7 +139,7 @@ class AdmissionController extends Controller
         'email'        =>$Admission->email,
         'image'        =>$image,
         'birth_certificate' =>$birth_certificate,
-        'Admission_no' =>config('app.name').count(),
+        'admission_no' =>$app.$count,
          'year' =>date("Y"),
          'admitted_by' =>auth::user()->id,
          ]);
@@ -147,6 +149,12 @@ class AdmissionController extends Controller
         $admission_id= $Admission->admission_id;
        
         $name=$Admission->first_name.' '. $Admission-> middle_name .' '. $Admission->last_name;
+        $settingss=Settings::create([
+    'key_name'=>$name,
+    'group_name'=>'student',
+    'key_value'=>$Admission->admission_id,
+  ]);
+        $settingss->save();
         if($parent_id)
         {
          
@@ -155,8 +163,9 @@ class AdmissionController extends Controller
            {
             return response()->json(apiResponseHandler([], "Parent is invalid", 400), 400);
            }
-           $Admission->parent=$parent_id;
-           $Admission->save();
+           $admissionP_id=Admission::where("admission_id",$Admission->admission_id)->first();
+           $admissionP_id->parent=$parent_id;
+           $admissionP_id->save();
           $ParentStudents=ParentStudents::create([
           'p_id'=>$parent_id,
           'admission_id'=>$admission_id
@@ -183,7 +192,7 @@ class AdmissionController extends Controller
 
          $parent1->admission_id=$admission_id;
          $parent1->save();
-       // $first_parent=$parent1->parent1_id;
+        $first_parent=$parent1->parent1_id;
         $ParentStudents=new ParentStudents([
           'p_id'=>$parent1->parent1_id,
           'admission_id'=>$admission_id
@@ -233,7 +242,7 @@ class AdmissionController extends Controller
     Mail::send('email.welcome', $email_data, function ($message) use ($email_data) {
         $message->to($email_data['email'], $email_data['name'])
             ->subject('Welcome to RICO ERP')
-            ->from('no-reply@arulphpdeveloper.com', 'RICO ERP');
+            ->from('info@arulphpdeveloper.com', 'RICO ERP');
     });
         
       }
@@ -468,9 +477,33 @@ public function destroy(Request $request)
  { 
     $i = 0;
    // $emails = Admission::whereMonth('dob', '=', date('m'))->whereDay('dob', '=', date('d'))->select('email')->first(); 
-   $users = Admission::whereMonth('dob', '=', date('m'))->whereDay('dob', '=', date('d'))->select( DB::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name) as full_name"),
-   DB::raw("DATE_FORMAT(FROM_DAYS(DATEDIFF(CURRENT_DATE, dob)),'%y') AS age"),'admission.image','admission.gender','admission.class','admission.dob','admission.admission_no','email')->first(); 
-  $birthday='today is your birthday';
+   $users = Admission::whereMonth('dob', '=', date('m'))->whereDay('dob', '=', date('d'))
+   ->join('setings','admission.gender','=','setings.s_d')
+    ->leftjoin('add_stream','admission.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+   ->select( DB::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name) as full_name"),'setings.key_name as gender',
+   DB::raw("DATE_FORMAT(FROM_DAYS(DATEDIFF(CURRENT_DATE, dob)),'%y') AS age"),'admission.image','admission.dob','admission.admission_no','email','std_class.name as class','class_stream.name as stream')->get(); 
+
+ $email = Admission::whereMonth('dob', '=', date('m'))->whereDay('dob', '=', date('d'))
+ ->select('admission_id')->get();
+$app=Config('app.name');
+  $birthday=$app.' '.'wishing you HAPPY BIRTHDAY';
+
+  $sent_by=Auth::user()->id;
+            foreach($email as $g)
+            {
+            $message= new Message(array(
+        
+                'sender'=>$sent_by,
+                'receiver'=>$g['admission_id'],
+                'message'=>$birthday,
+            ));
+            if(!$message->save())
+            {
+              $errors[]=$g;
+            }
+            }
    if(!empty($users))
         {
                 return response()->json([
@@ -481,6 +514,7 @@ public function destroy(Request $request)
       else{
         return response()->json([
                  'message'  => 'no data found',
+                 'errors'  => $errors
                 
                   ]);
       }
@@ -510,6 +544,7 @@ public function destroy(Request $request)
   public function studentProfile(request $request)
 
   {
+    $id=$request->admission_id;
     
             if(!empty($student))$id=$request->admission_id;
     $parent_id=Auth::user()->parent;
@@ -529,9 +564,9 @@ public function destroy(Request $request)
         leftjoin('student_house','admission.house','=','student_house.house_id')
     ->leftjoin('users','admission.admitted_by','=','users.id')
     ->where('admission.admission_id',$id)->select(db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student_name"),'admission_no as adm_no','admission.admission_id as upi_no','ge.key_name as gender','dob','dis.key_name as disable','blood.key_name as blood_group','st.key_name as status',
-    'phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
+    'admission.phone','ci.key_name as citizenship','counties.name as county','sub_county.sub_county','residence',
     'std_class.name as class','class_stream.name as stream','emergency_phone','student_house.name as house','bo.key_name as scholar','re.key_name as religion',
-    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','image')->first();
+    'former_Scl','entry_mark','allergies','doctor_name','sc.key_name as scholarship',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as admitted_by"),'admission.date as admitted_on','admission.image')->first();
         $parent1= First_parent::leftjoin('setings as re1','first_parent.relation_f','=','re1.s_d')->where('first_parent.parent1_id',$parent_id)->select('re1.key_name as relation_f','phone_f',
         'email_f','occupation_f','id_passport_f','address_f','postal_code_f',db::raw("concat(first_parent.first_name_f,' ',
         COALESCE(first_parent.middle_name_f,''),' ',first_parent.last_name_f)as first_parent"))->first();
@@ -606,7 +641,7 @@ public function destroy(Request $request)
     ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
     ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
     ->select(DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as full_name"),
-    'std_class.name as class','class_stream.name as stream','dob','gender','admission_no','date','completion_yr','admission_id')
+    'std_class.name as class','class_stream.name as stream','dob','gender','admission_no','admission.date','completion_yr','admission_id')
     ->where('completion_yr','>',0)->get();
        if(!empty($inactive))
       {

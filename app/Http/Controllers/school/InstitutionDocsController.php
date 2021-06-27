@@ -17,6 +17,7 @@ class InstitutionDocsController extends Controller
 {
     public function store(Request $InstitutionDocs)
     {
+        $valiDationArray[]='';
         if($InstitutionDocs->ownership_doc)
         {
           $valiDationArray["ownership_doc"]='required|file';

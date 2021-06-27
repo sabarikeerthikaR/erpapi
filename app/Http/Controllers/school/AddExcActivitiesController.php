@@ -67,6 +67,7 @@ class AddExcActivitiesController extends Controller
     	$Admission=Admission::join('add_stream','admission.class','=','add_stream.id')
       ->join('std_class','add_stream.class','=','std_class.class_id')
       ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+
       ->select(DB::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name) as full_name"),
       'admission_no','std_class.name as class','class_stream.name as stream','admission_id')
       ->where('admission.class',$class)
@@ -93,8 +94,11 @@ class AddExcActivitiesController extends Controller
       ->join('add_stream','admission.class','=','add_stream.id')
       ->join('std_class','add_stream.class','=','std_class.class_id')
       ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-      'std_class.name as class','class_stream.name as stream','admission_no')
+      ->join('add_activities','extra_curricular_activity.activity','=','add_activities.id')
+      ->join('staff','add_activities.teacher','=','staff.employee_id')
+      ->select(db::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name)as student"),
+        db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),'',staff.last_name)as teacher"),
+      'std_class.name as class','class_stream.name as stream','admission_no','add_activities.name as activity')
       ->where('admission.class',$class)->where('admission.year',$year)
       ->where('activity',$activity)
       ->get();

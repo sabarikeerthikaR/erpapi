@@ -143,7 +143,7 @@ public function destroy(Request $request)
     }
     public function managefundStock()
     {
-        $book=Book_for_fund::select('purchase_date','quantity','title','book_for_fund_id','receipt')->where('quantity','>',0)->get();
+        $book=Book_for_fund::select('purchase_date','quantity','title','book_for_fund_id','receipt')->get();
         return response()->json([
          'message'=>'success',
          'data'=>$book

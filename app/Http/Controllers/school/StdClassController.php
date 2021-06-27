@@ -131,7 +131,8 @@ public function add_stream(Request $request)
           {
           return response()->json([
           'message'  => 'add stream updated successfully',
-          'updated data'   =>     $Std_classstream,
+         'class'=>$request->class,
+         'data'=>$data
           
               ]);
           }

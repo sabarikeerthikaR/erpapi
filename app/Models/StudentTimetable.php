@@ -7,7 +7,7 @@ class StudentTimetable extends Model
 {
    
      protected $fillable = [
-        'start_time','end_time','day','subject','class'
+        'start_time','end_time','class','subject','day'
     ];
     protected $table = 'student_timetable';
     protected $primaryKey = 'id';
