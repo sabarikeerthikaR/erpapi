@@ -17,15 +17,27 @@ class StudntCertificateController extends Controller
 {
      public function store(Request $Studnt_certificate)
     {
-      $validator =  Validator::make($Studnt_certificate->all(), [
-            'student_name' => ['required', 'string'],
-            'date' => ['required', 'string'],
-            'title' => ['required', 'string'],
-            'certificate_no' => ['required', 'string'],
+      $valiDationArray =[
+            'student_name' => ['required'],
+            'date' => ['required'],
+            'title' => ['required'],
+            'certificate_no' => ['required'],
            
-          ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+          ]; 
+      if($Studnt_certificate->upload_certificate)
+       {
+         $valiDationArray["upload_certificate"]='required|file';
+       }
+        $validator =  Validator::make($Studnt_certificate->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $upload_certificate='';
+        if($Studnt_certificate->file('upload_certificate')){
+        $upload_certificate = $Studnt_certificate->file('upload_certificate');
+        $imgName = time() . '.' . pathinfo($upload_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/upload_certificate/' . $imgName, file_get_contents($upload_certificate));
+        $upload_certificate=config('app.url').'/public/uploads/upload_certificate/' . $imgName;
         }
         $Studnt_certificate=Studnt_certificate::create([
 
@@ -33,8 +45,8 @@ class StudntCertificateController extends Controller
         'date'  =>$Studnt_certificate->date ,
         'title'  =>$Studnt_certificate->title ,
         'certificate_no'  =>$Studnt_certificate->certificate_no ,
-        'upload_certificate'  =>$Studnt_certificate->upload_certificate ,
-        
+        'upload_certificate'  =>$upload_certificate ,
+        'description'  =>$Studnt_certificate->description ,
          ]);
         if($Studnt_certificate->save()){
                   return response()->json([
@@ -71,24 +83,31 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
-         'student_name' => ['required', 'string'],
-            'date' => ['required', 'string'],
-            'title' => ['required', 'string'],
-            'certificate_no' => ['required', 'string'],
-            'upload_certificate' => ['required','mimes:png,jpg,jpeg,csv,txt,xlx,xls,pdf','max:2048'],
+    $valiDationArray = [
+         'student_name' => ['required'],
+            'date' => ['required'],
+            'title' => ['required'],
+            'certificate_no' => ['required'],
           
-        ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
-    $Studnt_certificate = Studnt_certificate::find($request->std_certificate);
+        ]; 
+          if($request->upload_certificate)
+     {
+       $valiDationArray["upload_certificate"]='required|file';
+     }
+      $Studnt_certificate = Studnt_certificate::find($request->std_certificate);
+      if($request->file('upload_certificate')){
+      $upload_certificate = $request->file('upload_certificate');
+      $imgName = time() . '.' . pathinfo($upload_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+      Storage::disk('public_uploads')->put('/upload_certificate/' . $imgName, file_get_contents($upload_certificate));
+      $upload_certificate=config('app.url').'/public/uploads/upload_certificate/' . $imgName;
+      $Admission->upload_certificate=$upload_certificate;
+      }
+    
         $Studnt_certificate->student_name = $request->student_name ;
         $Studnt_certificate->date = $request->date ;
         $Studnt_certificate->title = $request->title ;
         $Studnt_certificate->certificate_no = $request->certificate_no ;
-        $Studnt_certificate->upload_certificate = $request->upload_certificate ;
-       
+        $Studnt_certificate->description = $request->description ;
         if($Studnt_certificate->save()){
             return response()->json([
                  'message'  => 'updated successfully',

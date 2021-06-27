@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Staff;
 use App\Models\Group_staff;

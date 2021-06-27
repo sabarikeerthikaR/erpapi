@@ -89,6 +89,7 @@ class DashboardController extends Controller
     ->where('message.created_at','>=',$date)
     ->select('message',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
     DB::raw("DATE_FORMAT(message.created_at, '%Y-%m-%d') as date"))
+    ->orderBy('message.id', 'desc')
      ->get();
     	return response()->json([
                  'message'  => ' success',
@@ -248,6 +249,7 @@ class DashboardController extends Controller
     ->where('message.created_at','>=',$date)
     ->select('message',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
     DB::raw("DATE_FORMAT(message.created_at, '%Y-%m-%d') as date"))
+    ->orderBy('message.id', 'desc')
      ->get();
     $examList=Exam::
     whereDate('end_date', '>=', date('Y-m-d'))

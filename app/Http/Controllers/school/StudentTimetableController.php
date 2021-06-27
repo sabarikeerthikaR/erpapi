@@ -29,7 +29,7 @@ class StudentTimetableController extends Controller
         $StudentTimetable = new StudentTimetable(array(
           'start_time'   =>$g['start_time'],
           'end_time'=>$g['end_time'],
-          'day'=>$g['day'],  
+          'day'=>$StudentTimetable->day,
           'subject'=>$g['subject'],
           'class'=>$StudentTimetable->class,
          ));
@@ -71,9 +71,15 @@ public function show(request $request)
                   ]);
                  }
     }
-   public function index()
+   public function index(request $request)
     {
-        $StudentTimetable = StudentTimetable::all();
+        $StudentTimetable = StudentTimetable::leftjoin('subjects','student_timetable.subject','=','subjects.subject_id')
+        ->leftjoin('setings as day','student_timetable.day','=','day.s_d')
+        ->where('student_timetable.class',$request->class)
+        ->where('student_timetable.day',$request->day)
+        ->select('subjects.name as subject','student_timetable.start_time','student_timetable.end_time','day.key_name as day')
+        ->groupBy('student_timetable.day')
+        ->get();
         return response()->json(['knec_code' => 'Success', 'data' => $StudentTimetable]);
     }
 
@@ -83,9 +89,9 @@ public function show(request $request)
         ->leftjoin('admission','student_timetable.class','=','admission.class')
         ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
         ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('subjects','student_timetable.subject','=','subjects.subject_id')
-        ->join('teacher_timetable','student_timetable.class','=','teacher_timetable.class')
-        ->join('staff','teacher_timetable.staff','=','staff.employee_id')
+        ->leftjoin('subjects','student_timetable.subject','=','subjects.subject_id')
+        ->leftjoin('teacher_timetable','student_timetable.class','=','teacher_timetable.class')
+        ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
         ->leftjoin('setings as day','student_timetable.day','=','day.s_d')
         ->where('student_timetable.day',$request->day)->where('admission.admission_id',$request->admission_id)
         ->select('std_class.name as class','class_stream.name as stream',
@@ -109,14 +115,8 @@ public function update(Request $request)
 
    {
    	 $validator =  Validator::make($request->all(), [
-   	 	'start_time' => ['required','string'],
-            'end_time' => ['required', 'string'],
-            'monday' => ['required', 'string'],
-            'tuesday' => ['required', 'string'],
-            'wednesday' => ['required', 'string'],
-            'thursday' => ['required','string'],
-            'friday' => ['required', 'string'],
-              'saturday' => ['required', 'string'],
+   	 	
+              'class' => ['class']
             
         ]); 
           if ($validator->fails()) {
@@ -125,13 +125,9 @@ public function update(Request $request)
     $StudentTimetable = StudentTimetable::find($request->id);
         $StudentTimetable->start_time= $request->start_time;
        $StudentTimetable->end_time= $request->end_time;
-       $StudentTimetable->monday= $request->monday;
-       $StudentTimetable->tuesday= $request->tuesday;
-       $StudentTimetable->wednesday= $request->wednesday;
-       $StudentTimetable->thursday= $request->thursday;
-       $StudentTimetable->friday= $request->friday;
-        $StudentTimetable->saturday= $request->saturday;
-       $StudentTimetable->sunday= $request->sunday;
+       $StudentTimetable->day= $request->day;
+        $StudentTimetable->subject= $request->subject;
+       $StudentTimetable->class= $request->class;
        
         if($StudentTimetable->save()){
             return response()->json([

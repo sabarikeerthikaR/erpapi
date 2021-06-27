@@ -69,7 +69,8 @@ class LeaveRequestController extends Controller
        db::raw('(CASE when accept = "1" then "Accepted"
                       when accept = "2" then "Rejected"
                        else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-        )->get();
+        )->orderBy('leave_request.id', 'desc')
+         ->get();
 
         if(!empty($getRequest)){
             return response()->json([
@@ -96,7 +97,8 @@ class LeaveRequestController extends Controller
                     db::raw('(CASE when accept = "1" then "Accepted"
                                     when accept = "2" then "Rejected"
                                     else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-                      )->get();
+                      )->orderBy('leave_request.id', 'desc')
+                        ->get();
             }
         else{
                   $getRequest=LeaveRequest::where('request_to',$id)   
@@ -107,7 +109,8 @@ class LeaveRequestController extends Controller
               db::raw('(CASE when accept = "1" then "Accepted"
                               when accept = "2" then "Rejected"
                               else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-                )->get();
+                )->orderBy('leave_request.id', 'desc')
+                  ->get();
 
            }
      

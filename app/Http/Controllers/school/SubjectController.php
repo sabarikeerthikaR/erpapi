@@ -61,16 +61,17 @@ class SubjectController extends Controller
           'term'   =>$g['term'],
           'class'=>$g['class'],
          ));
+        $settings=new Settings(array(
+            'group_name'=>'subject',
+            'key_name'=>$request->name,
+            'key_value'=>$Subject->id,
+            ));
+            $settings->save();
           if(!$Subject->save())
           {
             $errors[]=$g;
           }
-        }  $settings=Settings::create([
-            'group_name'=>'subject',
-            'key_name'=>$request->name,
-            'key_value'=>$request->subject_id,
-            ]);
-            $settings->save();
+        }  
              
               if(count($errors)==0)
               {
@@ -127,8 +128,15 @@ public function show(request $request)
         ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
         ->leftjoin('class_stream','add_stream.stream','=','stream_id')
         ->where('subjects.code',$request->code)
-        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->get();
-        return response()->json(['status' => 'Success', 'data' => $Subject]);
+        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->first();
+        $class = Subject::leftjoin('add_stream','subjects.class','=','add_stream.id')
+        ->leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','stream_id')
+        ->where('subjects.code',$request->code)
+        ->select('unit.key_name as sub_units','class_stream.name as stream','std_class.name as class')->get();
+        return response()->json(['status' => 'Success', 'data' => $Subject,
+                                                         'class'=>$class]);
     }
 
 

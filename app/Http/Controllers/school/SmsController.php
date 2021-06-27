@@ -291,7 +291,9 @@ public function selectStaffForMessage(request $request)
            if($message->save()){
                return response()->json([
               'message'  => 'message send successfully',
-              'data'  => $message 
+              'sender'=>$sent_by,
+                    'receiver'=>$sent_to,
+                    'message_data'=>$request->message,
                ]);
            }else {
                return response()->json([
@@ -313,16 +315,19 @@ public function selectStaffForMessage(request $request)
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          else
          {
            $receiver=Auth::user()->admission_id;
            $message=Message::where('receiver',$receiver)
-                           ->join('staff','message.sender','=','staff.employee_id')
-                           ->select('message.created_at','message',
-                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           ->leftjoin('staff','message.sender','=','staff.employee_id')
+                           ->leftjoin('users','message.sender','=','users.id')
+                           ->select(db::raw('(CASE when user_role = "2" then "Admin"
+                       else "staff"  end) as name'),'message.created_at','message',
                            'message.id as message_id','replay') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          if(!empty($message)){
@@ -348,6 +353,7 @@ public function selectStaffForMessage(request $request)
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id','replay') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          else
@@ -358,6 +364,7 @@ public function selectStaffForMessage(request $request)
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id','replay') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          if(!empty($message)){

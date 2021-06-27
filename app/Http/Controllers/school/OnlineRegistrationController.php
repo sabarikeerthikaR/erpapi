@@ -17,7 +17,7 @@ class OnlineRegistrationController extends Controller
 {
      public function store(Request $Online_registration)
     {
-    	 $valiDationArray = [
+    	 $valiDationArray =[
             'first_name' => ['required'],
             'last_name' => ['required'],
             'admission_for' => ['required'],
@@ -25,7 +25,7 @@ class OnlineRegistrationController extends Controller
             'gender' => ['required'],
             'first_parent' => ['required'],
             'email_f' => ['required','email' ],
-            'phone_f' => ['required', 'numeric', 'digits:10'],
+            'phone_f' => ['required','numeric','digits:10'],
             'address_f'=> ['required'],
             'former_school' => ['required'],
             'grade_completed' => ['required'],

@@ -9,7 +9,7 @@ class AddActivities extends Model
 {
 
      protected $fillable = [
-        'name'
+        'name','teacher'
     ];
     protected $table = 'add_activities';
     protected $primaryKey ='id';
