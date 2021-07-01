@@ -167,7 +167,7 @@ public function destroy(Request $request)
         ->select('terms.name as term','fee.key_name as payment_method','fee_payment.date','amount as paid','transaction_no','tuition_fee as payable',
             db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),'fee_payment.id',
             db::raw('tuition_fee - amount as balance'),'admission.admission_no','class_stream.name as stream','std_class.name as class',
-            db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"))
+            db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),'fee_payment.description')
         ->get();
          $otherdata = Fee_payment::where('student',$request->admission_id)
         ->leftjoin('admission','fee_payment.student','=','admission.admission_id')
@@ -285,6 +285,11 @@ public function destroy(Request $request)
                'errors'=>$errors
              ]);
            }
+  }
+
+  public function OnlinePayment(request $request)
+  {
+    
   }
 
     

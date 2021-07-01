@@ -77,8 +77,7 @@ public function show(request $request)
         ->leftjoin('setings as day','student_timetable.day','=','day.s_d')
         ->where('student_timetable.class',$request->class)
         ->where('student_timetable.day',$request->day)
-        ->select('subjects.name as subject','student_timetable.start_time','student_timetable.end_time','day.key_name as day')
-        ->groupBy('student_timetable.day')
+        ->select('subjects.name as subject','student_timetable.start_time','student_timetable.end_time','day.key_name as day','student_timetable.id')
         ->get();
         return response()->json(['knec_code' => 'Success', 'data' => $StudentTimetable]);
     }
@@ -116,7 +115,7 @@ public function update(Request $request)
    {
    	 $validator =  Validator::make($request->all(), [
    	 	
-              'class' => ['class']
+              'class' => ['required']
             
         ]); 
           if ($validator->fails()) {

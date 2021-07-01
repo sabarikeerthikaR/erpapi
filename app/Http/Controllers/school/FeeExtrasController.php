@@ -12,17 +12,18 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Fee_extras;
+use App\Models\Settings;
 
 class FeeExtrasController extends Controller
 {
    public function store(Request $Fee_extras)
     {
       $validator =  Validator::make($Fee_extras->all(), [
-           'title' => ['required', 'string'],
-            'fee_type' => ['required', 'string'],
-            'amount' => ['required', 'numeric'],
-             'charged' => ['required', 'string'],
-              'description' => ['required', 'string'],
+           'title' => ['required'],
+            'fee_type' => ['required'],
+            'amount' => ['required'],
+             'charged' => ['required'],
+              'description' => ['required'],
           ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -35,6 +36,12 @@ class FeeExtrasController extends Controller
         'charged'  =>$Fee_extras->charged ,
         'description'  =>$Fee_extras->description ,
          ]);
+        $settings=Settings::create([
+            'group_name'=>'fee_extras',
+            'key_name'=>$Fee_extras->title ,
+            'key_value'=>$Fee_extras->id,
+            ]);
+            $settings->save();
         if($Fee_extras->save()){
                   return response()->json([
                  'message'  => 'Fee_extras saved successfully',
@@ -62,7 +69,10 @@ public function show(request $request)
    }
    public function index()
     {
-        $Fee_extras = Fee_extras::all();
+        $Fee_extras = Fee_extras::join('setings as fee','fee_extras.fee_type','=','fee.s_d')
+        ->join('setings as charge','fee_extras.charged','=','charge.s_d')
+        ->select('fee.key_name as fee_type','amount','description','charge.key_name as charge','fee_extras.id','title')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_extras]);
     }
 
@@ -71,11 +81,11 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-      'title' => ['required', 'string'],
-            'fee_type' => ['required', 'string'],
-            'amount' => ['required', 'numeric'],
-             'charged' => ['required', 'string'],
-              'description' => ['required', 'string'],
+      'title' => ['required'],
+            'fee_type' => ['required'],
+            'amount' => ['required'],
+             'charged' => ['required'],
+              'description' => ['required'],
           
         ]); 
           if ($validator->fails()) {
@@ -88,6 +98,9 @@ public function update(Request $request)
          $Fee_extras->charged = $request->charged ;
           $Fee_extras->description = $request->description ;
        
+        $settings=Settings::where('group_name','=','fee_extras')->where('key_value',$request->id)->first();
+        $settings->key_name= $request->title ;
+        $settings->save();
         if($Fee_extras->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -102,6 +115,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Fee_extras = Fee_extras::find($request->id);
+          $settings=Settings::where('group_name','=','fee_extras')->where('key_value',$request->id)->first();
+        $settings->key_name=NULL;
+        $settings->group_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Fee_extras))
 
                 {

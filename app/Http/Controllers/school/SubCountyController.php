@@ -60,7 +60,7 @@ class SubCountyController extends Controller
 public function show(request $request)
     { 
     	       $SubCounty = SubCounty::where('id',$request->id)
-               ->select('sub_county','sub_county.id as subCounty_id','county as county_id')->first();
+               ->select('sub_county','sub_county.id','county')->first();
              if(!empty($SubCounty)){
                     return response()->json([
                     'data'  => $SubCounty      
@@ -74,8 +74,8 @@ public function show(request $request)
     }
    public function index()
     {
-        $SubCounty = SubCounty::join('counties','sub_county.county','=','counties.id')->select('counties.name as county','sub_county','sub_county.id as subCounty_id','counties.id as county_id')->get();
-        return response()->json(['knec_code' => 'Success', 'data' => $SubCounty]);
+        $SubCounty = SubCounty::join('counties','sub_county.county','=','counties.id')->select('counties.name as county_name','sub_county.sub_county','sub_county.id','sub_county.county')->get();
+        return response()->json(['message' => 'Success', 'data' => $SubCounty]);
     }
 
 

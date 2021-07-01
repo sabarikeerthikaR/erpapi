@@ -79,7 +79,7 @@ public function show(request $request)
         ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->join('position','new_placement.position','=','position.id')
         ->select('std_class.name as class','class_stream.name as stream',
-        DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as full_name"),
+        DB::raw("CONCAT(first_name,' ',COALESCE(middle_name_s,''),' ',last_name)as full_name"),
         'new_placement.date','date_upto','position.name as position','admission_id')->get();
         if(!empty($NewPlacement))
         {

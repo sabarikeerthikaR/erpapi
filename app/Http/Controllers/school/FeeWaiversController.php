@@ -19,11 +19,10 @@ class FeeWaiversController extends Controller
     {
       $validator =  Validator::make($Fee_waivers->all(), [
       	 'date'=> ['required'],
-            'student'       => ['required', 'string'],
-            'amount'       => ['required', 'numeric'],
-            'term'       => ['required','string'],
-             'year'       => ['required', 'string'],
-            'remarks'       => ['required','string'],
+            'student'       => ['required'],
+            'amount'       => ['required'],
+            'term'       => ['required'],
+             'year'       => ['required']
           ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -66,7 +65,12 @@ public function show(request $request)
     }
    public function index()
     {
-        $Fee_waivers = Fee_waivers::all();
+        $Fee_waivers = Fee_waivers::join('admission','fee_waivers.student','=','admission.admission_id')
+               ->join('terms as term','fee_waivers.term','=','term.term_id')
+               ->join('setings as year','fee_waivers.year','=','year.s_d')
+               ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as student"),'term.name as term','year.key_name as year','amount','remarks','fee_waivers.date','fee_waivers.id')
+               ->get();
+
         return response()->json(['status' => 'Success', 'data' => $Fee_waivers]);
     }
 
@@ -75,12 +79,11 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'date'=> ['required'],
-            'student'       => ['required', 'string'],
-            'amount'       => ['required', 'numeric'],
-            'term'       => ['required','string'],
-             'year'       => ['required', 'string'],
-            'remarks'       => ['required','string'],
+            'date'=> ['required'],
+            'student'       => ['required'],
+            'amount'       => ['required'],
+            'term'       => ['required'],
+             'year'       => ['required']
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
