@@ -64,7 +64,7 @@ class SubjectController extends Controller
         $settings=new Settings(array(
             'group_name'=>'subject',
             'key_name'=>$request->name,
-            'key_value'=>$Subject->id,
+            'key_value'=>$request->subject_id,
             ));
             $settings->save();
           if(!$Subject->save())
@@ -137,6 +137,40 @@ public function show(request $request)
         ->select('unit.key_name as sub_units','class_stream.name as stream','std_class.name as class')->get();
         return response()->json(['status' => 'Success', 'data' => $Subject,
                                                          'class'=>$class]);
+    }
+    public function subunitShow(request $request)
+    {
+        $subunit=Subject::where('subject_id',$request->subject_id)
+        ->select('unit_title','mark')
+        ->first();
+          if(!empty($subunit)){
+                    return response()->json([
+                    'data'  => $subunit      
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'Not yet saved'  
+                  ]);
+                 }
+
+    }
+
+    public function subUnits(request $request)
+    {
+        $subUnits=Subject::find($request->subject_id);
+        $subUnits->unit_title = $request->unit_title;
+        $subUnits->mark = $request->mark;
+         if($subUnits->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $subUnits
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
     }
 
 

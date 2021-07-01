@@ -60,10 +60,10 @@ public function show(request $request)
    }
    public function index()
     {
-        $Fee_structure = Fee_structure::join('terms','fee_structure.term','=','terms.term_id')
-        ->join('add_stream','fee_structure.class','=','add_stream.id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
+        $Fee_structure = Fee_structure::leftjoin('terms','fee_structure.term','=','terms.term_id')
+        ->leftjoin('add_stream','fee_structure.class','=','add_stream.id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
         ->select('std_class.name as class','class_stream.name as stream','terms.name as term','fee_amount','fee_structure.id as fee_structure_id')->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_structure]);
     }

@@ -32,6 +32,7 @@ route::get('profile', 'school\AuthController@profile');
 //allstudents
 route::get('list_students', 'school\AdmissionController@allstudent');
 route::post('b_day', 'school\AdmissionController@birthday');
+route::get('birthdayGet', 'school\AdmissionController@birthdayGet');
 route::get('studentProfile', 'school\AdmissionController@studentProfile');
 route::get('myIdCard', 'school\AdmissionController@myIdCard');
 route::get('LeavingCart', 'school\AdmissionController@LeavingCart');
@@ -937,7 +938,8 @@ route::post('teacherTimetable_update','school\TeacherTimetableController@update'
 route::get('teacherTimetable_destroy','school\TeacherTimetableController@destroy');
 route::get('teacherTimetable_select','school\TeacherTimetableController@show');
 route::get('StaffSubject','school\TeacherTimetableController@StaffSubject');
-
+route::post('subUnits','school\SubjectController@subUnits');
+route::get('subunitShow','school\SubjectController@subunitShow');
 
 //employee attendance
 route::post('employeAtten_store','school\EmployeeAttendanceController@store');
@@ -957,6 +959,7 @@ route::get('studentAtten_select','school\ClassAttendanceController@show');
 route::get('classAttendanceView','school\ClassAttendanceController@classAttendanceView');
 route::get('ClassStudentTeacher','school\ClassAttendanceController@ClassStudentTeacher');
 route::get('attendanceView','school\ClassAttendanceController@attendanceView');
+route::get('ClassStudent','school\ClassAttendanceController@ClassStudent');
 
 //discipline
 route::post('discipline_store','school\DisciplineController@store');
@@ -1025,7 +1028,7 @@ route::get('BookFundReport','school\InstitutionSetupController@BookFundReport');
 route::get('admindata','school\AdminController@Admindata');
 route::post('changePassword','school\AdminController@changePassword');
 route::post('adminupdate','school\AdminController@adminupdate');
-
+    route::post('MessageTeacher','school\SmsController@MessageTeacher');
 
 });
 
@@ -1042,6 +1045,7 @@ Route::group(["middleware"=>["auth:api"]], function () {
          route::get('ShowLeaveRequestStudent/{id}','school\LeaveRequestController@ShowLeaveRequestStudent');
          route::get('AcceptLeaveRequest/{id}','school\LeaveRequestController@AcceptLeaveRequest');
          route::post('AcceptReject','school\LeaveRequestController@AcceptReject');
+          route::get('studentLeaveAdminView','school\LeaveRequestController@studentLeaveAdminView');
      });
 
 Route::get('testCode', function () {

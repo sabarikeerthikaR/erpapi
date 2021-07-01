@@ -380,11 +380,14 @@ public function destroy(Request $request)
     public function teaching(request $request)
    {
    
-    $emp=db::table('staff')->join('setings as gen','staff.gender','=','gen.s_d')
-    ->join('setings as st','staff.gender','=','st.s_d')
-    ->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')->join('group_staff','staff.employee_type','=','group_staff.employee_type')
-    ->where('staff.employee_type','=',1)
-    ->where('staff.disable','=',NULL)
+    $emp=db::table('staff')->leftjoin('setings as gen','staff.gender','=','gen.s_d')
+    ->leftjoin('setings as st','staff.gender','=','st.s_d')
+        ->leftjoin('group_staff','staff.employee_type','=','group_staff.employee_type')
+    ->select(DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as full_name"),
+             'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')
+
+    ->where('staff.employee_type',1)
+    ->where('staff.disable',NULL)
     ->get(); 
      if(!empty($emp)){
                     return response()->json([
@@ -399,8 +402,12 @@ public function destroy(Request $request)
    }
    public function nonteaching(request $request)
    {
-    $emp=db::table('staff')->join('setings as gen','staff.gender','=','gen.s_d')
-    ->join('setings as st','staff.gender','=','st.s_d')->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')->join('group_staff','staff.employee_type','=','group_staff.employee_type')
+    $emp=db::table('staff')->leftjoin('setings as gen','staff.gender','=','gen.s_d')
+    ->leftjoin('setings as st','staff.gender','=','st.s_d')
+        ->leftjoin('group_staff','staff.employee_type','=','group_staff.employee_type')
+    ->select(DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as full_name"),
+             'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')
+
     ->where('staff.employee_type','=',2)
     ->where('staff.disable','=',NULL)
     ->get();  
@@ -417,9 +424,11 @@ public function destroy(Request $request)
    }
    public function supporting(request $request)
    {
-    $emp=db::table('staff')->join('setings as gen','staff.gender','=','gen.s_d')
-    ->join('setings as st','staff.gender','=','st.s_d')->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')
-    ->join('group_staff','staff.employee_type','=','group_staff.employee_type')
+    $emp=db::table('staff')->leftjoin('setings as gen','staff.gender','=','gen.s_d')
+    ->leftjoin('setings as st','staff.gender','=','st.s_d')
+    ->leftjoin('group_staff','staff.employee_type','=','group_staff.employee_type')
+    ->select(DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as full_name"),
+             'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')
     ->where('staff.employee_type','=',3)
     ->where('staff.disable','=',NULL)
     ->get();   if(!empty($emp)){
@@ -469,8 +478,8 @@ public function destroy(Request $request)
    }
    public function inactive()
    {
-    $staff = db::table('staff')->join('setings as gen','staff.gender','=','gen.s_d')
-    ->join('setings as st','staff.gender','=','st.s_d')->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')->join('group_staff','staff.employee_type','=','group_staff.employee_type')
+    $staff = db::table('staff')->leftjoin('setings as gen','staff.gender','=','gen.s_d')
+    ->leftjoin('setings as st','staff.gender','=','st.s_d')->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),'passport_photo','gen.key_name as gender','st.key_name as status','position','employee_id')->join('group_staff','staff.employee_type','=','group_staff.employee_type')
     ->where('disable','=',1)->where('staff.employee_type','=',1)
     ->get();  
        return response()->json(['status' => 'Success', 'data' => $staff]);

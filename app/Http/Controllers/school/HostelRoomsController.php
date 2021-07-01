@@ -78,7 +78,8 @@ public function show(request $request)
     {
        $HostelBed = db::table('hostel_rooms')->leftjoin('hostel_bed','hostel_rooms.id','=','hostel_bed.hostel_room')
        ->leftjoin('hostel','hostel_rooms.hostel','=','hostel.id')
-       ->select('hostel_rooms.id','hostel.title as hostel','bed_no','hostel_bed.created_at','room_name','status','hostel_rooms.description')
+       ->select('hostel_rooms.id','hostel.title as hostel','bed_no','hostel_rooms.created_at','room_name','status','hostel_rooms.description',
+   )
        ->groupBy('hostel_rooms.id')
        ->get();
         return response()->json(['status' => 'Success', 'data' => $HostelBed]);

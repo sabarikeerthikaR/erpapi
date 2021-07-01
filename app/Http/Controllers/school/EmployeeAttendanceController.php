@@ -14,6 +14,7 @@ use Illuminate\Database\Migrations\Migration;
 use App\Models\EmployeeAttendance;
 use App\Models\Staff;
 use Illuminate\Support\Carbon;
+use App\Models\Holidays;
 
 class EmployeeAttendanceController extends Controller
 {
@@ -27,10 +28,9 @@ class EmployeeAttendanceController extends Controller
           
         
         $EmployeeAttendance = new EmployeeAttendance(array(
-          'date'=>$g['date'],
+          'date'=>$EmployeeAttendance->date,
           'employee'=>$g['employee'],    
-          'time_in'=>$g['time_in'],
-           'time_out'=>$g['time_out'],
+          'present'=>$g['present'],
          ));
           if(!$EmployeeAttendance->save())
           {
@@ -42,7 +42,9 @@ class EmployeeAttendanceController extends Controller
               {
               return response()->json([
               'message'  => 'EmployeeAttendance saved successfully',
-              'data'     => $EmployeeAttendance
+              'date'     => $EmployeeAttendance->date,
+              'data'=>$attendance
+
                   ]);
               }
               else 
@@ -56,7 +58,11 @@ class EmployeeAttendanceController extends Controller
 public function show(request $request)
    {
 
-    $EmployeeAttendance = EmployeeAttendance::find($request->id);
+    $EmployeeAttendance = EmployeeAttendance::where('id',$request->id)
+    ->leftjoin('staff','employee_attendance.employee','=','staff.employee_id')
+    ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as employee"),'present',
+             'employee_attendance.id','employee_attendance.date','employee_id')
+    ->first();
              if(!empty($EmployeeAttendance)){
                     return response()->json([
                     'data'  => $EmployeeAttendance      
@@ -68,9 +74,13 @@ public function show(request $request)
                   ]);
                  }
    }
-   public function index()
+   public function index(Request $request)
     {
-        $EmployeeAttendance = EmployeeAttendance::join('staff','employee_attendance.employee','=','staff.employee_id')->select('employee_attendance.date','time_in','time_out','id',DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as employee"))->get();
+        $EmployeeAttendance = EmployeeAttendance::join('staff','employee_attendance.employee','=','staff.employee_id')
+        ->whereDate('date',$request->date)
+        ->select('employee_attendance.date','present','id',
+                 DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as employee"))
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $EmployeeAttendance]);
     }
 
@@ -78,45 +88,19 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-        $attendance=$request->attendance;
-        $errors=[];
-        foreach($attendance as $g)
-        {
-         
          $EmployeeAttendance = EmployeeAttendance::find($request->id);
-        $EmployeeAttendance['date']=$request['date'];
-        $EmployeeAttendance['employee']=$request['employee'];  
-        $EmployeeAttendance['time_in']=$request['time_in'];
-         $EmployeeAttendance['time_out']=$request['time_out'];
-         $EmployeeAttendance->save();
-         $dateRoom = new EmployeeAttendance(array(
-          'date'=>$g['date'],
-          'employee'=>$g['employee'],    
-          'time_in'=>$g['time_in'],
-           'time_out'=>$g['time_out'],
-         ));
-       
-          if(!$dateRoom->save())
-          {
-            $errors[]=$g;
-          }
-        } 
-             
-              if(count($errors)==0)
-              {
-              return response()->json([
-              'message'  => 'EmployeeAttendance updated successfully',
-              'data'  =>$dateRoom,
-              'updated'=>$EmployeeAttendance
-                  ]);
-              }
-              else 
-              {
-                  return response()->json([
-                   'message'  => 'failed',
-                   'errors'=>$errors
+        $EmployeeAttendance->employee = $request->employee;
+        $EmployeeAttendance->present = $request->present;
+        if($EmployeeAttendance->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $EmployeeAttendance
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
                  ]);
-               }
+        }
 
     }
 public function destroy(Request $request)
@@ -158,13 +142,16 @@ public function destroy(Request $request)
    }
    public function EmployeeMyAttendance(request $request)
    {
-          
-        $attendance = EmployeeAttendance::where('employee',$request->staff)
-            ->select('date')
-            ->get(); 
-            
-        return response()->json(apiResponseHandler($attendance, 'success'));
+         $present = EmployeeAttendance::where('employee',$request->employee)
+      ->where('present',1)
+      ->select('date')
+      ->get(); 
+      $absent = EmployeeAttendance::where('employee',$request->employee)
+      ->where('present',0)
+      ->select('date')
+      ->get(); 
+      
+  return response()->json(['present'=>$present,'absent'=>$absent ,'message'=>'success']);
+    }
 
-     
-   }
 }
