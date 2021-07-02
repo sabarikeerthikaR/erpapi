@@ -71,7 +71,12 @@ public function show(request $request)
    }
    public function index()
     {
-        $ExpenseDetails = ExpenseDetails::all();
+        $ExpenseDetails = ExpenseDetails::leftjoin('staff','expensedetails.person_responsible','=','staff.employee_id')
+        ->leftjoin('expense_item','expensedetails.title','=','expense_item.id')
+        ->leftjoin('expense_category','expensedetails.category','=','expense_category.id')
+        ->select('expensedetails.date','amount','receipt','expensedetails.description','expense_item.name as title',
+                 'expense_category.name as category',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as person_responsible"))
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $ExpenseDetails]);
     }
 
@@ -80,14 +85,13 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-            'date' => ['required', 'string'],
-            'title' => ['required', 'string'],
-            'category' => ['required', 'string'],
-            'amount' => ['required', 'string'],
-            'person_responsible' => ['required', 'string'],
-            'receipt' => ['required', 'string'],
-            'description' => ['required', 'string'],
-          
+            'date' => ['required'],
+            'title' => ['required'],
+            'category' => ['required'],
+            'amount' => ['required'],
+            'person_responsible' => ['required'],
+            'receipt' => ['required'],
+            
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);

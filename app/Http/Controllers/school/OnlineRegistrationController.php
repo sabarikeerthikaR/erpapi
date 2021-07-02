@@ -182,7 +182,6 @@ public function update(Request $request)
        $Online_registration->disability_if_any= $request->disability_if_any;
        $Online_registration->local_guardian= $request->local_guardian;
        $Online_registration->comments= $request->comments;
-       $Online_registration->image= $request->image;
         $Online_registration->address= $request->address;
        $Online_registration->phone= $request->phone;
         if($Online_registration->save()){

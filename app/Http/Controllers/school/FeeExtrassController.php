@@ -11,6 +11,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\FeeExtrass;
+use Illuminate\Support\Facades\Auth;
 
 class FeeExtrassController extends Controller
 {
@@ -25,9 +26,9 @@ class FeeExtrassController extends Controller
           {
            return response()->json(apiResponseHandler([],'The student field is required',400), 400);
           }
-          // $class=Admission::where('admission_id',$request->student)->select('class')->first();
-          // $feeAmount=Fee_structure::where('class',$class->class)->where('term',$g['term'])
-          // ->select('fee_amount')->first();
+          $feeAmount=Fee_extras::where('admission_id',$request->student)->select('class')->first();
+          $feeAmount=Fee_structure::where('class',$class->class)->where('term',$g['term'])
+          ->select('fee_amount')->first();
                     $FeeExtrass = new FeeExtrass(array(
         
                       'amount'=>$g['amount'],

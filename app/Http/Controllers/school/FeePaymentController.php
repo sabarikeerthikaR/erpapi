@@ -196,7 +196,11 @@ public function destroy(Request $request)
          ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->leftjoin('bank_name','fee_payment.bank','=','bank_name.id')
         ->select(DB::raw('SUM(amount) as amount'),db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-            db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),'fee_payment.date','fee_payment.description','fee.key_name as type','admission.admission_id')
+            db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),
+            'fee_payment.date','fee_payment.description','fee.key_name as type','admission.admission_id',
+            'fee_payment.id')
+            db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),'fee_payment.date','fee_payment.description',
+            'fee.key_name as type','admission.admission_id')
         ->groupBy('student')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_payment]);
@@ -245,6 +249,29 @@ public function destroy(Request $request)
     }
     public function feePaymentlistedit(request $request)
     {
+   
+        if($request->amount)
+        {
+            $feedata = Fee_payment::where('id',$request->id)->select('amount')->first();
+            $payment=$feedata->amount - $request->amount;
+            $feedata->tuition_fee=$payment;
+        }
+ 
+    $feedata = Fee_payment::where('id',$request->id)->first();
+      
+      $feedata->date=$request->date;
+      $feedata->amount=$request->amount;
+      $feedata->payment_method=$request->payment_method;
+      $feedata->transaction_no=$request->transaction_no;
+      $feedata->bank=$request->bank;
+      $feedata->description=$request->description;
+      $feedata->term=$request->term;
+
+          if($feedata->save())
+          {
+          return response()->json([
+          'message'  => 'feedata saved successfully',
+          'data'=>$feedata,
          $data=$request->data;
     $errors=[];
     foreach($data as $g)
