@@ -9,7 +9,7 @@ class ExpenseCategory extends Model
 {
 
      protected $fillable = [
-        'name','description'
+        'name'
     ];
     protected $table = 'expense_category';
     protected $primaryKey = 'id';

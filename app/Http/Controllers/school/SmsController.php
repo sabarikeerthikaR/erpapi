@@ -259,39 +259,87 @@ public function selectStaffForMessage(request $request)
     {
         $errors=[];
         $sent_to=$request->sent_to;
+        //teacher
           if(Auth::user()->user_role==3)
           {
-            $sent_by=Auth::user()->staff_id;
-            foreach($sent_to as $g)
-            {
-            $message= new Message(array(
-        
-                'sender'=>$sent_by,
-                'receiver'=>$g['receiver'],
-                'message'=>$request->message,
-            ));
-            if(!$message->save())
-            {
-              $errors[]=$g;
-            }
-            }
+                    $sent_by=Auth::user()->id;
+                    foreach($sent_to as $g)
+                    {
+                    $message= new Message(array(
+                
+                        'sender'=>$sent_by,
+                        'receiver'=>$g['receiver'],
+                        'message'=>$request->message,
+                    ));
+                            if(!$message->save())
+                            {
+                              $errors[]=$g;
+                            }
+                    }
           }
-          else
+// admin
+          elseif(Auth::user()->user_role==2)
           {
-            $sent_by=Auth::user()->admission_id;
+                 $sent_by=Auth::user()->id;
+                    $sent_to=$request->sent_to;
+                            if($sent_to==4){
+                                             $users=User::where('user_role',$sent_to)->select('admission_id')->get();
+                                              foreach($users as $g)
+                                                    {
+                                                    $message= new Message(array(
+                                                
+                                                        'sender'=>$sent_by,
+                                                        'admission_id'=>$g['admission_id'],
+                                                        'message'=>$request->message,
+                                                    ));
+                                                            if(!$message->save())
+                                                            {
+                                                              $errors[]=$g;
+                                                            }
+                                                    }
+                                    
+                                                     }
+                                                     else
+                                                     {
+                                                         $users=User::where('user_role',$sent_to)->select('id')->get();
+                                                         foreach($users as $g)
+                                                            {
+                                                            $message= new Message(array(
+                                                        
+                                                                'sender'=>$sent_by,
+                                                                'receiver'=>$g['id'],
+                                                                'message'=>$request->message,
+                                                            ));
+                                                                    if(!$message->save())
+                                                                    {
+                                                                      $errors[]=$g;
+                                                                    }
+                                                            }
+                                                     }
+                                 
+               
+          }
 
-                $message= new Message([
-        
-                    'sender'=>$sent_by,
-                    'receiver'=>$sent_to,
-                    'message'=>$request->message,
-                ]);
+          else
+
+            //student
+          {
+                $sent_by=Auth::user()->admission_id;
+
+                    $message= new Message([
+            
+                        'sender'=>$sent_by,
+                        'receiver'=>$sent_to,
+                        'message'=>$request->message,
+                    ]);
           }
          
            if($message->save()){
                return response()->json([
               'message'  => 'message send successfully',
-              'data'  => $message 
+              'sender'=>$sent_by,
+                    'receiver'=>$sent_to,
+                    'message_data'=>$request->message,
                ]);
            }else {
                return response()->json([
@@ -313,16 +361,19 @@ public function selectStaffForMessage(request $request)
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          else
          {
            $receiver=Auth::user()->admission_id;
            $message=Message::where('receiver',$receiver)
-                           ->join('staff','message.sender','=','staff.employee_id')
-                           ->select('message.created_at','message',
-                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           ->leftjoin('staff','message.sender','=','staff.employee_id')
+                           ->leftjoin('users','message.sender','=','users.id')
+                           ->select(db::raw('(CASE when user_role = "2" then "Admin"
+                       else "staff"  end) as name'),'message.created_at','message',
                            'message.id as message_id','replay') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          if(!empty($message)){
@@ -348,6 +399,7 @@ public function selectStaffForMessage(request $request)
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id','replay') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          else
@@ -358,6 +410,7 @@ public function selectStaffForMessage(request $request)
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id','replay') 
+                           ->orderBy('message.id', 'desc')
                            ->get();
          }
          if(!empty($message)){

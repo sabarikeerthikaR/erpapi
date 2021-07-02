@@ -81,9 +81,9 @@ public function show(request $request)
         $Books = Books::leftjoin('books_category','books.book_category_id','=','books_category.book_category_id')
         ->leftjoin('borrow','books.book_id','=','borrow.book_id')
         ->select('title','author','books_category.name','edition','quantity',
-        DB::raw("COUNT('borrow.book_id'='books.book_id')as borrowed"),
+        DB::raw("COUNT('borrow.book_id')as borrowed"),
         db::raw('quantity - borrow.book_id as remaining_books'),'books.book_id')
-        ->groupBy('book_id')
+        ->groupBy('books.book_id')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Books]);
     }
@@ -156,7 +156,7 @@ public function destroy(Request $request)
     }
     public function manageStock()
     {
-        $book=Books::select('purchase_date','quantity','title','book_id')->where('quantity','>',0)->get();
+        $book=Books::select('purchase_date','quantity','title','book_id')->get();
         return response()->json([
          'message'=>'success',
          'data'=>$book

@@ -70,7 +70,12 @@ public function show(request $request)
     }
    public function index()
     {
-        $Std_class = Std_class::all();
+        $Std_class = Std_class::leftjoin('add_stream','std_class.class_id','=','add_stream.class')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('admission','add_stream.id','=','admission.class')
+        ->select(db::raw("COUNT(admission.class) as total_student"),'class_id','std_class.name as class','std_class.description','std_class.status','class_stream.name as stream','class_id','stream_id')
+        ->groupBy('std_class.class_id')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Std_class]);
     }
     public function update(Request $request)
@@ -131,7 +136,8 @@ public function add_stream(Request $request)
           {
           return response()->json([
           'message'  => 'add stream updated successfully',
-          'updated data'   =>     $Std_classstream,
+         'class'=>$request->class,
+         'data'=>$data
           
               ]);
           }
@@ -240,7 +246,7 @@ public function destroy(Request $request)
       ->leftjoin('admission','add_stream.id','=','admission.class')
       ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
       ->select('std_class.name as class',
-      db::raw("CONCAT(staff.first_name,' ',staff.middle_name,' ',staff.last_name)as teacher"),
+      db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as teacher"),
       db::raw('COUNT(admission.class)as total_student'),
       'status.key_name as status','class_id','class_stream.name as stream','add_stream.id')
       ->groupBy('add_stream.id')->get();

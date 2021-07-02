@@ -45,7 +45,7 @@ class ExamController extends Controller
         'weight'  =>$Exam->weight ,
         'start_date'  =>$Exam->start_date ,
         'end_date'  =>$Exam->end_date ,
-        
+        'description'  =>$Exam->description ,
          ]);
          $settings= new Settings([
             'group_name'=>'Exam',
@@ -83,7 +83,7 @@ public function show(request $request)
         $Exam = Exam::join('terms','exam.term','=','terms.term_id')
         ->join('setings as year','exam.year','=','year.s_d')
         ->select('exam_id','title','weight','start_date','end_date','terms.name as term',
-    'year.key_name as year')->get();
+    'year.key_name as year','description')->get();
         return response()->json(['status' => 'Success', 'data' => $Exam]);
     }
 
@@ -108,6 +108,7 @@ public function update(Request $request)
         $Exam->weight = $request->weight ;
         $Exam->start_date = $request->start_date ;
         $Exam->end_date = $request->end_date ;
+        $Exam->description = $request->description ;
         $settings=Settings::where('group_name','=','Exam')->where('key_value',$request->exam_id)->first();
         $settings->key_name= $request->title;
         $settings->save();
@@ -382,6 +383,30 @@ public function destroy(Request $request)
             'data'=>$teacher
           ]);
     }
+
+     public function ExamResults(request $request)
+    {
+         $teacher=ExamMark::where('exam_mark.student',$request->student)
+        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
+        ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
+        ->leftjoin('gradings','grading_system.grading_systm_id','=','gradings.grading_system_id')
+        ->leftjoin('grade','gradings.grade','=','grade.gradings_id')
+        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+       // ->whereBetween('exam_mark.total_mark',['max_mark','min_mark'])
+       ->where('exam_mark.total_mark','>=','gradings.min_mark')
+       ->where('exam_mark.total_mark','<=','gradings.max_mark')
+        ->select('exam.title as exam','subjects.name as subject',
+        db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+        'total_mark','grading_system.title as grading_system','grade.title as grade',
+        'grade.remarks')
+        ->groupBy('exam_mark.id')
+        ->get(); 
+        return response()->json([
+            'message'  => 'success',
+            'data'=>$teacher
+          ]);
+    }
     // public function ExamCertificate(request $request)
     // {
         
@@ -403,8 +428,5 @@ public function destroy(Request $request)
         
     // }
     
-    // public function ExamResults(request $request)
-    // {
-        
-    // }
+   
 }

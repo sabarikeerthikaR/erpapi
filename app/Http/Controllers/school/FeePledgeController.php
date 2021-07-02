@@ -18,11 +18,10 @@ class FeePledgeController extends Controller
    public function store(Request $Fee_pledge)
     {
       $validator =  Validator::make($Fee_pledge->all(), [
-            'student'       => ['required', 'string'],
+            'student'       => ['required'],
             'pledge_date'=> ['required'],
-            'amount'       => ['required', 'numeric'],
-            'status'       => ['required','string'],
-            'remarks'       => ['required','string'],
+            'amount'       => ['required'],
+            'status'       => ['required'],
           ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -32,7 +31,7 @@ class FeePledgeController extends Controller
         'pledge_date'  =>$Fee_pledge->pledge_date,
         'amount'  =>$Fee_pledge->amount,
         'status'  =>$Fee_pledge->status,
-        'remarks'  =>$Fee_pledge->remarks,
+        'remark'  =>$Fee_pledge->remark,
        
          ]);
         if($Fee_pledge->save()){
@@ -62,7 +61,10 @@ public function show(request $request)
     }
    public function index()
     {
-        $Fee_pledge = Fee_pledge::all();
+        $Fee_pledge = Fee_pledge::leftjoin('admission','fee_pledge.student','=','admission.admission_id')
+        ->leftjoin('setings','fee_pledge.status','=','setings.s_d')
+        ->select('pledge_date','amount','setings.key_name as status','remark',
+                 db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),'id')->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_pledge]);
     }
 
@@ -71,11 +73,10 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-            'student'       => ['required', 'string'],
+             'student'       => ['required'],
             'pledge_date'=> ['required'],
-            'amount'       => ['required', 'numeric'],
-            'status'       => ['required','string'],
-            'remarks'       => ['required','string'],
+            'amount'       => ['required'],
+            'status'       => ['required'],
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -85,7 +86,7 @@ public function update(Request $request)
          $Fee_pledge->pledge_date= $request->pledge_date;
          $Fee_pledge->amount= $request->amount;
         $Fee_pledge->status= $request->status;
-        $Fee_pledge->remarks= $request->remarks;
+        $Fee_pledge->remark= $request->remark;
 
         if($Fee_pledge->save()){
             return response()->json([

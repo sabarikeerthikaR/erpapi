@@ -83,7 +83,7 @@ public function show(request $request)
    public function index()
     {
         $Item_stock = Item_stock::join('staff','item_stock.person_responsible','=','staff.employee_id')->leftjoin('users','item_stock.added_by','=','users.id')->join('add_item','item_stock.item_name','=','add_item.item_id')
-        ->select('item_stock_id','item_stock.date','add_item.name as product','quantity','unit_price','total','receipt',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as person_responsible"),db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as added_by"))->get();
+        ->select('item_stock_id','item_stock.date','add_item.name as item_name','quantity','unit_price','total','receipt',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as person_responsible"),db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as added_by"))->get();
         return response()->json(['status' => 'Success', 'data' => $Item_stock]);
     }
 

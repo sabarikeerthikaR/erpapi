@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
     //switch student
 
     route::post('switchstudent','school\AdminController@switchStudent');
+        route::get('listStudents','school\AdminController@listStudents');
     //student dashboard
     route::get('dashboardstudent','school\DashboardController@dashboard');
     route::get('getweeklyattendance','school\DashboardController@getweeklyattendance');

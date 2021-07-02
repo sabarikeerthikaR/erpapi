@@ -17,6 +17,7 @@ class InstitutionDocsController extends Controller
 {
     public function store(Request $InstitutionDocs)
     {
+        $valiDationArray[]='';
         if($InstitutionDocs->ownership_doc)
         {
           $valiDationArray["ownership_doc"]='required|file';
@@ -118,30 +119,8 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    if($request->ownership_doc)
-    {
-      $valiDationArray["ownership_doc"]='required|file';
-    }
-    if($request->institution_certificate)
-    {
-      $valiDationArray["institution_certificate"]='required|file';
-    }
-    if($request->incorporation_certificate)
-    {
-      $valiDationArray["incorporation_certificate"]='required|file';
-    }
-    if($request->ministry_approval)
-    {
-      $valiDationArray["ministry_approval"]='required|file';
-    }
-    if($request->title_deed)
-    {
-      $valiDationArray["title_deed"]='required|file';
-    }
-    $validator =  Validator::make($request->all(),$valiDationArray); 
-     if ($validator->fails()) {
-         return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
-     }
+   
+  
      $p=$request->all();
      $id=$p['institution_id'];
      DB::enableQueryLog();
@@ -185,7 +164,7 @@ public function update(Request $request)
                     $InstitutionDocs->title_deed=$title_deed;
                     }
 
-  
+ 
        
     // $InstitutionDocs->ownership_doc= $ownership_doc;
     //    $InstitutionDocs->institution_certificate=$institution_certificate;

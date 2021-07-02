@@ -41,6 +41,8 @@ Route::group(['prefix' => 'teacher'], function () {
     route::get('StudentByclass','school\ClassAttendanceController@StudentByclass');
     route::get('classAttendanceViewforteacher','school\ClassAttendanceController@classAttendanceViewforteacher');
     route::get('AttendanceListByDate','school\ClassAttendanceController@AttendanceListByDate');
+        route::get('selectAttendance','school\ClassAttendanceController@showforSelect');
+                route::post('updateTeacher','school\ClassAttendanceController@updateTeacher');
     
     // student
     route::get('myclass','school\TeacherTimetableController@myclass');

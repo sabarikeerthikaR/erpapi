@@ -69,8 +69,14 @@ public function show(request $request)
         ->leftjoin('setings as clear','student_clearance.cleard','=','clear.s_d')
         ->leftjoin('staff as staf','student_clearance.confirmed_by','=','staf.employee_id')
         ->leftjoin('department','student_clearance.department','=','department.department_id')
-        ->select('student_clearance.date','charge',db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student")
-    ,'department.name as department','clear.key_name as clear','student','student_clearance.id',db::raw("CONCAT(staf.first_name,' ',COALESCE(staf.middle_name,''),' ',staf.last_name)as confirmed_by")
+        ->select('student_clearance.date',
+            'charge',
+            db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student")
+    ,'department.name as department',
+    'clear.key_name as clear',
+    'admission_id',
+    'student_clearance.id',
+    db::raw("CONCAT(staf.first_name,' ',COALESCE(staf.middle_name,''),' ',staf.last_name)as confirmed_by")
     ,'pending_items')
     ->get();
         return response()->json(['status' => 'Success', 'data' => $StudentClearance]);

@@ -8,7 +8,7 @@ class ExpenseItem extends Model
 {
  
      protected $fillable = [
-        'name','description'
+        'name'
     ];
     protected $table = 'expense_item';
     protected $primaryKey = 'id';

@@ -33,7 +33,6 @@ class GradingsController extends Controller
           'remark'  =>$g['remark'],
           'grading_system_id'=>$Gradings->grading_system_id,
           'created_by'=>auth::user()->id,
-          'created_on'=>date('Y-d-m'),
          ));
           if(!$Gradings->save())
           {
@@ -46,7 +45,7 @@ class GradingsController extends Controller
               return response()->json([
               'message'  => 'Gradings saved successfully',
               'grading_system_id'=>$Gradings->grading_system_id,
-              'created_by'=>'admin',
+              'created_by'=>auth::user()->id,
               'created_on'=>date('Y-d-m'),
               'data'=> $grade
                   ]);
@@ -80,7 +79,10 @@ public function show(request $request)
    public function index()
     {
         $Gradings = Gradings::join('grading_system','gradings.grading_system_id','grading_system.grading_systm_id')
-        ->select('grading_system.title as grading_system','grading_id','gradings.created_on','gradings.created_by','grading_systm_id','grading_system.description')
+        ->join('users','gradings.created_by','=','users.id')
+        ->select('grading_system.title as grading_system','grading_id','gradings.created_on',
+                 db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as created_by"),
+                 'grading_systm_id','grading_system.description')
         ->groupBy('grading_systm_id')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Gradings]);

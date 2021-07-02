@@ -270,12 +270,55 @@ public function destroy(Request $request)
         $id=$p['institution_id'];
         DB::enableQueryLog();
     $InstitutionDocs = InstitutionDocs::where('institution_id',$id)->first();
-    $InstitutionDocs->Institution_Logo= $request->Institution_Logo;
-    $InstitutionDocs->ownership_doc= $request->ownership_doc;
-       $InstitutionDocs->institution_certificate= $request->institution_certificate;
-       $InstitutionDocs->incorporation_certificate= $request->incorporation_certificate;
-       $InstitutionDocs->ministry_approval= $request->ministry_approval;
-       $InstitutionDocs->title_deed= $request->title_deed;
+    if($request->file('Institution_Logo')){
+                    $Institution_Logo= $request->file('Institution_Logo');
+                    $cerName = time() . '.' . pathinfo($Institution_Logo->getClientOriginalName(), PATHINFO_EXTENSION);
+                    Storage::disk('public_uploads')->put('/ministry-approval/' . $cerName, file_get_contents($Institution_Logo));
+                    $Institution_Logo=config('app.url').'/public/uploads/ministry-approval/' . $cerName;
+                    $InstitutionDocs->Institution_Logo=$Institution_Logo;
+                    }
+     if($request->file('ownership_doc')){
+          $ownership_doc = $request->file('ownership_doc');
+          $imgName = time() . '.' . pathinfo($ownership_doc->getClientOriginalName(), PATHINFO_EXTENSION);
+          Storage::disk('public_uploads')->put('/ownership-doc/' . $imgName, file_get_contents($ownership_doc));
+          $ownership_doc=config('app.url').'/public/uploads/ownership-doc/' . $imgName;
+          $InstitutionDocs->ownership_doc=$ownership_doc;
+          }
+          if($request->file('institution_certificate')){
+            $institution_certificate= $request->file('institution_certificate');
+            $cerName = time() . '.' . pathinfo($institution_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+            Storage::disk('public_uploads')->put('/institution-certificate/' . $cerName, file_get_contents($institution_certificate));
+            $institution_certificate=config('app.url').'/public/uploads/institution-certificate/' . $cerName;
+            $InstitutionDocs->institution_certificate=$institution_certificate;
+            }
+            if($request->file('incorporation_certificate')){
+              $incorporation_certificate = $request->file('incorporation_certificate');
+              $imgName = time() . '.' . pathinfo($incorporation_certificate->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/incorporation-certificate/' . $imgName, file_get_contents($incorporation_certificate));
+              $incorporation_certificate=config('app.url').'/public/uploads/incorporation-certificate/' . $imgName;
+              $InstitutionDocs->incorporation_certificate=$incorporation_certificate;
+              }
+              if($request->file('ministry_approval')){
+                $ministry_approval= $request->file('ministry_approval');
+                $cerName = time() . '.' . pathinfo($ministry_approval->getClientOriginalName(), PATHINFO_EXTENSION);
+                Storage::disk('public_uploads')->put('/ministry-approval/' . $cerName, file_get_contents($ministry_approval));
+                $ministry_approval=config('app.url').'/public/uploads/ministry-approval/' . $cerName;
+                $InstitutionDocs->ministry_approval=$ministry_approval;
+                }
+                if($request->file('title_deed')){
+                    $title_deed= $request->file('title_deed');
+                    $cerName = time() . '.' . pathinfo($title_deed->getClientOriginalName(), PATHINFO_EXTENSION);
+                    Storage::disk('public_uploads')->put('/ministry-approval/' . $cerName, file_get_contents($title_deed));
+                    $title_deed=config('app.url').'/public/uploads/ministry-approval/' . $cerName;
+                    $InstitutionDocs->title_deed=$title_deed;
+                    }
+
+    //$InstitutionDocs->Institution_Logo= $request->Institution_Logo;
+   // $InstitutionDocs->ownership_doc= $request->ownership_doc;
+     //  $InstitutionDocs->institution_certificate= $request->institution_certificate;
+      // $InstitutionDocs->incorporation_certificate= $request->incorporation_certificate;
+      // $InstitutionDocs->ministry_approval= $request->ministry_approval;
+       //$InstitutionDocs->title_deed= $request->title_deed;
       
        $InstitutionDocs->save();
        $ContactPerson = ContactPerson::where('institution_id',$id)->first();

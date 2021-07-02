@@ -80,22 +80,23 @@ public function show(request $request)
    }
    public function index()
     {
-        $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+        $Assignment = Assignment::leftjoin('add_stream','assignment.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->select('std_class.name as class','class_stream.name as stream','title',
     'start_date','end_date','upload_document','assignment','comment','assignment_id')->get();
         return response()->json(['status' => 'Success', 'data' => $Assignment]);
     }
 public function assignmentview(Request $request)
 {
-    $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+    $Assignment = Assignment::leftjoin('add_stream','assignment.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('users','assignment.created_by','=','users.id')
         ->where('assignment_id',$request->assignment_id)
         ->select('std_class.name as class','class_stream.name as stream','title',
     'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on',
-    'created_by')->first();
+    DB::raw("CONCAT (users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)As created_by"))->first();
     if(!empty($Assignment))
     {
         return response()->json(['status' => 'Success', 'data' => $Assignment]);
@@ -219,28 +220,29 @@ public function destroy(Request $request)
     }
     public function AssignmetShowTeacher(Request $request)
     {
-        $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('users','assignment.created_by','=','users.id')
+        $Assignment = Assignment::leftjoin('add_stream','assignment.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('users','assignment.created_by','=','users.id')
         ->where('users.staff_id',$request->staff_id)
         ->select('std_class.name as class','class_stream.name as stream','title',
     'start_date','end_date','upload_document','assignment','comment','assignment_id','add_stream.id as class_id',
     'assignment.created_at'
-    )->get();
+    )->orderBy('assignment_id', 'desc')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Assignment]);
     }
 
     public function assignmentviewteacher(Request $request)
 {
-    $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('users','assignment.created_by','=','users.id')
+    $Assignment = Assignment::leftjoin('add_stream','assignment.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('users','assignment.created_by','=','users.id')
         ->where('assignment_id',$request->assignment_id)
         ->select(DB::raw("CONCAT (users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)As created_by"),
             'std_class.name as class','class_stream.name as stream','title',
-    'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on',
+    'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on'
     )->first();
     if(!empty($Assignment))
     {
@@ -251,15 +253,17 @@ public function destroy(Request $request)
 }
 public function AssignmetShowStudent(Request $request)
 {
-    $Assignment = Assignment::join('add_stream','assignment.class','=','add_stream.id')
-    ->join('std_class','add_stream.class','=','std_class.class_id')
-    ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-    ->join('admission','add_stream.id','=','admission.class')
-    ->join('users','assignment.created_by','=','users.id')
+    $Assignment = Assignment::leftjoin('add_stream','assignment.class','=','add_stream.id')
+    ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+    ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+    ->leftjoin('admission','add_stream.id','=','admission.class')
+    ->leftjoin('users','assignment.created_by','=','users.id')
     ->where('admission.admission_id',$request->admission_id)
     ->select(DB::raw("CONCAT (users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)As created_by"),
         'std_class.name as class','class_stream.name as stream','title',
-'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on','assignment.created_at')->get();
+'start_date','end_date','upload_document','assignment','comment','assignment_id','created_on','assignment.created_at')
+    ->orderBy('assignment_id', 'desc')
+    ->get();
     return response()->json(['status' => 'Success', 'data' => $Assignment]);
 }
 }

@@ -25,6 +25,7 @@ class PastPaperController extends Controller
       	    'year' =>['required'],
             'name' => ['required'],
             'class' => ['required'],
+             'upload_paper' => ['required'],
           ]; 
           if($Past_paper->upload_paper)
         {
@@ -41,6 +42,7 @@ class PastPaperController extends Controller
         Storage::disk('public_uploads')->put('/upload_paper/' . $imgName, file_get_contents($upload_paper));
         $upload_paper=config('app.url').'/public/uploads/upload_paper/' . $imgName;
         }
+
         $Past_paper=Past_paper::create([
          'year'  =>$Past_paper->year,
          'name'  =>$Past_paper->name,

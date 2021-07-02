@@ -32,6 +32,7 @@ route::get('profile', 'school\AuthController@profile');
 //allstudents
 route::get('list_students', 'school\AdmissionController@allstudent');
 route::post('b_day', 'school\AdmissionController@birthday');
+route::get('birthdayGet', 'school\AdmissionController@birthdayGet');
 route::get('studentProfile', 'school\AdmissionController@studentProfile');
 route::get('myIdCard', 'school\AdmissionController@myIdCard');
 route::get('LeavingCart', 'school\AdmissionController@LeavingCart');
@@ -388,8 +389,6 @@ route::get('ExamResults','school\ExamController@ExamResults');
 route::post('studentMovement','school\StudentClassController@studentMovement');
 route::get('student_class','school\StudentClassController@listStudent');
 
-
-
 // student certicate
 route::post('stc_store','school\StudntCertificateController@store');
 route::get('stc_show','school\StudntCertificateController@index');
@@ -694,6 +693,7 @@ route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit
 route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
 route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+route::get('feePaymentlistview','school\FeePaymentController@feePaymentlistview');
 
 //fee extrass 
 route::post('storeFeeExtras','school\FeeExtrassController@storeFeeExtras');
@@ -937,7 +937,9 @@ route::get('teacherTimetable_show','school\TeacherTimetableController@index');
 route::post('teacherTimetable_update','school\TeacherTimetableController@update');
 route::get('teacherTimetable_destroy','school\TeacherTimetableController@destroy');
 route::get('teacherTimetable_select','school\TeacherTimetableController@show');
-
+route::get('StaffSubject','school\TeacherTimetableController@StaffSubject');
+route::post('subUnits','school\SubjectController@subUnits');
+route::get('subunitShow','school\SubjectController@subunitShow');
 
 //employee attendance
 route::post('employeAtten_store','school\EmployeeAttendanceController@store');
@@ -956,7 +958,8 @@ route::get('studentAtten_destroy','school\ClassAttendanceController@destroy');
 route::get('studentAtten_select','school\ClassAttendanceController@show');
 route::get('classAttendanceView','school\ClassAttendanceController@classAttendanceView');
 route::get('ClassStudentTeacher','school\ClassAttendanceController@ClassStudentTeacher');
-
+route::get('attendanceView','school\ClassAttendanceController@attendanceView');
+route::get('ClassStudent','school\ClassAttendanceController@ClassStudent');
 
 //discipline
 route::post('discipline_store','school\DisciplineController@store');
@@ -980,7 +983,7 @@ route::post('makeSyllabus','school\SyllabusController@makeSyllabus');
 route::get('syllabusshow','school\SyllabusController@select');
 route::post('SyllabusUpdate','school\SyllabusController@update');
 route::get('SyllabusDelete','school\SyllabusController@destroy');
-route::get('SyllabusSelect','school\SyllabusController@SyllabusShow');
+route::get('SyllabusSelect','school\SyllabusController@show');
 //route::post('requisitions_update','school\SyllabusController@update');
 
 
@@ -1025,7 +1028,7 @@ route::get('BookFundReport','school\InstitutionSetupController@BookFundReport');
 route::get('admindata','school\AdminController@Admindata');
 route::post('changePassword','school\AdminController@changePassword');
 route::post('adminupdate','school\AdminController@adminupdate');
-
+    route::post('MessageTeacher','school\SmsController@MessageTeacher');
 
 });
 
@@ -1042,6 +1045,7 @@ Route::group(["middleware"=>["auth:api"]], function () {
          route::get('ShowLeaveRequestStudent/{id}','school\LeaveRequestController@ShowLeaveRequestStudent');
          route::get('AcceptLeaveRequest/{id}','school\LeaveRequestController@AcceptLeaveRequest');
          route::post('AcceptReject','school\LeaveRequestController@AcceptReject');
+          route::get('studentLeaveAdminView','school\LeaveRequestController@studentLeaveAdminView');
      });
 
 Route::get('testCode', function () {

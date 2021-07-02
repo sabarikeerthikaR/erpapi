@@ -82,7 +82,7 @@ public function show(request $request)
         ->leftjoin('setings','enquiries.gender','=','setings.s_d')
         ->select('enquiries.date',db::raw("CONCAT(first_name,' ',last_name) as name"),
         'setings.key_name as gender','dob','enquiries.status','enquiries_option.name as know_us',
-        'std_class.name as class','class_stream.name as stream',db::raw("CONCAT(phone,'   ',email)as contacts"),
+        'std_class.name as class','class_stream.name as stream','phone','email',
         'enquiries.id')->get();
         return response()->json(['status' => 'Success', 'data' => $Enquiries]);
     }

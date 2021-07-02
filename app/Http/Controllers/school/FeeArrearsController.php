@@ -19,10 +19,10 @@ class FeeArrearsController extends Controller
     {
       $validator =  Validator::make($Fee_arrears->all(), [
    
-            'student'       => ['required', 'string'],
-            'amount'       => ['required', 'numeric'],
-            'term'       => ['required','string'],
-             'year'       => ['required', 'string'],
+            'student'       => ['required'],
+            'amount'       => ['required'],
+            'term'       => ['required'],
+             'year'       => ['required'],
 
            
 
@@ -66,7 +66,11 @@ public function show(request $request)
     }
    public function index()
     {
-        $Fee_arrears = Fee_arrears::all();
+        $Fee_arrears = Fee_arrears::join('admission','fee_arrears.student','=','admission.admission_id')
+               ->join('terms as term','fee_arrears.term','=','term.term_id')
+               ->join('setings as year','fee_arrears.year','=','year.s_d')
+               ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as student"),'term.name as term','year.key_name as year','amount','fee_arrears.id')
+               ->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_arrears]);
     }
 
@@ -75,10 +79,10 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'student'       => ['required', 'string'],
-            'amount'       => ['required', 'numeric'],
-            'term'       => ['required','string'],
-             'year'       => ['required', 'string'],
+           'student'       => ['required'],
+            'amount'       => ['required'],
+            'term'       => ['required'],
+             'year'       => ['required'],
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);

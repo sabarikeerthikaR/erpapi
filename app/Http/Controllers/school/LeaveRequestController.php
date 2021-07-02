@@ -69,7 +69,8 @@ class LeaveRequestController extends Controller
        db::raw('(CASE when accept = "1" then "Accepted"
                       when accept = "2" then "Rejected"
                        else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-        )->get();
+        )->orderBy('leave_request.id', 'desc')
+         ->get();
 
         if(!empty($getRequest)){
             return response()->json([
@@ -96,7 +97,8 @@ class LeaveRequestController extends Controller
                     db::raw('(CASE when accept = "1" then "Accepted"
                                     when accept = "2" then "Rejected"
                                     else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-                      )->get();
+                      )->orderBy('leave_request.id', 'desc')
+                        ->get();
             }
         else{
                   $getRequest=LeaveRequest::where('request_to',$id)   
@@ -107,7 +109,8 @@ class LeaveRequestController extends Controller
               db::raw('(CASE when accept = "1" then "Accepted"
                               when accept = "2" then "Rejected"
                               else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-                )->get();
+                )->orderBy('leave_request.id', 'desc')
+                  ->get();
 
            }
      
@@ -115,6 +118,29 @@ class LeaveRequestController extends Controller
         if(!empty($getRequest)){
             return response()->json([
             'data'  => $getRequest      
+            ]);
+        }else
+        {
+          return response()->json([
+         'message'  => 'No data found'  
+          ]);
+         }
+    }
+    public function studentLeaveAdminView(request $request)
+    {
+        $leave=LeaveRequest::join('admission','leave_request.request_by','=','admission.admission_id')
+        ->where('admission.class',$request->class)
+        ->select('leave_request.date','from_date','to_date','leave_request.reason',
+                  'leave_request.id as leave_request_id','admission_id',
+              db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as full_name"),
+              db::raw('(CASE when accept = "1" then "Accepted"
+                              when accept = "2" then "Rejected"
+                              else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
+                )->orderBy('leave_request.id', 'desc')
+        ->get();
+        if(!empty($leave)){
+            return response()->json([
+            'data'  => $leave      
             ]);
         }else
         {
