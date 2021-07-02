@@ -265,7 +265,6 @@ public function destroy(Request $request)
       $feedata->description=$request->description;
       $feedata->term=$request->term;
 
-     
           if($feedata->save())
           {
           return response()->json([
