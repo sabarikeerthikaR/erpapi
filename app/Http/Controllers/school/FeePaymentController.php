@@ -199,6 +199,8 @@ public function destroy(Request $request)
             db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),
             'fee_payment.date','fee_payment.description','fee.key_name as type','admission.admission_id',
             'fee_payment.id')
+            db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),'fee_payment.date','fee_payment.description',
+            'fee.key_name as type','admission.admission_id')
         ->groupBy('student')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_payment]);
@@ -270,6 +272,36 @@ public function destroy(Request $request)
           return response()->json([
           'message'  => 'feedata saved successfully',
           'data'=>$feedata,
+         $data=$request->data;
+    $errors=[];
+    foreach($data as $g)
+    {
+        $class=Admission::where('admission_id',$request->admission_id)->select('class')->first();
+          $feeAmount=Fee_structure::where('class',$class->class)->where('term',$g['term'])
+          ->select('fee_amount')->first();
+ 
+    $feedata = Fee_payment::where('student',$request->admission_id)->first();
+      
+      $feedata->date=$g['date'];
+      $feedata->amount=$g['amount'];
+      $feedata->payment_method=$g['payment_method'];
+      $feedata->transaction_no=$g['transaction_no'];
+      $feedata->bank=$g['bank'];
+      $feedata->description=$g['description'];
+      $feedata->term=$g['term'];
+      $feedata->tuition_fee=$feeAmount->fee_amount;
+ 
+      if(!$feedata->save())
+      {
+        $errors[]=$g;
+      }
+    } 
+         
+          if(count($errors)==0)
+          {
+          return response()->json([
+          'message'  => 'feedata saved successfully',
+          'data'=>$data,
          
               ]);
           }
@@ -277,6 +309,7 @@ public function destroy(Request $request)
           {
               return response()->json([
                'message'  => 'failed',
+               'errors'=>$errors
              ]);
            }
   }
