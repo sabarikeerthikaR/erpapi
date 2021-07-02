@@ -141,7 +141,7 @@ public function destroy(Request $request)
    }
    public function EmployeeMyAttendance(request $request)
    {
-          
+
        $present = EmployeeAttendance::where('employee',$request->employee)
       ->where('present',1)
       ->select('date')
@@ -153,5 +153,27 @@ public function destroy(Request $request)
       
   return response()->json(['present'=>$present,'absent'=>$absent ,'message'=>'success']);
     
+        $present = EmployeeAttendance::where('employee',$request->staff)
+            ->select('date')
+            ->get(); 
+            $holidays= Holidays::select('date')->get();
+            
+                        $fromDate= Carbon::parse('2021-01')->daysInYear;
+
+
+             $diffInDays = $holidays->diffInDays($fromDate, false);
+
+            
+        if(!empty($emp)){
+                    return response()->json([
+                    'present'  => $present,    
+                     'absent'  => $diffInDays        
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'No data found'  
+                  ]);
+                 }
    }
 }
