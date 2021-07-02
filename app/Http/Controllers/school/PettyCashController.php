@@ -19,9 +19,8 @@ class PettyCashController extends Controller
     {
       $validator =  Validator::make($Petty_cash->all(), [
             'petty_date' => ['required'],
-            'description' => ['required', 'string'],
-            'ammount'    => ['required', 'numeric'],
-            'person_responsible'  => ['required', 'string'],
+            'ammount'    => ['required'],
+            'person_responsible'  => ['required'],
             
           ]); 
          if ($validator->fails()) {
@@ -62,7 +61,10 @@ public function show(request $request)
    }
    public function index()
     {
-        $Petty_cash = Petty_cash::all();
+        $Petty_cash = Petty_cash::leftjoin('staff','petty_cash.person_responsible','=','staff.employee_id')
+        ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as person_responsible"),
+                  'petty_date','description','ammount','id')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Petty_cash]);
     }
 
@@ -71,16 +73,16 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-          'petty_date' => ['required'],
-            'description' => ['required', 'string'],
-            'ammount'    => ['required', 'numeric'],
-            'person_responsible'  => ['required', 'string'],
+         'petty_date' => ['required'],
+            'ammount'    => ['required'],
+            'person_responsible'  => ['required'],
+            
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
     $Petty_cash = Petty_cash::find($request->id);
-       $Petty_cash->petty_date= $request->title;
+       $Petty_cash->petty_date= $request->petty_date;
        $Petty_cash->description= $request->description;
        $Petty_cash->ammount= $request->ammount;
        $Petty_cash->person_responsible= $request->person_responsible;

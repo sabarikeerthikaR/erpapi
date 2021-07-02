@@ -60,9 +60,9 @@ public function show(request $request)
 
     $EmployeeAttendance = EmployeeAttendance::where('id',$request->id)
     ->leftjoin('staff','employee_attendance.employee','=','staff.employee_id')
-    ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as employee"),'present',
-             'employee_attendance.id','employee_attendance.date','employee_id')
-    ->first();
+        ->select('employee_attendance.date','present','employee_attendance.id','employee_id',
+                 DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as employee"))
+        ->first();
              if(!empty($EmployeeAttendance)){
                     return response()->json([
                     'data'  => $EmployeeAttendance      
@@ -74,10 +74,9 @@ public function show(request $request)
                   ]);
                  }
    }
-   public function index(Request $request)
+   public function index()
     {
-        $EmployeeAttendance = EmployeeAttendance::join('staff','employee_attendance.employee','=','staff.employee_id')
-        ->whereDate('date',$request->date)
+        $EmployeeAttendance = EmployeeAttendance::leftjoin('staff','employee_attendance.employee','=','staff.employee_id')
         ->select('employee_attendance.date','present','id',
                  DB::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as employee"))
         ->get();
@@ -88,6 +87,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
+        $attendance=$request->attendance;
          $EmployeeAttendance = EmployeeAttendance::find($request->id);
         $EmployeeAttendance->employee = $request->employee;
         $EmployeeAttendance->present = $request->present;
@@ -101,7 +101,6 @@ public function update(Request $request)
                  'message'  => 'failed'
                  ]);
         }
-
     }
 public function destroy(Request $request)
     {
@@ -142,16 +141,30 @@ public function destroy(Request $request)
    }
    public function EmployeeMyAttendance(request $request)
    {
-         $present = EmployeeAttendance::where('employee',$request->employee)
-      ->where('present',1)
-      ->select('date')
-      ->get(); 
-      $absent = EmployeeAttendance::where('employee',$request->employee)
-      ->where('present',0)
-      ->select('date')
-      ->get(); 
-      
-  return response()->json(['present'=>$present,'absent'=>$absent ,'message'=>'success']);
-    }
+          
+        $present = EmployeeAttendance::where('employee',$request->staff)
+            ->select('date')
+            ->get(); 
+            $holidays= Holidays::select('date')->get();
+            
+                        $fromDate= Carbon::parse('2021-01')->daysInYear;
 
+
+             $diffInDays = $holidays->diffInDays($fromDate, false);
+
+            
+        if(!empty($emp)){
+                    return response()->json([
+                    'present'  => $present,    
+                     'absent'  => $diffInDays        
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'No data found'  
+                  ]);
+                 }
+
+     
+   }
 }

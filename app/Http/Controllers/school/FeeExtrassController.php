@@ -11,6 +11,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\FeeExtrass;
+use Illuminate\Support\Facades\Auth;
 
 class FeeExtrassController extends Controller
 {

@@ -12,14 +12,15 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\ExpenseCategory;
+use App\Models\Settings;
 
 class ExpenseCategoryController extends Controller
 {
     public function store(Request $ExpenseCategory)
     {
       $validator =  Validator::make($ExpenseCategory->all(), [
-            'name' => ['required', 'string'],
-            'description' => ['required', 'string'],
+            'name' => ['required'],
+        
           ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -27,9 +28,14 @@ class ExpenseCategoryController extends Controller
         $ExpenseCategory=ExpenseCategory::create([
 
         'name'  =>$ExpenseCategory->name,
-        'description'          =>$ExpenseCategory->description,
-       
+        
          ]);
+         $settings=Settings::create([
+            'group_name'=>'expense_category',
+            'key_name'=>$ExpenseCategory->name,
+            'key_value'=>$ExpenseCategory->id,
+            ]);
+            $settings->save();
         if($ExpenseCategory->save()){
                   return response()->json([
                  'message'  => 'ExpenseCategory saved successfully',
@@ -66,17 +72,18 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'name' => ['required', 'string'],
-            'description' => ['required', 'string'],
-            
+            'name' => ['required'],
+        
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
     $ExpenseCategory = ExpenseCategory::find($request->item_id);
-        $ExpenseCategory->name= $request->title;
-        $ExpenseCategory->description= $request->description;
-                
+        $ExpenseCategory->name= $request->name;
+    
+                $settings=Settings::where('group_name','=','expense_category')->where('key_value',$request->id)->first();
+        $settings->key_name= $request->name;
+        $settings->save();
         if($ExpenseCategory->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -91,6 +98,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $ExpenseCategory = ExpenseCategory::find($request->item_id);
+         $settings=Settings::where('group_name','=','expense_category')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($ExpenseCategory))
 
                 {

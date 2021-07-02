@@ -308,10 +308,10 @@ public function destroy(Request $request)
     }
     public function ClassStudentTeacher(request $request)
     {
-      $student=Admission::join('add_stream as u','admission.class','=','u.id')
-                          ->join('staff','u.teacher','=','staff.employee_id')
-                          ->join('class_stream','u.stream','=','stream_id')
-                          ->join('std_class','u.class','=','std_class.class_id')
+      $student=Admission::leftjoin('add_stream as u','admission.class','=','u.id')
+                          ->leftjoin('staff','u.teacher','=','staff.employee_id')
+                          ->leftjoin('class_stream','u.stream','=','stream_id')
+                          ->leftjoin('std_class','u.class','=','std_class.class_id')
                           ->select(db::raw("COUNT('admission.class')as total_student"),
                           db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as teacher"),
                           'std_class.name as class','class_stream.name as stream','u.id as class_id')
