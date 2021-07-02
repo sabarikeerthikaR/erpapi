@@ -360,27 +360,46 @@ public function destroy(Request $request)
     }
     public function examReportStaffView(request $request)
     {
-       
-        $teacher=AddStream::where('add_stream.teacher',$request->staff)
+       $grade=AddStream::where('add_stream.teacher',$request->staff)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
-        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
-        ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
+        ->where('exam_mark.exam',$request->exam)
+       ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
         ->leftjoin('gradings','grading_system.grading_systm_id','=','gradings.grading_system_id')
         ->leftjoin('grade','gradings.grade','=','grade.gradings_id')
+        ->select('grade.title as grade','min_mark','max_mark',
+        'grade.remarks')
+        ->groupBy('gradings_id')
+        ->get();
+
+        $student=AddStream::where('add_stream.teacher',$request->staff)
+        ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
+        ->where('exam_mark.exam',$request->exam)
+         ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+         ->select('student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
+         ->groupBy('student')
+         ->get();
+
+
+       foreach($student as  $k => $g)
+        {
+
+        $mark=AddStream::where('add_stream.teacher',$request->staff)
+        ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
+        ->where('exam_mark.exam',$request->exam)
+        ->where('exam_mark.student',$g['student'])
+        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
         ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
         ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-       // ->whereBetween('exam_mark.total_mark',['max_mark','min_mark'])
-       ->where('exam_mark.total_mark','>=','gradings.min_mark')
-       ->where('exam_mark.total_mark','<=','gradings.max_mark')
-        ->select('exam.title as exam','subjects.name as subject',
-        db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-        'total_mark','grading_system.title as grading_system','grade.title as grade',
-        'grade.remarks')
-        ->groupBy('exam_mark.id')
+        ->select('subjects.name as subject',
+        'total_mark')
+        //->groupBy('exam_mark.id')
         ->get(); 
+    }
         return response()->json([
             'message'  => 'success',
-            'data'=>$teacher
+            'student'=> $student,
+            'mark'=>$mark,
+            'grade'=>$grade
           ]);
     }
 
@@ -406,6 +425,72 @@ public function destroy(Request $request)
             'message'  => 'success',
             'data'=>$teacher
           ]);
+    }
+    public function examList(request $request)
+    {
+        $mark=ExamMark::where('exam_mark.class',$request->class)
+                        ->where('exam_mark.subject',$request->subject)
+                        ->where('exam_mark.exam',$request->exam)
+                        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+                        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+                                 'total_mark','exam_mark.id')
+                        ->get();
+                        return response()->json([
+            'message'  => 'success',
+            'data'=>$mark
+          ]);
+
+
+    }
+    public function MarkSelectshow(request $request)
+   {
+
+    $subUnit=ExamMark::find($request->id)
+    ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+    ->select('sub_units')->first();
+    $ExamMark = ExamMark::find($request->id);
+             if(!empty($ExamMark)){
+                    return response()->json([
+                    'data'  => $ExamMark ,
+                     'subUnit'  => $subUnit          
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'No data found in this id'  
+                  ]);
+                 }
+   }
+     public function markEdit(request $request)
+    {
+         $subUnit=ExamMark::find($request->id)
+    ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+    ->select('sub_units')->first();
+        if($subUnit->sub_units==339)
+            {
+        $mark=ExamMark::find($request->id);
+         $mark->mark_one = $request->mark_one ;
+         $mark->mark_two = $request->mark_two ;
+         $mark->total_mark = $request->mark_one +  $request->mark_two;
+     }
+     else
+     {
+        $mark=ExamMark::find($request->id);
+         $mark->total_mark = $request->total_mark ;
+
+     }
+        if($mark->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $mark
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
+
+
     }
     // public function ExamCertificate(request $request)
     // {

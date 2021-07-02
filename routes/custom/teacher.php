@@ -66,6 +66,9 @@ Route::group(['prefix' => 'teacher'], function () {
         // exam
         route::get('markEntry','school\ExamController@markEntry');
         route::post('markentryPost','school\ExamController@markentryPost');
+         route::get('examList','school\ExamController@examList');
+                  route::get('markEdit','school\ExamController@markEdit');
+                  route::get('MarkSelectshow','school\ExamController@MarkSelectshow');
        
      //sms
      route::get('selectStudentForMessage','school\SmsController@selectStudentForMessage');

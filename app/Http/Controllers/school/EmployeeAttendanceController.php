@@ -141,7 +141,18 @@ public function destroy(Request $request)
    }
    public function EmployeeMyAttendance(request $request)
    {
-          
+
+       $present = EmployeeAttendance::where('employee',$request->employee)
+      ->where('present',1)
+      ->select('date')
+      ->get(); 
+      $absent = EmployeeAttendance::where('employee',$request->employee)
+      ->where('present',0)
+      ->select('date')
+      ->get(); 
+      
+  return response()->json(['present'=>$present,'absent'=>$absent ,'message'=>'success']);
+    
         $present = EmployeeAttendance::where('employee',$request->staff)
             ->select('date')
             ->get(); 
@@ -164,7 +175,5 @@ public function destroy(Request $request)
                  'message'  => 'No data found'  
                   ]);
                  }
-
-     
    }
 }
