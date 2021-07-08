@@ -198,7 +198,7 @@ public function destroy(Request $request)
         ->select(DB::raw('SUM(amount) as amount'),db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
             db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),
             'fee_payment.date','fee_payment.description','fee.key_name as type','admission.admission_id',
-            'fee_payment.id')
+            'fee_payment.id',
             db::raw("CONCAT(bank_name.name,' ',bank_account.account_no)as bank"),'fee_payment.date','fee_payment.description',
             'fee.key_name as type','admission.admission_id')
         ->groupBy('student')
@@ -267,51 +267,16 @@ public function destroy(Request $request)
       $feedata->description=$request->description;
       $feedata->term=$request->term;
 
-          if($feedata->save())
-          {
-          return response()->json([
-          'message'  => 'feedata saved successfully',
-          'data'=>$feedata,
-         $data=$request->data;
-    $errors=[];
-    foreach($data as $g)
-    {
-        $class=Admission::where('admission_id',$request->admission_id)->select('class')->first();
-          $feeAmount=Fee_structure::where('class',$class->class)->where('term',$g['term'])
-          ->select('fee_amount')->first();
- 
-    $feedata = Fee_payment::where('student',$request->admission_id)->first();
-      
-      $feedata->date=$g['date'];
-      $feedata->amount=$g['amount'];
-      $feedata->payment_method=$g['payment_method'];
-      $feedata->transaction_no=$g['transaction_no'];
-      $feedata->bank=$g['bank'];
-      $feedata->description=$g['description'];
-      $feedata->term=$g['term'];
-      $feedata->tuition_fee=$feeAmount->fee_amount;
- 
-      if(!$feedata->save())
-      {
-        $errors[]=$g;
-      }
-    } 
-         
-          if(count($errors)==0)
-          {
-          return response()->json([
-          'message'  => 'feedata saved successfully',
-          'data'=>$data,
-         
-              ]);
-          }
-          else 
-          {
-              return response()->json([
-               'message'  => 'failed',
-               'errors'=>$errors
-             ]);
-           }
+         if($feedata->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $feedata
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
   }
 
   public function OnlinePayment(request $request)

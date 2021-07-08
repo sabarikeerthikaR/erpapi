@@ -15,33 +15,49 @@ use App\Models\ExpenseDetails;
 
 class ExpenseDetailsController extends Controller
 {
-    public function store(Request $ExpenseDetails)
+    public function store(Request $request)
     {
-        
-        $expense=$ExpenseDetails->expense;
+       
+       
+        $expense=$request->expense;
         $errors=[];
         foreach($expense as $g)
         {
-         
-        
-        $ExpenseDetails = new ExpenseDetails(array(
-          'date'   =>$g['date'],
-          'title'=>$g['title'],
-          'category'=>$g['category'],  
-          'amount'  =>$g['amount'],
-          'person_responsible'   =>$g['person_responsible'],
-          'receipt'=>$g['receipt'],
-          'description'   =>$g['description'],
-         ));
-          if(!$ExpenseDetails->save())
-          {
-            $errors[]=$g;
-          }
+            if( $files=$request->file('receipt'))
+            {
+                        foreach($files as $file)
+                    {
+                     
+                        if($file){
+                        $imgName = time() . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+                        Storage::disk('public_uploads')->put('/expense_receipt/' . $imgName, file_get_contents($receipt));
+                        $receipt=config('app.url').'/public/uploads/expense_receipt/' . $imgName;
+                        }
+                    }
+
+            }
+                 $receipt='';
+                $ExpenseDetails = new ExpenseDetails(array(
+                  'date'   =>$g['date'],
+                  'title'=>$g['title'],
+                  'category'=>$g['category'],  
+                  'amount'  =>$g['amount'],
+                  'person_responsible'   =>$g['person_responsible'],
+                  'receipt'=>$receipt,
+                  'description'   =>$g['description'],
+                 ));
+                  if(!$ExpenseDetails->save())
+                  {
+                    $errors[]=$g;
+                  }
         } 
+    
+    
              
               if(count($errors)==0)
               {
               return response()->json([
+                'data'=>$expense,
               'message'  => 'ExpenseDetails saved successfully',
                   ]);
               }
@@ -84,18 +100,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
-            'date' => ['required'],
-            'title' => ['required'],
-            'category' => ['required'],
-            'amount' => ['required'],
-            'person_responsible' => ['required'],
-            'receipt' => ['required'],
-            
-        ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
+   
     $ExpenseDetails = ExpenseDetails::find($request->id);
         $ExpenseDetails->date = $request->date ;
         $ExpenseDetails->title = $request->title ;

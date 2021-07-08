@@ -7,7 +7,7 @@ class Petty_cash extends Model
 {
   
      protected $fillable = [
-        'petty_date','description','ammount', 'person_responsible'
+        'petty_date','description','ammount', 'person_responsible','created_by'
     ];
     protected $table = 'petty_cash';
     protected $primaryKey = 'id';

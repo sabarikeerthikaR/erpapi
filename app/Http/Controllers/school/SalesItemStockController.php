@@ -17,19 +17,28 @@ class SalesItemStockController extends Controller
 {
     public function store(Request $Sales_item_stock)
     {
-      $validator =  Validator::make($Sales_item_stock->all(), [
+      $valiDationArray = [
             'purchase_date' => ['required'],
-            'item' => ['required', 'string'],
-            'quantity'    => ['required', 'numeric'],
-            'unit_price' => ['required', 'numeric'],
-            'buying_price' => ['required', 'numeric'],
-            'person_responsible'    => ['required', 'string'],
-            'receipt' => ['required', 'string'],
-            'description' => ['required', 'string'],
-  
-          ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+            'item' => ['required'],
+            'quantity'    => ['required'],
+            'unit_price' => ['required'],
+            'buying_price' => ['required'],
+            'person_responsible'    => ['required'],
+          ]; 
+         if($Sales_item_stock->receipt)
+        {
+          $valiDationArray["receipt"]='required|file';
+        }
+        $validator =  Validator::make($Sales_item_stock->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $receipt='';
+        if($Sales_item_stock->file('receipt')){
+        $receipt = $Sales_item_stock->file('receipt');
+        $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+        Storage::disk('public_uploads')->put('/salesItem-stock/' . $imgName, file_get_contents($receipt));
+        $receipt=config('app.url').'/public/uploads/salesItem-stock/' . $imgName;
         }
         $Sales_item_stock=Sales_item_stock::create([
 
@@ -39,7 +48,7 @@ class SalesItemStockController extends Controller
          'unit_price'  =>$Sales_item_stock->unit_price,
         'buying_price'  =>$Sales_item_stock->buying_price,
         'person_responsible'    =>$Sales_item_stock->person_responsible,
-         'receipt'  =>$Sales_item_stock->receipt,
+         'receipt'  =>$receipt,
         'description'    =>$Sales_item_stock->description,
          
         
@@ -71,7 +80,12 @@ public function show(request $request)
    }
    public function index()
     {
-        $Sales_item_stock = Sales_item_stock::all();
+        $Sales_item_stock = Sales_item_stock::leftjoin('staff','sales_item_stock.person_responsible','=','staff.employee_id')
+        ->leftjoin('sales_item','sales_item_stock.item','=','sales_item.id')
+        ->select('purchase_date','quantity','unit_price','buying_price','receipt','sales_item_stock.description',
+                 'sales_item.item_name as item',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)person_responsible")
+                 ,'sales_item_stock.id')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Sales_item_stock]);
     }
 
@@ -79,27 +93,39 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
+    $validator = [
          'purchase_date' => ['required'],
-            'item' => ['required', 'string'],
-            'quantity'    => ['required', 'numeric'],
-            'unit_price' => ['required', 'numeric'],
-            'buying_price' => ['required', 'numeric'],
-            'person_responsible'    => ['required', 'string'],
-            'receipt' => ['required', 'string'],
-            'description' => ['required', 'string'],
-        ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+            'item' => ['required'],
+            'quantity'    => ['required'],
+            'unit_price' => ['required'],
+            'buying_price' => ['required'],
+            'person_responsible'    => ['required'],
+        ]; 
+         if($request->receipt)
+        {
+          $valiDationArray["receipt"]='required|file';
         }
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
+
     $Sales_item_stock = Sales_item_stock::find($request->id);
+
+          if($request->file('receipt')){
+              $receipt = $request->file('receipt');
+              $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/Sales_item_stock-upload-document/' . $imgName, file_get_contents($receipt));
+              $receipt=config('app.url').'/public/uploads/Sales_item_stock-upload-document/' . $imgName;
+              $Sales_item_stock->receipt=$receipt;
+              }
+
        $Sales_item_stock->purchase_date= $request->purchase_date;
        $Sales_item_stock->item= $request->item;
        $Sales_item_stock->quantity= $request->quantity;
        $Sales_item_stock->unit_price= $request->unit_price;
        $Sales_item_stock->buying_price= $request->buying_price;
        $Sales_item_stock->person_responsible = $request->description;
-       $Sales_item_stock->receipt= $request->receipt;
        $Sales_item_stock->description= $request->description;
 
         if($Sales_item_stock->save()){

@@ -149,9 +149,12 @@ public function destroy(Request $request)
    public function profile(request $request)
    {
        $id=$request->student;
-       $admission=Admission::
-       select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),
-       'admission_no','dob','class','date')->where('admission_id',$id)->first();
+       $admission=Admission::leftjoin('add_stream','admission.class','=','add_stream.id')
+       ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+       ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+       ->select(DB::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as full_name"),
+       'admission_no','dob',
+       DB::raw("CONCAT(std_class.name,' ',class_stream.name) as class"))->where('admission_id',$id)->first();
        $leaving=LeavingCertificate::select('date','headteachr_remark','curricular_activity','created_on')->where('student',$id)->first();
        if(!empty($leaving))
        {

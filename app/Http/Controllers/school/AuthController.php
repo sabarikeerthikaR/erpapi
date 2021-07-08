@@ -66,9 +66,7 @@ class AuthController extends Controller
             'first_name' => ['required'],
             'last_name' => ['required'],
             'email' => ['required', 'string', 'email','unique:users,email,'.$request->id]
-            
-            
-           
+  
         ]);
          if ($validator->fails()) {
              return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);

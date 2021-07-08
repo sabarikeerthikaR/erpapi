@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\MedicalRecords;
+use Illuminate\Support\Facades\Auth;
 
 class MedicalRecordsController extends Controller
 {

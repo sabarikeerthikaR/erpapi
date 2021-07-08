@@ -88,6 +88,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Address_book_category = Address_book_category::find($request->id);
+        $settings=Settings::where('group_name','=','address_book_category')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Address_book_category))
 
                 {

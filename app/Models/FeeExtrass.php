@@ -9,8 +9,8 @@ class FeeExtrass extends Model
 {
 
      protected $fillable = [
-        'student_id','description','select_fee','amount', 'term','year','created_by','pay_amount'
-        ,'description','bank','payment_method','transaction_no','balance'
+        'student_id','description','select_fee','amount', 'term','year','created_by'
+        ,'description'
     ];
     protected $table ='fee_extrass';
     protected $primaryKey ='id';

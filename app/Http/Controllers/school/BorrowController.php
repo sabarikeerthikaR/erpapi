@@ -89,9 +89,14 @@ public function show(request $request)
     ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
     ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->leftjoin('books','borrow.book_id','=','books.book_id')
-        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),
-        'books.title as book','borrow.borrow_date','return_date','borrow.status','remarks','b_id')->get();
-        return response()->json(['status' => 'Success', 'data' => $Borrow]);
+        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+                 db::raw("CONCAT(std_class.name,' ',class_stream.name)as class"),
+        'books.title as book','borrow.borrow_date','return_date', 
+        DB::raw('(CASE WHEN borrow.status is null 
+THEN "borrowed" 
+ELSE "book returned" END) AS 
+status_user'),'remarks','b_id')->get();
+        return response()->json(['message' => 'Success', 'data' => $Borrow]);
     }
 
 
@@ -163,11 +168,10 @@ public function destroy(Request $request)
     }
     public function addReturn(request $request)
     {
-      $p=$request->all();
-        $id=$p['admission_id'];
-        DB::enableQueryLog();
-       $Borrow = Borrow::where('admission_id',$id)->first();
-      $Borrow->book_id= $request->book_id;
+      // $p=$request->all();
+      //   $id=$p['admission_id'];
+      //   DB::enableQueryLog();
+       $Borrow = Borrow::where('b_id',$request->b_id)->first();
        $Borrow->actual_return= $request->actual_return;
       $Borrow->remarks= $request->remarks;
       $Borrow->status='book returned';

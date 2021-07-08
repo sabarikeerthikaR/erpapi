@@ -71,9 +71,9 @@ public function show(request $request)
     }
    public function index()
     {
-        $Items_manager_contact = Items_manager_contact::join('address_book','items_manager_contact.address_book','=','address_book.id')
-        ->join('address_book_category','items_manager_contact.category','=','address_book_category.id')
-        ->join('counties','items_manager_contact.country','=','counties.id')
+        $Items_manager_contact = Items_manager_contact::leftjoin('address_book','items_manager_contact.address_book','=','address_book.id')
+        ->leftjoin('address_book_category','items_manager_contact.category','=','address_book_category.id')
+        ->leftjoin('counties','items_manager_contact.country','=','counties.id')
         ->select('contact_person','items_manager_contact.email','cell_phone','telephone','website','address','counties.name','city','email',
         'items_manager_contact.id','address_book.name as address_book','company_name',
     'address_book_category.name as category','items_manager_contact.description')->get();

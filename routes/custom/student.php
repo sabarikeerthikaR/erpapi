@@ -69,7 +69,7 @@ use Illuminate\Support\Facades\Route;
     // exam
     route::get('termForExam','school\ExamController@termForExam');
     route::get('viewExamTimetableStudent','school\ExamController@viewExamTimetableStudent');
-   
+       route::get('ExamResults','school\ExamController@ExamResults');
 
     //fee payments
     route::post('feePayment_store','school\FeePaymentController@store');

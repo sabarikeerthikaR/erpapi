@@ -30,6 +30,7 @@ class LibrarySettingsController extends Controller
         'fine_per_day'  =>$Library_settings->fine_per_day,
         'book_duration' =>$Library_settings->book_duration,
         'borrow_limit'  =>$Library_settings->borrow_limit,
+        'created_by'  =>auth::user()->id
          ]);
         if($Library_settings->save()){
                   return response()->json([
@@ -58,7 +59,10 @@ public function show(request $request)
    }
    public function index()
     {
-        $Library_settings = Library_settings::all();
+        $Library_settings = Library_settings::leftjoin('users','library_settings.created_by','=','users.id')
+        ->select('library_setting_id','fine_per_day','book_duration','borrow_limit',
+                 db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as created_by"))
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Library_settings]);
     }
 

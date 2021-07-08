@@ -22,8 +22,8 @@ class DisciplineController extends Controller
     {
       $validator =  Validator::make($Discipline->all(), [
             'date' => ['required'],
-            'culprit' => ['required', 'string'],
-            'description' => ['required', 'string'],
+            'culprit' => ['required'],
+            'description' => ['required'],
             
           ]); 
           if ($validator->fails()) {
@@ -68,8 +68,10 @@ public function show(request $request)
    public function index()
     {
         $Discipline = Discipline::join('admission','discipline.culprit','=','admission.admission_id')
-        ->select('discipline.date',DB::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name_s,''),' ',admission.last_name)as student"),
-        'description as reason','discipline.status','discipline.id')->get();
+        ->select('discipline.date',
+                 DB::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name)as student"),
+        'description as reason','discipline.status','discipline.id',
+        )->get();
         return response()->json(['status' => 'Success', 'data' => $Discipline]);
     }
 

@@ -17,21 +17,33 @@ class GrantsController extends Controller
 {
    public function store(Request $Grants)
     {
-      $validator =  Validator::make($Grants->all(), [
-            'grant_type' => ['required', 'string'],
+      $valiDationArray = [
+            'grant_type' => ['required'],
             'date' => ['required'],
-            'amount'    => ['required', 'numeric'],
-            'payment_method'  => ['required', 'string'],
-             'bank_deposited' => ['required', 'string'],
-            'purpose' => ['required', 'string'],
-            'school_representative'    => ['required', 'string'],
-             'contact_person' => ['required', 'string'],
-            'contact_details' => ['required', 'string'],
+            'amount'    => ['required'],
+            'payment_method'  => ['required'],
+             'bank_deposited' => ['required'],
+            'purpose' => ['required'],
+            'school_representative'    => ['required'],
+             'contact_person' => ['required'],
+            'contact_details' => ['required'],
             
-          ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+          ]; 
+         if($Grants->add_file)
+        {
+          $valiDationArray["add_file"]='required|file';
         }
+        $validator =  Validator::make($Grants->all(),$valiDationArray); 
+        if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+        }
+        $add_file='';
+         if($Grants->file('add_file')){
+         $add_file = $Grants->file('add_file');
+         $imgName = time() . '.' . pathinfo($add_file->getClientOriginalName(), PATHINFO_EXTENSION);
+         Storage::disk('public_uploads')->put('/grants-file/' . $imgName, file_get_contents($add_file));
+         $add_file=config('app.url').'/public/uploads/grants-file/' . $imgName;
+         }
         $Grants=Grants::create([
 
         'grant_type'  =>$Grants->grant_type,
@@ -41,7 +53,7 @@ class GrantsController extends Controller
         'bank_deposited'  =>$Grants->bank_deposited,
         'purpose'   =>$Grants->purpose,
         'school_representative' =>$Grants->school_representative,
-       'add_file'  =>$Grants->add_file,
+       'add_file'  =>$add_file,
         'contact_person'    =>$Grants->contact_person,
         'contact_details'   =>$Grants->contact_details,
        
@@ -74,7 +86,14 @@ public function show(request $request)
    }
    public function index()
     {
-        $Grants = Grants::all();
+        $Grants = Grants::leftjoin('setings as grant_type','grants.grant_type','=','grant_type.s_d')
+        ->leftjoin('setings as payment_method','grants.payment_method','=','payment_method.s_d')
+        ->leftjoin('bank_account','grants.bank_deposited','=','bank_account.id')
+         ->leftjoin('setings','bank_account.bank_name','=','setings.s_d')
+        ->select('date','amount','purpose','school_representative','add_file','contact_person','contact_details',
+                 'grant_type.key_name as grant_type','payment_method.key_name as payment_method',
+                 db::raw("CONCAT(setings.key_name,' ',bank_account.account_no)as bank_deposited"),'grants.id')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Grants]);
     }
 
@@ -82,21 +101,34 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
-          'grant_type' => ['required', 'string'],
+    $valiDationArray = [
+          'grant_type' => ['required'],
             'date' => ['required'],
-            'amount'    => ['required', 'numeric'],
-            'payment_method'  => ['required', 'string'],
-             'bank_deposited' => ['required', 'string'],
-            'purpose' => ['required', 'string'],
-            'school_representative'    => ['required', 'string'],
-             'contact_person' => ['required', 'string'],
-            'contact_details' => ['required', 'string'],
-        ]); 
-         if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+            'amount'    => ['required'],
+            'payment_method'  => ['required'],
+             'bank_deposited' => ['required'],
+            'purpose' => ['required'],
+            'school_representative'    => ['required'],
+             'contact_person' => ['required'],
+            'contact_details' => ['required'],
+            
+        ]; 
+         if($request->add_file)
+        {
+          $valiDationArray["add_file"]='required|file';
         }
-    $Grants = Grants::find($request->id);
+        $validator =  Validator::make($request->all(),$valiDationArray); 
+         if ($validator->fails()) {
+             return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
+         }
+       $Grants = Grants::find($request->id);
+          if($request->file('add_file')){
+              $add_file = $request->file('add_file');
+              $imgName = time() . '.' . pathinfo($add_file->getClientOriginalName(), PATHINFO_EXTENSION);
+              Storage::disk('public_uploads')->put('/grants-file/' . $imgName, file_get_contents($add_file));
+              $add_file=config('app.url').'/public/uploads/grants-file/' . $imgName;
+              $request->add_file=$add_file;
+              }
        $Grants->grant_type= $request->grant_type;
        $Grants->date= $request->date;
        $Grants->amount= $request->amount;
@@ -104,7 +136,6 @@ public function update(Request $request)
        $Grants->bank_deposited= $request->bank_deposited;
        $Grants->purpose= $request->purpose;
        $Grants->school_representative= $request->school_representative;
-       $Grants->add_file= $request->add_file;
        $Grants->contact_person= $request->contact_person;
        $Grants->contact_details= $request->contact_details;
       

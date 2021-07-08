@@ -18,7 +18,7 @@ class AddressBookController extends Controller
    public function store(Request $Address_book)
     {
       $validator =  Validator::make($Address_book->all(), [
-            'name' => ['required', 'string'],
+            'name' => ['required'],
             
             
           ]); 
@@ -31,6 +31,12 @@ class AddressBookController extends Controller
          
        
          ]);
+         $settings=Settings::create([
+            'group_name'=>'address_book',
+            'key_name'=>$Address_book->name,
+            'key_value'=>$Address_book->id,
+            ]);
+            $settings->save();
         if($Address_book->save()){
                   return response()->json([
                  'message'  => 'Address_book saved successfully',
@@ -67,7 +73,7 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'name' => ['required', 'string'],
+           'name' => ['required'],
             
            
         ]); 
@@ -76,7 +82,9 @@ public function update(Request $request)
         }
     $Address_book = Address_book::find($request->id);
         $Address_book->name= $request->name;
-       
+        $settings=Settings::where('group_name','=','address_book')->where('key_value',$request->id)->first();
+         $settings->key_name= $request->name;
+         $settings->save();
         
         if($Address_book->save()){
             return response()->json([
@@ -92,6 +100,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Address_book = Address_book::find($request->id);
+        $settings=Settings::where('group_name','=','address_book')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Address_book))
 
                 {
