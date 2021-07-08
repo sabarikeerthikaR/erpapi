@@ -120,17 +120,30 @@ public function add_stream(Request $request)
       {
         $errors[]=$g;
       }
-  //     else{
-  //       $streams[]=$Std_classstream->id;
-  //      $streanName[]=
-  //     $settings= new Settings(array(
-  //       'group_name'=>'class_stream',
-  //       'key_name'=>$name=$class->name .' '. $Std_classstream->name,
-  //       'key_value'=>$g[$Std_classstream->id]
-  //       ));
-  //     $settings->save();
-  //  }
+  
    }
+
+   $streamClass=AddStream::where('class',$request->class)
+                           ->where('stream',$g['stream'])
+                           ->where('date',date('Y-m-d'))
+                           ->join('std_class','add_stream.class','=','std_class.class_id')
+                           ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+                           ->select('class_stream.name as stream','std_class.name as class','add_stream.id')
+                           ->get();
+
+    foreach($streamClass as $s)
+    {
+        $settings= new Settings(array(
+         'group_name'=>'class_stream',
+         'key_name'=>$s['stream'].' '.$s['class'],
+         'key_value'=>$s['id'],
+         ));
+         if(!$settings->save())
+      {
+        $errors[]=$s;
+      }
+
+    }
   
    if(count($errors)==0)
           {

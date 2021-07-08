@@ -49,7 +49,7 @@ class ExpenseCategoryController extends Controller
     }
 public function show(request $request)
    {
-   	 $ExpenseCategory = ExpenseCategory::find($request->item_id);
+   	 $ExpenseCategory = ExpenseCategory::find($request->id);
              if(!empty($ExpenseCategory)){
                     return response()->json([
                     'data'  => $ExpenseCategory      
@@ -78,10 +78,9 @@ public function update(Request $request)
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
-    $ExpenseCategory = ExpenseCategory::find($request->item_id);
+    $ExpenseCategory = ExpenseCategory::find($request->id);
         $ExpenseCategory->name= $request->name;
-    
-                $settings=Settings::where('group_name','=','expense_category')->where('key_value',$request->id)->first();
+        $settings=Settings::where('group_name','=','expense_category')->where('key_value',$request->id)->first();
         $settings->key_name= $request->name;
         $settings->save();
         if($ExpenseCategory->save()){

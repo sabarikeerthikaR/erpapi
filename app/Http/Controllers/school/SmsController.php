@@ -355,6 +355,7 @@ public function selectStaffForMessage(request $request)
     {
          if(Auth::user()->user_role==3)
          {
+            //staff
             $receiver=Auth::user()->staff_id;
             $message=Message::where('receiver',$receiver)
                            ->join('admission','message.sender','=','admission.admission_id')
@@ -366,12 +367,12 @@ public function selectStaffForMessage(request $request)
          }
          else
          {
+            //student
            $receiver=Auth::user()->admission_id;
            $message=Message::where('receiver',$receiver)
-                           ->leftjoin('staff','message.sender','=','staff.employee_id')
                            ->leftjoin('users','message.sender','=','users.id')
-                           ->select(db::raw('(CASE when user_role = "2" then "Admin"
-                       else "staff"  end) as name'),'message.created_at','message',
+                           ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                                    'message.created_at','message',
                            'message.id as message_id','replay') 
                            ->orderBy('message.id', 'desc')
                            ->get();
@@ -406,7 +407,7 @@ public function selectStaffForMessage(request $request)
          {
            $sender=Auth::user()->admission_id;
            $message=Message::where('sender',$sender)
-                           ->join('staff','message.receiver','=','staff.employee_id')
+                           ->join('users','message.receiver','=','users.id')
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id','replay') 
@@ -441,5 +442,10 @@ public function selectStaffForMessage(request $request)
                  'message'  => 'failed'
                  ]);
         }
+    }
+    public function staffMessageNotify(request $request)
+    {
+        $message=Message::where('receiver',$request->staff)->get();
+
     }
 }

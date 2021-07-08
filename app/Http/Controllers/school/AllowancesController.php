@@ -12,14 +12,15 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Allowances;
+use App\Models\Settings;
 
 class AllowancesController extends Controller
 {
     public function store(Request $Allowances)
     {
       $validator =  Validator::make($Allowances->all(), [
-            'name' => ['required', 'string'],
-            'amount' => ['required', 'numeric'],
+          
+            'amount' => ['required'],
             
             
           ]); 
@@ -32,6 +33,12 @@ class AllowancesController extends Controller
         'amount'  =>$Allowances->amount,
         
          ]);
+         $settings=Settings::create([
+            'group_name'=>'allowances',
+            'key_name'=>$Allowances->name,
+            'key_value'=>$Allowances->id,
+            ]);
+            $settings->save();
         if($Allowances->save()){
                   return response()->json([
                  'message'  => 'Allowances saved successfully',
@@ -68,8 +75,7 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-          'name' => ['required', 'string'],
-          'amount' => ['required', 'numeric'],
+         'amount' => ['required'],
             
         ]); 
          if ($validator->fails()) {
@@ -78,7 +84,9 @@ public function update(Request $request)
     $Allowances = Allowances::find($request->id);
        $Allowances->name= $request->name;
        $Allowances->amount= $request->amount;
-       
+        $settings=Settings::where('group_name','=','allowances')->where('key_value',$request->id)->first();
+        $settings->key_name= $request->name;
+        $settings->save();
       
         if($Allowances->save()){
             return response()->json([
@@ -94,6 +102,11 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Allowances = Allowances::find($request->id);
+        $settings=Settings::where('group_name','=','allowances')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Allowances))
 
                 {

@@ -9,7 +9,7 @@ class Books_category extends Model
 {
 
      protected $fillable = [
-       'name', 'description',   ];
+       'name', 'description','added_by' ];
     protected $table = 'books_category';
     protected $primaryKey = 'book_category_id';
 

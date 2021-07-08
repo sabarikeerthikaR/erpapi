@@ -473,6 +473,7 @@ route::get('fs_show','school\FeeStructureController@index');
 route::post('fs_update','school\FeeStructureController@update');
 route::get('fs_destroy','school\FeeStructureController@destroy');
 route::get('fs_select','school\FeeStructureController@show');
+route::get('OnlinePaymentTermFeeList','school\OnlinePaymentController@OnlinePaymentTermFeeList');
 
 //fee type
 route::post('ft_store','school\FeeTypeController@store');
@@ -671,7 +672,7 @@ route::post('salesItem_store','school\SalesItemController@store');
 route::get('salesItem_show','school\SalesItemController@index');
 route::post('salesItem_update','school\SalesItemController@update');
 route::get('salesItem_destroy','school\SalesItemController@destroy');
-route::get('salesItem_select','school\EmergencyContactController@show');
+route::get('salesItem_select','school\SalesItemController@show');
 
 //sales item stock
 route::post('salesItemStock_store','school\SalesItemStockController@store');
@@ -697,6 +698,10 @@ route::get('feePaymentlistview','school\FeePaymentController@feePaymentlistview'
 
 //fee extrass 
 route::post('storeFeeExtras','school\FeeExtrassController@storeFeeExtras');
+route::get('FeeExtrasShow','school\FeeExtrassController@index');
+route::post('FeeExtrasUpdate','school\FeeExtrassController@update');
+route::get('FeeExtrasDelete','school\FeeExtrassController@destroy');
+route::get('FeeExtrasSelect','school\FeeExtrassController@show');
 route::get('manageFeeExtras','school\FeeExtrassController@manageFeeExtras');
 route::get('allInvoices','school\FeeExtrassController@allInvoices');
 route::get('generateInvoice','school\FeeExtrassController@generateInvoice');

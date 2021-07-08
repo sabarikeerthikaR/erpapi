@@ -36,8 +36,8 @@ class BankAccountController extends Controller
         'branch'        =>$Bank_account->branch,
         'description'   =>$Bank_account->description,
          ]);
-        $bankName=Bank_name::where('id',$Bank_account->bank_name)
-        ->select('name')->first();
+        $bankName=Settings::where('s_d',$Bank_account->bank_name)
+        ->select('key_name')->first();
         $settings=Settings::create([
             'group_name'=>'bank_account',
             'key_name'=>$bankName->name.' '.$Bank_account->account_no,
@@ -71,7 +71,8 @@ public function show(request $request)
    }
    public function index()
     {
-        $Bank_account = Bank_account::leftjoin('bank_name','bank_account.bank_name','=','bank_name.id')->select('bank_name.name as bank_name','account_name','account_no','branch','description')->get();
+        $Bank_account = Bank_account::leftjoin('bank_name','bank_account.bank_name','=','bank_name.id')
+        ->select('bank_name.name as bank_name','account_name','account_no','branch','description','bank_account.id')->get();
         return response()->json(['status' => 'Success', 'data' => $Bank_account]);
     }
 

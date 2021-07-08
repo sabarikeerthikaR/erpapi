@@ -31,18 +31,29 @@ class HostelRoomsController extends Controller
           'room_name'=>$g['room_name'],    
           'description'=>$g['description']
          ));
-          //  $settings= new Settings(array(
-        //  'group_name'=>'hostel_room',
-        //  'key_name'=>$g['room_name'],
-        //  'key_value' =>
-        //  ));
-        //  return $settings;die;
-        //  $settings->save();
+       
           if(!$HostelRooms->save())
           {
             $errors[]=$g;
           }
         } 
+
+        $roomData=HostelRooms::where('hostel',$g['hostel'])
+                               ->where('room_name',$g['room_name'])
+                               ->where('description',$g['description'])
+                               ->select('room_name','id')
+                               ->get();
+
+        foreach($roomData as $s)
+        {
+                $settings= new Settings(array(
+         'group_name'=>'hostel_room',
+         'key_name'=>$s['room_name'],
+         'key_value' =>$s['id']
+         ));
+        
+         $settings->save();
+        }
              
               if(count($errors)==0)
               {
@@ -119,6 +130,22 @@ public function update(Request $request)
           }
 
        }
+       $roomData=HostelRooms::where('hostel',$g['hostel'])
+                               ->where('room_name',$g['room_name'])
+                               ->select('room_name','id')
+                               ->get();
+
+
+        foreach($roomData as $s)
+        {
+                $settings= new Settings(array(
+         'group_name'=>'hostel_room',
+         'key_name'=>$s['room_name'],
+         'key_value' =>$s['id']
+         ));
+        
+         $settings->save();
+        }
            if(count($errors)==0)
               {
               return response()->json([

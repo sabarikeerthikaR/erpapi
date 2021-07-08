@@ -28,7 +28,7 @@ class GiveOutBookFundController extends Controller
          
          
         $store = new Give_out_book_fund(array(
-          'remarks'   =>$g['remarks'],
+          'remark'   =>$g['remark'],
           'book'=>$g['book'],
           'borrow_date'=>$request->borrow_date,
           'student'=>$request->student,
@@ -101,7 +101,7 @@ public function update(Request $request)
         $Give_out_book_fund->borrow_date = $request->borrow_date ;
         $Give_out_book_fund->student= $request->student;
                 $Give_out_book_fund->book= $request->book;
-                 $Give_out_book_fund->remark= $request->remark;
+                 $Give_out_book_fund->remark =$request->remark;
         if($Give_out_book_fund->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -154,13 +154,10 @@ public function destroy(Request $request)
     }
     public function addReturnBookforfund(request $request)
     {
-      $p=$request->all();
-        $id=$p['student'];
-        DB::enableQueryLog();
-       $Borrow = Give_out_book_fund::where('student',$id)->first();
-      $Borrow->book= $request->book;
+     
+       $Borrow = Give_out_book_fund::where('give_out_id',$request->give_out_id)->first();
        $Borrow->return_date= $request->return_date;
-      $Borrow->remark= $request->remark;
+      $Borrow->remark = $request->remark;
       $Borrow->status='book returned';
       if($Borrow->save()){
           return response()->json([

@@ -156,9 +156,11 @@ public function destroy(Request $request)
         $studentsub=Admission::where('class',$request->class)
         ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student")
         )->get();
-        $subject=Subject::join('exam','subjects.term','=','exam.term')
+        $subject=Subject::leftjoin('exam','subjects.term','=','exam.term')
         ->where('class',$request->class)
-        ->select('name as subject','subject_id','sub_units')
+        ->select('name as subject','subject_id',
+            db::raw('(CASE when sub_units = "339" then "1"
+                       else "0"  end) as sub_units'))
         ->groupBy('subject_id')
         ->get();
         if(!empty($studentsub))
@@ -177,11 +179,11 @@ public function destroy(Request $request)
         $data=$request->data;
         $errors=[];
         $subjects=Subject::where('subject_id',$request->subject)
-        ->select('sub_units')
-        ->first();
+        ->where('sub_units',339)
+        ->count();
         foreach($data as $k => $g)
         {
-            if($subjects->sub_units==339)
+            if($subjects > 0)
             {
                 $exam1[$k]['student'] = $g['student'];
                 $exam1[$k]['mark_one'] = $g['mark_one'];
@@ -312,6 +314,7 @@ public function destroy(Request $request)
         ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
         ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$request->class)
+        ->where('exam_timetable.exam',$request->exam)
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
         'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
         ->get();
@@ -375,29 +378,29 @@ public function destroy(Request $request)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
         ->where('exam_mark.exam',$request->exam)
          ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-         ->select('student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
-         ->groupBy('student')
+         ->select('exam_mark.student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
+         ->groupBy('exam_mark.student')
          ->get();
 
 
        foreach($student as  $k => $g)
         {
 
-        $mark=AddStream::where('add_stream.teacher',$request->staff)
+        $mark[]=AddStream::where('add_stream.teacher',$request->staff)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
-        ->where('exam_mark.exam',$request->exam)
         ->where('exam_mark.student',$g['student'])
+        ->where('exam_mark.exam',$request->exam)
         ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
         ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
         ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
         ->select('subjects.name as subject',
-        'total_mark')
-        //->groupBy('exam_mark.id')
+        'total_mark',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
         ->get(); 
     }
+    $data = $student->merge($mark);
         return response()->json([
             'message'  => 'success',
-            'student'=> $student,
+            'student'=> $data,
             'mark'=>$mark,
             'grade'=>$grade
           ]);
@@ -405,25 +408,30 @@ public function destroy(Request $request)
 
      public function ExamResults(request $request)
     {
-         $teacher=ExamMark::where('exam_mark.student',$request->student)
-        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
-        ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
+         $grade=ExamMark::where('exam_mark.student',$request->student)
+         ->where('exam_mark.exam',$request->exam)
+       ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
         ->leftjoin('gradings','grading_system.grading_systm_id','=','gradings.grading_system_id')
         ->leftjoin('grade','gradings.grade','=','grade.gradings_id')
+        ->select('grade.title as grade','min_mark','max_mark',
+        'grade.remarks')
+        ->groupBy('gradings_id')
+        ->get();
+
+        $mark=ExamMark::where('exam_mark.student',$request->student)
+         ->where('exam_mark.exam',$request->exam)
+        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
         ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
         ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-       // ->whereBetween('exam_mark.total_mark',['max_mark','min_mark'])
-       ->where('exam_mark.total_mark','>=','gradings.min_mark')
-       ->where('exam_mark.total_mark','<=','gradings.max_mark')
-        ->select('exam.title as exam','subjects.name as subject',
-        db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-        'total_mark','grading_system.title as grading_system','grade.title as grade',
-        'grade.remarks')
-        ->groupBy('exam_mark.id')
+        ->select('subjects.name as subject',
+        'total_mark')
+        //->groupBy('exam_mark.id')
         ->get(); 
+
         return response()->json([
             'message'  => 'success',
-            'data'=>$teacher
+            'data'=>$mark,
+            'grade'=>$grade
           ]);
     }
     public function examList(request $request)
@@ -432,8 +440,11 @@ public function destroy(Request $request)
                         ->where('exam_mark.subject',$request->subject)
                         ->where('exam_mark.exam',$request->exam)
                         ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+                        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
                         ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-                                 'total_mark','exam_mark.id')
+                                 'total_mark','exam_mark.id',
+                             db::raw('(CASE when sub_units = "339" then "1"
+                       else "0"  end) as sub_units'))
                         ->get();
                         return response()->json([
             'message'  => 'success',
@@ -445,14 +456,31 @@ public function destroy(Request $request)
     public function MarkSelectshow(request $request)
    {
 
-    $subUnit=ExamMark::find($request->id)
+    $subUnit=ExamMark::where('id',$request->id)
     ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
-    ->select('sub_units')->first();
-    $ExamMark = ExamMark::find($request->id);
-             if(!empty($ExamMark)){
+    ->where('sub_units',339)
+    ->count(); 
+    if($subUnit > 0)
+    {
+         $ExamMark=ExamMark::where('id',$request->id)
+    ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+     ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
+                             'mark_one','mark_two','total_mark','exam_mark.id','exam_mark.student','exam_mark.subject')
+    ->first(); 
+
+    }else
+    {
+        $ExamMark=ExamMark::where('id',$request->id)
+    ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+     ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
+                              'total_mark','exam_mark.id','exam_mark.student',
+                                 'exam_mark.subject')
+    ->first(); 
+
+    }
+          if(!empty($ExamMark)){
                     return response()->json([
-                    'data'  => $ExamMark ,
-                     'subUnit'  => $subUnit          
+                    'data'  => $ExamMark          
                     ]);
                 }else
                 {
@@ -463,10 +491,12 @@ public function destroy(Request $request)
    }
      public function markEdit(request $request)
     {
-         $subUnit=ExamMark::find($request->id)
-    ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
-    ->select('sub_units')->first();
-        if($subUnit->sub_units==339)
+         $subUnit=ExamMark::where('exam_mark.id',$request->id)
+    ->join('subjects','exam_mark.subject','=','subjects.subject_id')
+        ->where('subjects.sub_units', 339)
+        ->groupBy('exam_mark.id')
+        ->count(); 
+        if($subUnit > 0)
             {
         $mark=ExamMark::find($request->id);
          $mark->mark_one = $request->mark_one ;

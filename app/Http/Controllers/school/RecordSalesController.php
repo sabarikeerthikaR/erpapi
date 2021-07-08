@@ -38,7 +38,7 @@ class RecordSalesController extends Controller
           'item'=>$g['item'],
           'quantity'=>$g['quantity'],
           'unit_price'=>$g['unit_price'],
-          'total'=>$g['total'],
+          'total'=>$g['quantity'] * $g['unit_price'],
           'transaction_no'=>$g['transaction_no'],
           'pay_method'=>$g['pay_method'],
          ));
@@ -79,7 +79,13 @@ public function show(request $request)
    }
    public function index()
     {
-        $RecordSales = RecordSales::all();
+        $RecordSales = RecordSales::leftjoin('setings','record_sales.pay_method','=','setings.s_d')
+        ->leftjoin('sales_item','record_sales.item','=','sales_item.id')
+        ->leftjoin('admission','record_sales.student','=','admission.admission_id')
+        ->select('record_sales.date','record_sales.id','quantity','unit_price','total','transaction_no',
+                  'sales_item.item_name as item','setings.key_name as pay_method',
+                  db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as student "))
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $RecordSales]);
     }
 
@@ -88,27 +94,27 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-         'date' => ['required', 'string'],
-            'student' => ['required', 'string'],
+         'date' => ['required'],
+            'student' => ['required'],
                                                            
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
-    $Hostel = Hostel::find($request->id);
-        $Hostel->date = $request->date ;
-        $Hostel->student = $request->student ;
-        $Hostel->item = $request->item ;
-        $Hostel->quantity = $request->quantity;
-         $Hostel->unit_price = $request->unit_price;
-          $Hostel->total = $request->total;
-           $Hostel->transaction_no = $request->transaction_no;
-            $Hostel->pay_method = $request->pay_method;
+    $RecordSales = RecordSales::find($request->id);
+        $RecordSales->date = $request->date ;
+        $RecordSales->student = $request->student ;
+        $RecordSales->item = $request->item ;
+        $RecordSales->quantity = $request->quantity;
+         $RecordSales->unit_price = $request->unit_price;
+          $RecordSales->total = $request->quantity * $request->unit_price ;
+           $RecordSales->transaction_no = $request->transaction_no;
+            $RecordSales->pay_method = $request->pay_method;
         
-        if($Hostel->save()){
+        if($RecordSales->save()){
             return response()->json([
                  'message'  => 'updated successfully',
-                 'data'  => $Hostel
+                 'data'  => $RecordSales
             ]);
         }else {
             return response()->json([

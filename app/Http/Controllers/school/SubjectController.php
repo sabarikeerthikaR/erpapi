@@ -61,18 +61,32 @@ class SubjectController extends Controller
           'term'   =>$g['term'],
           'class'=>$g['class'],
          ));
-        $settings=new Settings(array(
-            'group_name'=>'subject',
-            'key_name'=>$request->name,
-            'key_value'=>$request->subject_id,
-            ));
-            $settings->save();
-          if(!$Subject->save())
+
+        if(!$Subject->save())
           {
             $errors[]=$g;
           }
+     
         }  
-             
+        $SubjectGet=Subject::where('name',$request->name)
+        ->where('name',$request->name)
+        ->where('code',$request->code)
+        ->where('short_name',$request->short_name)
+        ->where('priority',$request->priority)
+        ->where('type',$request->type)
+        ->select('subject_id')->get();
+       foreach($SubjectGet as $s)
+        {
+        $settings=new Settings(array(
+            'group_name'=>'subject',
+            'key_name'=>$request->name,
+            'key_value'=>$s['subject_id'],
+            ));
+             if(!$settings->save())
+          {
+            $errors[]=$g;
+          }
+         }
               if(count($errors)==0)
               {
               return response()->json([

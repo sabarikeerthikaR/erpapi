@@ -49,7 +49,7 @@ class ExpenseItemController extends Controller
     }
 public function show(request $request)
    {
-   	 $ExpenseItem = ExpenseItem::find($request->item_id);
+   	 $ExpenseItem = ExpenseItem::find($request->id);
              if(!empty($ExpenseItem)){
                     return response()->json([
                     'data'  => $ExpenseItem      
@@ -79,7 +79,7 @@ public function update(Request $request)
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
-    $ExpenseItem = ExpenseItem::find($request->item_id);
+    $ExpenseItem = ExpenseItem::find($request->id);
         $ExpenseItem->name= $request->name;
     
                 $settings=Settings::where('group_name','=','expense_item')->where('key_value',$request->id)->first();
@@ -98,7 +98,7 @@ public function update(Request $request)
     }
 public function destroy(Request $request)
     {
-        $ExpenseItem = ExpenseItem::find($request->item_id);
+        $ExpenseItem = ExpenseItem::find($request->id);
         $settings=Settings::where('group_name','=','expense_item')->where('key_value',$request->id)->first();
         $settings->group_name=NULL;
         $settings->key_name=NULL;

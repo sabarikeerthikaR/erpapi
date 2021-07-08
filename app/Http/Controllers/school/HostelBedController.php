@@ -32,18 +32,26 @@ class HostelBedController extends Controller
           
          ));
 
-        //  $settings= new Settings(array(
-        //  'group_name'=>'bed',
-        //  'key_name'=>$g['bed_no'],
-        //  'key_value' =>
-        //  ));
-        //  return $settings;die;
-        //  $settings->save();
           if(!$HostelBed->save())
           {
             $errors[]=$g;
           }
         } 
+         $roomData=HostelBed::where('hostel_room',$g['hostel_room'])
+                               ->where('bed_no',$g['bed_no'])
+                               ->select('bed_no','id')
+                               ->get();
+
+        foreach($roomData as $s)
+        {
+                $settings= new Settings(array(
+         'group_name'=>'bed',
+         'key_name'=>$s['bed_no'],
+         'key_value' =>$s['id']
+         ));
+        
+         $settings->save();
+        }
 
              
               if(count($errors)==0)

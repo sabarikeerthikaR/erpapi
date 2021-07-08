@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Petty_cash;
+use Illuminate\Support\Facades\Auth;
 
 class PettyCashController extends Controller
 {
@@ -32,6 +33,7 @@ class PettyCashController extends Controller
         'description'  =>$Petty_cash->description,
         'ammount'    =>$Petty_cash->ammount,
         'person_responsible'        =>$Petty_cash->person_responsible,
+        'created_by'        =>auth::user()->id,
        
          ]);
         if($Petty_cash->save()){
@@ -62,8 +64,10 @@ public function show(request $request)
    public function index()
     {
         $Petty_cash = Petty_cash::leftjoin('staff','petty_cash.person_responsible','=','staff.employee_id')
-        ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as person_responsible"),
-                  'petty_date','description','ammount','id')
+        ->leftjoin('users','petty_cash.created_by','=','users.id')
+        ->select(db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as person_responsible"),
+        db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as created_by"),
+                  'petty_date','description','ammount','petty_cash.id')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Petty_cash]);
     }

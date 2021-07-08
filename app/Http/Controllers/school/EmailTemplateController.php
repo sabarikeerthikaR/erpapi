@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Email_template;
 use App\Models\Settings;
+use Illuminate\Support\Facades\Auth;
 
 class EmailTemplateController extends Controller
 {
@@ -26,6 +27,7 @@ class EmailTemplateController extends Controller
         'description'  =>$Email_template->description ,
         'email_body'  =>$Email_template->email_body ,
         'status'  =>$Email_template->status ,
+        'created_by'  =>auth::user()->id ,
         
          ]);
        
@@ -54,9 +56,12 @@ public function show(request $request)
                   ]);
                  }
    }
-   public function index()
+   public function index(request $request)
     {
-        $Email_template = Email_template::all();
+        $Email_template = Email_template::leftjoin('users','email_template.created_by','=','users.id')
+        ->select(db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as created_by"),
+           'title','slug','description','email_body','email_template.status','email_template.id')
+        ->first();
         return response()->json(['status' => 'Success', 'data' => $Email_template]);
     }
 

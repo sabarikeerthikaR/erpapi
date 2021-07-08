@@ -24,42 +24,35 @@ class RequisitionsController extends Controller
         $Requisitions_data =[];
         foreach($data as $g)
         {
-         
+
+        $Requisitions[]= array(
+         'sub_total'  =>$g['qty']*$g['unit_price'],
+        
+        );
        
-        $Requisitions_data[]=array(
+        $Requisitions_data=new Requisitions( array(
           'item'   =>$g['item'],
           'qty'=>$g['qty'],
           'unit_price'=>$g['unit_price'],  
           'sub_total'  =>$g['qty']*$g['unit_price'],
-          'created_by'=>'admin'
+          "total"=> array_sum(array_column($Requisitions,'sub_total')),
+          'created_by'=>auth::user()->id
           
-         );
+         ));
         
           
+      if(!$Requisitions_data->save())
+          {
+            $errors[]=$g;
+          }
         } 
-        $req_row=array(
-            "date"=>date("Y-m-d"),
-            "item"=>array_push($Requisitions_data,'item'),
-            "qty"=>array_push($Requisitions_data,'qty'),
-            "total"=>array_sum(array_column($Requisitions_data,'sub_total')),
-            "unit_price"=>array_push($Requisitions_data,'unit_price'),
-            "sub_total"=>array_push($Requisitions_data,'sub_total'),
-            "data"=>json_encode($Requisitions_data),
-            "created_by"=>'admin'
-        );  
-    
-    $Requisitions=new Requisitions(
-        $req_row
-
-    ); 
-        if($Requisitions->save()) 
-        {
-          
-              return response()->json([
-              'message'  => 'Requisitions saved successfully',
-              'total'=> $req_row['total'],
-              'data'=>$Requisitions
              
+              if(count($errors)==0)
+              {
+              return response()->json([
+              'message'  => 'Requisitions_data saved successfully',
+              'data'=>$Requisitions_data,
+              //'student'=>$Fee_payment->student
                   ]);
               }
               else 

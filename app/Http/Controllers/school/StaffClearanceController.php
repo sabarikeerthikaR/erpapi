@@ -79,8 +79,9 @@ public function show(request $request)
         ->leftjoin('setings as clear','staff_clearance.clear','=','clear.s_d')
         ->leftjoin('staff as staf','staff_clearance.confirmed_by','=','staf.employee_id')
         ->leftjoin('department','staff_clearance.department','=','department.department_id')
-        ->select('date','charge','comment',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as staff")
+        ->select('date','charge','comment',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as staff_name")
     ,'department.name as department','staff','clear.key_name as clear','staff_clearance.id',db::raw("CONCAT(staf.first_name,' ',COALESCE(staf.middle_name,''),' ',staf.last_name)as confirmed_by"))
+    ->groupBy('staff_clearance.staff')
     ->get();
         return response()->json(['status' => 'Success', 'data' => $StaffClearance]);
       }

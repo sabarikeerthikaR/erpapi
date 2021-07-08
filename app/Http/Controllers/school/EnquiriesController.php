@@ -78,10 +78,10 @@ public function show(request $request)
         $Enquiries = Enquiries::leftjoin('add_stream','enquiries.class','=','add_stream.id')
         ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
         ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->leftjoin('enquiries_option','enquiries.about_us','=','enquiries_option.id')
+        ->leftjoin('setings as abt','enquiries.about_us','=','abt.s_d')
         ->leftjoin('setings','enquiries.gender','=','setings.s_d')
         ->select('enquiries.date',db::raw("CONCAT(first_name,' ',last_name) as name"),
-        'setings.key_name as gender','dob','enquiries.status','enquiries_option.name as know_us',
+        'setings.key_name as gender','dob','enquiries.status','abt.key_name as know_us',
         'std_class.name as class','class_stream.name as stream','phone','email',
         'enquiries.id')->get();
         return response()->json(['status' => 'Success', 'data' => $Enquiries]);

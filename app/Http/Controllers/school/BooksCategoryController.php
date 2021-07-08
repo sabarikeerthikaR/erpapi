@@ -13,13 +13,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Books_category;
 use App\Models\Settings;
+use Illuminate\Support\Facades\Auth;
 
 class BooksCategoryController extends Controller
 {
    public function store(Request $Books_category)
     {
       $validator =  Validator::make($Books_category->all(), [
-      	    'name' =>['required','string'],
+      	    'name' =>['required'],
             
           ]); 
          if ($validator->fails()) {
@@ -28,6 +29,7 @@ class BooksCategoryController extends Controller
         $Books_category=Books_category::create([
          'name'  =>$Books_category->name,
          'description'  =>$Books_category->description,
+          'added_by'  =>auth::user()->id
         
          ]);
          $settings=Settings::create([
@@ -64,7 +66,9 @@ public function show(request $request)
    }
    public function index()
     {
-        $Books_category = Books_category::all();
+        $Books_category = Books_category::leftjoin('users','books_category.added_by','=','users.id')
+        ->select('name','description',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as added_by"),'created_on','book_category_id')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Books_category]);
     }
 

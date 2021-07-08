@@ -60,6 +60,7 @@ class LeaveRequestController extends Controller
        $id=$request->id;
        $user=Auth::user();
         $getRequest=LeaveRequest::where('request_by',$id)
+        ->whereMonth('created_at', '=', date('m'))
         ->where(function($query) use($user){
            if($user->user_role==4)
            $query->join('admission as u','users.admission_id','=','u.admission_id');

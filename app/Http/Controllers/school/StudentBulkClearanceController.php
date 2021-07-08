@@ -90,7 +90,9 @@ public function show(request $request)
         ->select('student_bulk_clearance.date','charge',db::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name)as student")
     ,'department.name as department','clear.key_name as clear','stu_clearance_id','student_bulk_clearance.admission_id',db::raw("CONCAT(staf.first_name,' ',staf.middle_name,' ',staf.last_name)as confirmed_by")
     ,'card.key_name as student_card_returned','comment')
+         ->groupBy('student_bulk_clearance.admission_id')
     ->get();
+
         return response()->json(['status' => 'Success', 'data' => $Student_bulk_clearance]);
     }
 
@@ -99,14 +101,9 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'admission_id' => ['required', 'numeric'],
-            'student_card_returned' => ['required', 'string'],
-            'department_id'    => ['required', 'numeric'],
-            'date'  => ['required'],
-            'clear'   => ['required', 'string'],
-            'charge' => ['required','string'],
-            'comment' => ['required', 'string'],
-            'staff_id'  => ['required', 'numeric']
+           'admission_id' => ['required'],
+            'department_id'    => ['required'],
+            'staff_id'  => ['required']
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -156,8 +153,11 @@ public function destroy(Request $request)
     public function view(request $request)
     {
       $id=$request->admission_id;
-      $student=Admission::select('admission_no','admission_id',Db::raw("CONCAT(first_name,'',middle_name,'',last_name)as student"),'phone','residence')->where('admission_id','=',$id)->first();
-      $clearance=Student_bulk_clearance::select('department_id','date','clear','charge','comment')->where('admission_id','=',$id)->get();
+      $student=Admission::select('admission_no','admission_id',Db::raw("CONCAT(first_name,'',middle_name,'',last_name)as student"),
+                                 'phone','residence')->where('admission_id','=',$id)->first();
+      $clearance=Student_bulk_clearance::leftjoin('department','student_bulk_clearance.department_id','=','department.department_id')
+      ->leftjoin('setings as clr','student_bulk_clearance.clear','=','clr.s_d')
+      ->select('department.name as department_id','date','clr.key_name as clear','charge','comment')->where('admission_id','=',$id)->get();
       if(!empty($student))
       {
         return response()->json([
