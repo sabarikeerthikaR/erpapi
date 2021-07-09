@@ -44,7 +44,8 @@ class FeePaymentController extends Controller
           'tuition_fee'=>$feeAmount->fee_amount,
           'term'=>$g['term'],
           'student'=>$Fee_payment->student,
-          'created_by'=>auth::user()->id
+          'created_by'=>auth::user()->id,
+          'class'=>$class->class
          ));
           if(!$Fee_payment->save())
           {
@@ -111,15 +112,20 @@ public function update(Request $request)
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
-    $Fee_payment = Fee_payment::find($request->id);
+         $Fee_payment = Fee_payment::find($request->id);
+         $class=Admission::where('admission_id',$request->student)->select('class')->first();
+          $feeAmount=Fee_structure::where('class',$class->class)->where('term',$g['term'])
+          ->select('fee_amount')->first();
+   
         $Fee_payment->date = $request->date ;
         $Fee_payment->amount = $request->amount ;
          $Fee_payment->payment_method = $request->payment_method ;
         $Fee_payment->transaction_no = $request->transaction_no ;
          $Fee_payment->bank = $request->bank ;
-         $Fee_payment->tuition_fee = $request->tuition_fee ;
+         $Fee_payment->tuition_fee = $feeAmount->fee_amount;
          $Fee_payment->student = $request->student ;
          $Fee_payment->term = $request->term ;
+         $Fee_payment->class = $class->class ;
         if($Fee_payment->save()){
             return response()->json([
                  'message'  => 'updated successfully',
