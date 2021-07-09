@@ -378,7 +378,7 @@ public function destroy(Request $request)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
         ->where('exam_mark.exam',$request->exam)
          ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-         ->select('exam_mark.student',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
+         ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
          ->groupBy('exam_mark.student')
          ->get();
 
@@ -397,11 +397,11 @@ public function destroy(Request $request)
         'total_mark',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
         ->get(); 
     }
-    $data = $student->merge($mark);
+    $marks=array_filter($mark,$student);
         return response()->json([
             'message'  => 'success',
-            'student'=> $data,
-            'mark'=>$mark,
+            //'student'=> $data,
+            'mark'=>$marks,
             'grade'=>$grade
           ]);
     }

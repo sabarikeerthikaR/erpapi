@@ -24,16 +24,13 @@ class OnlinePaymentController extends Controller
 public function OnlinePaymentTermFeeList(request $request)
 
 {
-  $feeList=Fee_payment::leftjoin('fee_structure','fee_payment.term','=','fee_structure.term')
-  ->where('student',$request->student)
-  ->where('fee_payment.tuition_fee','<=','fee_payment.amount')
-  ->select(db::raw('fee_payment.tuition_fee - fee_payment.amount as amount'),'fee_payment.term')
-  ->groupBy('fee_structure.term')  
-  ->get();
-   $termFee=Fee_structure::rightjoin('fee_payment','fee_structure.term','!=','fee_payment.term')
-  ->where('fee_payment.student',$request->student)
- // ->where('fee_payment.term','!=','fee_structure.term')
-  ->select('fee_structure.fee_amount','fee_structure.term') 
+  $feeList=Admission::where('admission_id',$request->student)
+  ->select('class')
+  ->first();
+   $termFee=Fee_payment::where('student',$request->student)
+  ->leftjoin('fee_structure','fee_payment.class','=','fee_payment.class')
+  ->select('fee_structure.fee_amount','fee_structure.term',
+            db::raw('sum(amount)as paid'),db::raw('(fee_amount - amount)as payable')) 
   ->groupBy('fee_structure.term')   
   ->get();
 
@@ -50,6 +47,11 @@ public function OnlinePaymentTermFeeList(request $request)
           'message'=>'No data found'
         ]);
       }
+}   
+public function OnlinePaymentpost(request $request)
+
+{
+ 
 }   
 
 

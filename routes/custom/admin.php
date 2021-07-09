@@ -473,7 +473,7 @@ route::get('fs_show','school\FeeStructureController@index');
 route::post('fs_update','school\FeeStructureController@update');
 route::get('fs_destroy','school\FeeStructureController@destroy');
 route::get('fs_select','school\FeeStructureController@show');
-route::get('OnlinePaymentTermFeeList','school\OnlinePaymentController@OnlinePaymentTermFeeList');
+
 
 //fee type
 route::post('ft_store','school\FeeTypeController@store');
@@ -652,6 +652,8 @@ route::get('processSalary_show','school\ProcessSalaryController@index');
 route::post('processSalary_update','school\ProcessSalaryController@update');
 route::get('processSalary_destroy','school\ProcessSalaryController@destroy');
 route::get('processSalary_select','school\ProcessSalaryController@show');
+route::get('processSalView','school\ProcessSalaryController@processSalView');
+route::get('SalEmployeeView','school\ProcessSalaryController@SalEmployeeView');
 
 //advance_salary
 route::post('advanceSalary_store','school\AdvanceSalaryController@store');
@@ -928,6 +930,7 @@ route::get('recordSales_show','school\RecordSalesController@index');
 route::post('recordSales_update','school\RecordSalesController@update');
 route::get('recordSales_destroy','school\RecordSalesController@destroy');
 route::get('recordSales_select','school\RecordSalesController@show');
+route::get('recordSalesView','school\RecordSalesController@recordSalesView');
 
 //student timetable
 route::post('studentTimetable_store','school\StudentTimetableController@store');

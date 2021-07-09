@@ -72,18 +72,10 @@ use Illuminate\Support\Facades\Route;
        route::get('ExamResults','school\ExamController@ExamResults');
 
     //fee payments
-    route::post('feePayment_store','school\FeePaymentController@store');
-    route::get('feePayment_show','school\FeePaymentController@index');
-    route::post('feePayment_update','school\FeePaymentController@update');
-    route::get('feePayment_destroy','school\FeePaymentController@destroy');
-    route::get('feePayment_select','school\FeePaymentController@show');
-    route::get('feePaymentStatusview','school\FeePaymentController@feePaymentStatusview');
-    route::get('feePaymentStatusdelete','school\FeePaymentController@feePaymentStatusdelete');
-    route::get('feePaymentlist','school\FeePaymentController@feePaymentlist');
-    route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit');
-    route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
+
     route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
     route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+route::get('OnlinePaymentTermFeeList','school\OnlinePaymentController@OnlinePaymentTermFeeList');
 
     });
     });
