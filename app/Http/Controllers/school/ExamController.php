@@ -383,8 +383,7 @@ public function destroy(Request $request)
          ->get();
 
 
-       foreach($student as  $k => $g)
-        {
+      
 
         $mark[]=AddStream::where('add_stream.teacher',$request->staff)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
@@ -396,8 +395,15 @@ public function destroy(Request $request)
         ->select('subjects.name as subject',
         'total_mark',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
         ->get(); 
-    }
-    $marks=array_filter($mark,$student);
+     $marks=[];
+     foreach($student as  $k => $g)
+     {
+           $data=array_filter($mark,function($m)use($g){
+            return($m["id"]==$g["id"]);
+           });
+           $marks[]=array("name"=>$g["name"],"data"=>$data);
+     }
+   
         return response()->json([
             'message'  => 'success',
             //'student'=> $data,
