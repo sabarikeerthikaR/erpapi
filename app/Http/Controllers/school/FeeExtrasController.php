@@ -69,8 +69,8 @@ public function show(request $request)
    }
    public function index()
     {
-        $Fee_extras = Fee_extras::join('setings as fee','fee_extras.fee_type','=','fee.s_d')
-        ->join('setings as charge','fee_extras.charged','=','charge.s_d')
+        $Fee_extras = Fee_extras::leftjoin('setings as fee','fee_extras.fee_type','=','fee.s_d')
+        ->leftjoin('setings as charge','fee_extras.charged','=','charge.s_d')
         ->select('fee.key_name as fee_type','amount','description','charge.key_name as charge','fee_extras.id','title')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Fee_extras]);

@@ -268,7 +268,7 @@ public function selectStaffForMessage(request $request)
                     $message= new Message(array(
                 
                         'sender'=>$sent_by,
-                        'receiver'=>$g['receiver'],
+                        'receiver'=>$g['admission_id'],
                         'message'=>$request->message,
                     ));
                             if(!$message->save())
@@ -356,9 +356,9 @@ public function selectStaffForMessage(request $request)
          if(Auth::user()->user_role==3)
          {
             //staff
-            $receiver=Auth::user()->staff_id;
+            $receiver=Auth::user()->id;
             $message=Message::where('receiver',$receiver)
-                           ->join('admission','message.sender','=','admission.admission_id')
+                           ->leftjoin('admission','message.sender','=','admission.admission_id')
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id') 
@@ -394,9 +394,9 @@ public function selectStaffForMessage(request $request)
     {
          if(Auth::user()->user_role==3)
          {
-            $sender=Auth::user()->staff_id;
+            $sender=Auth::user()->id;
             $message=Message::where('sender',$sender)
-                           ->join('admission','message.receiver','=','admission.admission_id')
+                           ->leftjoin('admission','message.receiver','=','admission.admission_id')
                            ->select('message.created_at','message',
                            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
                            'message.id as message_id','replay') 
@@ -407,9 +407,9 @@ public function selectStaffForMessage(request $request)
          {
            $sender=Auth::user()->admission_id;
            $message=Message::where('sender',$sender)
-                           ->join('users','message.receiver','=','users.id')
+                           ->leftjoin('users','message.receiver','=','users.staff_id')
                            ->select('message.created_at','message',
-                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name) as name"),
                            'message.id as message_id','replay') 
                            ->orderBy('message.id', 'desc')
                            ->get();

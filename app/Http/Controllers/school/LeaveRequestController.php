@@ -14,6 +14,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Auth;
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Helper;
 
 class LeaveRequestController extends Controller
 {
@@ -44,6 +45,12 @@ class LeaveRequestController extends Controller
            'request_to'=>$request_to,
              'date'=>date('Y-m-d')
          ]);
+
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id,$request_to,'leaveRequest', 'requested for leave',0);
+
+
         if($leaveRequest->save()){
             return response()->json([
            'message'  => 'leaveRequest saved successfully',
@@ -155,6 +162,10 @@ class LeaveRequestController extends Controller
         
         $leaveReq=LeaveRequest::find($request->leaveRequest_id);
         $leaveReq->accept=$request->acceptReject;
+
+        $id=auth::user()->id;
+        //activity
+        sendActivities($id,$request_to,'leaveRequest', 'leave request is accepted',0);
 
         if($leaveReq->save()){
             return response()->json([

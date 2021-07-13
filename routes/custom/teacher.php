@@ -86,6 +86,8 @@ Route::group(['prefix' => 'teacher'], function () {
     //notice board
     route::get('teachernoticeBoard','school\NoticeBoardController@teachernoticeBoard');
     
+    //activities
+    route::get('activityGet','school\ActivityController@activityGet');
     
     });
     

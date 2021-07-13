@@ -75,7 +75,7 @@ class AdvanceSalaryController extends Controller
    }
    public function index()
     {
-        $Advance_salary = Advance_salary::join('staff','advance_salary.employee','=','staff.employee_id')
+        $Advance_salary = Advance_salary::leftjoin('staff','advance_salary.employee','=','staff.employee_id')
         ->select('advance_salary.date','amount','comment','advance_salary.id',
             db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as employee"))
         ->get();

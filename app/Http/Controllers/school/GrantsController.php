@@ -22,11 +22,7 @@ class GrantsController extends Controller
             'date' => ['required'],
             'amount'    => ['required'],
             'payment_method'  => ['required'],
-             'bank_deposited' => ['required'],
-            'purpose' => ['required'],
             'school_representative'    => ['required'],
-             'contact_person' => ['required'],
-            'contact_details' => ['required'],
             
           ]; 
          if($Grants->add_file)
@@ -102,16 +98,12 @@ public function update(Request $request)
 
    {
     $valiDationArray = [
-          'grant_type' => ['required'],
-            'date' => ['required'],
-            'amount'    => ['required'],
-            'payment_method'  => ['required'],
-             'bank_deposited' => ['required'],
-            'purpose' => ['required'],
-            'school_representative'    => ['required'],
-             'contact_person' => ['required'],
-            'contact_details' => ['required'],
-            
+        'grant_type' => ['required'],
+        'date' => ['required'],
+        'amount'    => ['required'],
+        'payment_method'  => ['required'],
+        'school_representative'    => ['required'],
+        
         ]; 
          if($request->add_file)
         {
