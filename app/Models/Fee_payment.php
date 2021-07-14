@@ -9,8 +9,7 @@ class Fee_payment extends Model
 {
      
      protected $fillable = [
-        'created_by','student','date','amount', 'payment_method', 'transaction_no',
-        'bank','tuition_fee','term','description','class'
+        'created_by','student','date','amount', 'payment_method', 'transaction_no','bank','tuition_fee','term','description'
     ];
     protected $table = 'fee_payment';
     protected $primaryKey = 'id';

@@ -15,11 +15,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Syllabus;
 use App\Models\Std_class;
 use App\Models\Subject;
+use App\Helper;
 
 class SyllabusController extends Controller
 {
     public function makeSyllabus(request $request)
     {
+        $valiDationArray=[];
         if($request->file)
         {
           $valiDationArray["file"]='required|file';
@@ -151,6 +153,7 @@ public function destroy(Request $request)
 
     public function teachermakeSyllabus(request $request)
     {
+        $valiDationArray=[];
         if($request->file)
         {
           $valiDationArray["file"]='required|file';
@@ -172,9 +175,15 @@ public function destroy(Request $request)
           'class'=>$request->class,
           'subject'=>$request->subject,
           'description'=>$request->description,
-          'file'=>$file
+          'file'=>$file,
+          'created_by'=>auth::user()->id
 
         ]);
+
+        $id=auth::user()->id;
+         //activity
+         sendActivities($id, $request->class,'syllabus', 'new syllabus is uploaded',0);
+
         if($syllabus->save())
         {
             return response()->json([
@@ -196,7 +205,7 @@ public function destroy(Request $request)
         ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
         ->leftjoin('subjects','syllabus.subject','=','subjects.subject_id')
         ->leftjoin('users','syllabus.created_by','=','users.id')
-        ->where('users.staff_id',$request->staff_id)
+        ->where('syllabus.class',$request->class)
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',
         'syllabus.date','syllabus.description','file','add_stream.id as class_id','syllabus.id as syllabus_id','syllabus.created_at')
         ->get();

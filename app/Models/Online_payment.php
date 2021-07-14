@@ -4,19 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Months extends Model
+
+class Online_payment extends Model
 {
-   
-      
+ 
      protected $fillable = [
-     'name'
+        'name','email','phone','address','card_number','transaction_id'
     ];
-    protected $table = 'month';
+    protected $table = 'online_payment';
     protected $primaryKey = 'id';
 
     public function categories()
     {
-        return $this->belongsToMany('App\month');
+        return $this->belongsToMany('App\online_payment');
     } 
     public function getDateFormat()
     {

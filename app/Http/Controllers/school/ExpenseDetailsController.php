@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\ExpenseDetails;
+use Illuminate\Support\Facades\Auth;
 
 class ExpenseDetailsController extends Controller
 {
@@ -23,19 +24,14 @@ class ExpenseDetailsController extends Controller
         $errors=[];
         foreach($expense as $g)
         {
-            if( $files=$request->file('receipt'))
-            {
-                        foreach($files as $file)
-                    {
-                     
-                        if($file){
-                        $imgName = time() . '.' . pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+                  
+            if($g['receipt']){
+                        $receipt=$g['receipt'];
+                        $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
                         Storage::disk('public_uploads')->put('/expense_receipt/' . $imgName, file_get_contents($receipt));
-                        $receipt=config('app.url').'/public/uploads/expense_receipt/' . $imgName;
+                        $receipt[]=config('app.url').'/public/uploads/expense_receipt/' . $imgName;
                         }
-                    }
-
-            }
+                  
                  $receipt='';
                 $ExpenseDetails = new ExpenseDetails(array(
                   'date'   =>$g['date'],
@@ -45,6 +41,7 @@ class ExpenseDetailsController extends Controller
                   'person_responsible'   =>$g['person_responsible'],
                   'receipt'=>$receipt,
                   'description'   =>$g['description'],
+                  'created_by'   =>auth::user()->id,
                  ));
                   if(!$ExpenseDetails->save())
                   {
@@ -102,12 +99,22 @@ public function update(Request $request)
    {
    
     $ExpenseDetails = ExpenseDetails::find($request->id);
+
+     if($request->file('receipt')){
+     $receipt = $request->file('receipt');
+     $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+     Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($receipt));
+     $receipt=config('app.url').'/public/uploads/students-photo/' . $imgName;
+     $ExpenseDetails->receipt=$receipt;
+     }
+   
+    
         $ExpenseDetails->date = $request->date ;
         $ExpenseDetails->title = $request->title ;
          $ExpenseDetails->category = $request->category ;
         $ExpenseDetails->amount = $request->amount ;
          $ExpenseDetails->person_responsible = $request->person_responsible ;
-         $ExpenseDetails->receipt = $request->receipt ;
+       //  $ExpenseDetails->receipt = $request->receipt ;
          $ExpenseDetails->description = $request->description ;
         if($ExpenseDetails->save()){
             return response()->json([

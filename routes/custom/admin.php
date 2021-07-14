@@ -694,7 +694,6 @@ route::get('feePaymentStatusdelete','school\FeePaymentController@feePaymentStatu
 route::get('feePaymentlist','school\FeePaymentController@feePaymentlist');
 route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit');
 route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
-route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
 route::get('feePaymentlistview','school\FeePaymentController@feePaymentlistview');
 
@@ -1013,24 +1012,24 @@ route::get('contactdetails_destroy','school\InstitutionSetupController@destroy')
 route::get('contactdetails_select','school\InstitutionSetupController@show');
 
 //reports
-route::get('StudentHistoryreport','school\InstitutionSetupController@StudentHistoryreport');
-route::get('AdmissionReport','school\InstitutionSetupController@AdmissionReport');
-route::get('ActivitiesReport','school\InstitutionSetupController@ActivitiesReport');
-route::get('feePaymentSummery','school\InstitutionSetupController@feePaymentSummery');
-route::get('feeStatus','school\InstitutionSetupController@feeStatus');
-route::get('feeArrears','school\InstitutionSetupController@feeArrears');
-route::get('feeExtrassReport','school\InstitutionSetupController@feeExtrassReport');
-route::get('feeExtrassList','school\InstitutionSetupController@feeExtrassList');
-route::get('feePaymentReport','school\InstitutionSetupController@feePaymentReport');
-route::get('ExamReport','school\InstitutionSetupController@ExamReport');
-route::get('jointExamReport','school\InstitutionSetupController@jointExamReport');
-route::get('smsExamsReport','school\InstitutionSetupController@smsExamsReport');
-route::get('GradeAnalysis','school\InstitutionSetupController@GradeAnalysis');
-route::get('expenseSummeryReport','school\InstitutionSetupController@expenseSummeryReport');
-route::get('DetailExpensesReport','school\InstitutionSetupController@DetailExpensesReport');
-route::get('wagsReport','school\InstitutionSetupController@wagsReport');
-route::get('SchoolAssets','school\InstitutionSetupController@SchoolAssets');
-route::get('BookFundReport','school\InstitutionSetupController@BookFundReport');
+route::get('StudentHistoryreport','school\ReportController@StudentHistoryreport');
+route::get('AdmissionReport','school\ReportController@AdmissionReport');
+route::get('ActivitiesReport','school\ReportController@ActivitiesReport');
+route::get('feePaymentSummery','school\ReportController@feePaymentSummery');
+route::get('feeStatus','school\ReportController@feeStatus');
+route::get('feeArrears','school\ReportController@feeArrears');
+route::get('feeExtrassReport','school\ReportController@feeExtrassReport');
+route::get('feeExtrassList','school\ReportController@feeExtrassList');
+route::get('feePaymentReport','school\ReportController@feePaymentReport');
+route::get('ExamReport','school\ReportController@ExamReport');
+route::get('jointExamReport','school\ReportController@jointExamReport');
+route::get('smsExamsReport','school\ReportController@smsExamsReport');
+route::get('GradeAnalysis','school\ReportController@GradeAnalysis');
+route::get('expenseSummeryReport','school\ReportController@expenseSummeryReport');
+route::get('DetailExpensesReport','school\ReportController@DetailExpensesReport');
+route::get('wagsReport','school\ReportController@wagsReport');
+route::get('SchoolAssets','school\ReportController@SchoolAssets');
+route::get('BookFundReport','school\ReportController@BookFundReport');
 
 //admin
 route::get('admindata','school\AdminController@Admindata');

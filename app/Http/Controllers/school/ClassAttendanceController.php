@@ -17,6 +17,7 @@ use App\Models\StudentClass;
 use App\Models\AddStream;
 use App\Models\Std_class;
 use App\Models\Class_stream;
+use App\Helper;
 use Illuminate\Support\Facades\Auth;
 
 class ClassAttendanceController extends Controller
@@ -126,6 +127,12 @@ else
           'taken_by'=>auth::user()->id,
           'taken_on'=>date("Y-m-d"),
          )); 
+
+         //activity
+         sendActivities($ClassAttendance->taken_by, 'student','attendance', 'new attendance for student is created',0);
+
+
+
           if(!$ClassAttendance->save())
           {
             $errors[]=$g;
@@ -198,6 +205,11 @@ public function show(request $request)
     $ClassAttendance = ClassAttendance::find($request->id);
         $ClassAttendance->student = $request->student;
         $ClassAttendance->present = $request->present;
+
+       $id=auth::user()->id;
+        //activity
+        sendActivities($id, 'student','attendance', 'attendance for student is updated',0);
+
         if($ClassAttendance->save()){
             return response()->json([
                  'message'  => 'updated successfully',

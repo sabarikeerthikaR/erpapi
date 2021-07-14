@@ -21,6 +21,7 @@ use App\Models\ExamTimetable;
 use App\Models\Gradings;
 use App\Models\Subject;
 use App\Models\Terms;
+use App\Helper;
 use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
@@ -203,7 +204,10 @@ public function destroy(Request $request)
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
             }
-                    
+            $id=auth::user()->id;
+            //activity
+            sendActivities($id, 'student','mark', 'new exam mark is created',0);
+        
             
             
         }
@@ -277,8 +281,7 @@ public function destroy(Request $request)
     }
     public function termForExam()
     {
-        $term=Terms::select('terms.*',DB::raw("DATE_FORMAT(terms.from_year, '%Y-%m') as from_date"),
-        DB::raw("DATE_FORMAT(terms.to_year, '%Y-%m') as to_date"))
+        $term=Exam::select('exam_id','title')
         ->get();
         return response()->json([
             'message'  => 'success',
@@ -294,7 +297,7 @@ public function destroy(Request $request)
         ->leftjoin('admission','users.admission_id','=','admission.admission_id')
         ->leftjoin('add_stream','admission.class','=','add_stream.id')
         ->select('admission.class')->first();
-        $timetable=Exam::where('exam.term',$request->term)
+        $timetable=Exam::where('exam_id',$request->exam)
         ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
         ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$class->class)
@@ -310,8 +313,7 @@ public function destroy(Request $request)
     public function viewExamTimetableStaff(request $request)
     {
        
-        $timetable=Exam::where('exam.term',$request->term)
-        ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        $timetable=Exam::leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
         ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$request->class)
         ->where('exam_timetable.exam',$request->exam)
@@ -374,40 +376,48 @@ public function destroy(Request $request)
         ->groupBy('gradings_id')
         ->get();
 
-        $student=AddStream::where('add_stream.teacher',$request->staff)
+        $studentName=AddStream::where('add_stream.teacher',$request->staff)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
         ->where('exam_mark.exam',$request->exam)
          ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-         ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
+         ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
          ->groupBy('exam_mark.student')
          ->get();
 
 
-      
+      //$mark=[];
 
-        $mark[]=AddStream::where('add_stream.teacher',$request->staff)
+        $mark=AddStream::where('add_stream.teacher',$request->staff)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
-        ->where('exam_mark.student',$g['student'])
+        //->where('exam_mark.student',$g['student'])
         ->where('exam_mark.exam',$request->exam)
         ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
         ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
-        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-        ->select('subjects.name as subject',
-        'total_mark',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
-        ->get(); 
+        ->select('subjects.name as subject','student',
+        'total_mark')
+        ->get()->toArray(); 
+    
+    
      $marks=[];
-     foreach($student as  $k => $g)
+      
+     foreach($studentName as  $k => $g)
+
      {
-           $data=array_filter($mark,function($m)use($g){
-            return($m["id"]==$g["id"]);
+
+          $data=array_filter($mark, function($m) use ($g){
+
+            return($m['student']==$g['admission_id']);
+            //return (is_array($m) && $m['student'] == $g['admission_id']);
+           //print_r($m);
            });
+
            $marks[]=array("name"=>$g["name"],"data"=>$data);
+
      }
-   
         return response()->json([
             'message'  => 'success',
-            //'student'=> $data,
-            'mark'=>$marks,
+            // 'student'=> $data,
+           'mark'=>$marks,
             'grade'=>$grade
           ]);
     }
@@ -515,6 +525,10 @@ public function destroy(Request $request)
          $mark->total_mark = $request->total_mark ;
 
      }
+     $id=auth::user()->id;
+        //activity
+        sendActivities($id, 'student','mark', 'Exam mark is updated',0);
+
         if($mark->save()){
             return response()->json([
                  'message'  => 'updated successfully',

@@ -4,6 +4,7 @@ use App\Firebase;
 use Illuminate\Support\Facades\Log;
 use PHPMailer\PHPMailer\PHPMailer;
 use Carbon\Carbon;
+use App\Models\Activities;
 
 function apiResponseHandler($response = [], $message = '', $status = 200)
 {
@@ -521,4 +522,17 @@ function getPercentage($amount,$per)
     $out=$v/100;
     return number_format($out,2);
     
+}
+
+function sendActivities($action_performer,$action_to,$action_title,$description,$read_status)
+{
+    $activities=new Activities ([
+
+        'action_performer'  =>$action_performer ,
+        'action_to'  =>$action_to ,
+        'action_title'  =>$action_title ,
+        'description'  =>$description ,
+        'read_status'  =>$read_status ,
+         ]);
+         $activities->save();
 }

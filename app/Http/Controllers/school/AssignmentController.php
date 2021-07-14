@@ -15,6 +15,7 @@ use App\Models\Assignment;
 use App\Models\AddStream;
 use App\Models\Class_stream;
 use Illuminate\Support\Facades\Auth;
+use App\Helper;
 use App\Models\Std_class;
 class AssignmentController extends Controller
 {
@@ -53,6 +54,8 @@ class AssignmentController extends Controller
           'created_on'  =>date("Y-m-d") ,
           'created_by'  =>auth::user()->id, 
          ]);
+
+         sendActivities($Assignment->created_by, $Assignment->class,'assignment', 'assignment performend for students',0);
         if($Assignment->save()){
                   return response()->json([
                  'message'  => 'Assignment saved successfully',
@@ -63,6 +66,7 @@ class AssignmentController extends Controller
                  'message'  => 'failed'
                  ]);
           }
+
     }
 public function show(request $request)
    {
@@ -207,6 +211,10 @@ public function destroy(Request $request)
           'created_on'  =>date("Y-m-d") ,
           'created_by'  =>Auth::user()->id, 
          ]);
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id, $Assignment->class,'Assignment', 'new Assignment is uploaded',0);
+
         if($Assignment->save()){
                   return response()->json([
                  'message'  => 'Assignment saved successfully',

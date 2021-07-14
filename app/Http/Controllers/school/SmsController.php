@@ -405,11 +405,11 @@ public function selectStaffForMessage(request $request)
          }
          else
          {
-           $sender=Auth::user()->id;
+           $sender=Auth::user()->admission_id;
            $message=Message::where('sender',$sender)
-                           ->leftjoin('users','message.receiver','=','users.id')
+                           ->leftjoin('users','message.receiver','=','users.staff_id')
                            ->select('message.created_at','message',
-                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name) as name"),
                            'message.id as message_id','replay') 
                            ->orderBy('message.id', 'desc')
                            ->get();

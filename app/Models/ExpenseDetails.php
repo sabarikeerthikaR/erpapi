@@ -8,7 +8,7 @@ class ExpenseDetails extends Model
 {
 
      protected $fillable = [
-        'date','title','category', 'amount', 'person_responsible','receipt','description'
+        'date','title','category', 'amount', 'person_responsible','receipt','description','created_by'
     ];
     protected $table = 'expensedetails';
     protected $primaryKey = 'id';

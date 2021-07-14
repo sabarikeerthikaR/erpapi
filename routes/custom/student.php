@@ -73,9 +73,12 @@ use Illuminate\Support\Facades\Route;
 
     //fee payments
 
-    route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
-    route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+    route::post('OnlinePaymentpost','school\OnlinePaymentController@OnlinePaymentpost');
+    route::get('FeeStatement','school\OnlinePaymentController@FeeStatement');
 route::get('OnlinePaymentTermFeeList','school\OnlinePaymentController@OnlinePaymentTermFeeList');
+route::get('feeExtrass','school\OnlinePaymentController@feeExtrass');
+route::post('FeeExtraspost','school\OnlinePaymentController@FeeExtraspost');
+route::get('FeeExtrassStatement','school\OnlinePaymentController@FeeExtrassStatement');
 
     });
     });
