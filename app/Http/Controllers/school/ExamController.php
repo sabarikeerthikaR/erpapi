@@ -21,6 +21,7 @@ use App\Models\ExamTimetable;
 use App\Models\Gradings;
 use App\Models\Subject;
 use App\Models\Terms;
+use App\Helper;
 use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
@@ -45,7 +46,7 @@ class ExamController extends Controller
         'weight'  =>$Exam->weight ,
         'start_date'  =>$Exam->start_date ,
         'end_date'  =>$Exam->end_date ,
-        
+        'description'  =>$Exam->description ,
          ]);
          $settings= new Settings([
             'group_name'=>'Exam',
@@ -83,7 +84,7 @@ public function show(request $request)
         $Exam = Exam::join('terms','exam.term','=','terms.term_id')
         ->join('setings as year','exam.year','=','year.s_d')
         ->select('exam_id','title','weight','start_date','end_date','terms.name as term',
-    'year.key_name as year')->get();
+    'year.key_name as year','description')->get();
         return response()->json(['status' => 'Success', 'data' => $Exam]);
     }
 
@@ -108,6 +109,7 @@ public function update(Request $request)
         $Exam->weight = $request->weight ;
         $Exam->start_date = $request->start_date ;
         $Exam->end_date = $request->end_date ;
+        $Exam->description = $request->description ;
         $settings=Settings::where('group_name','=','Exam')->where('key_value',$request->exam_id)->first();
         $settings->key_name= $request->title;
         $settings->save();
@@ -153,11 +155,13 @@ public function destroy(Request $request)
     {
         $exam=$request->exam_id;
         $studentsub=Admission::where('class',$request->class)
-        ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student")
+        ->select('admission_id',db::raw("CONCAT(first_name,' ',coalesce(middle_name,''),' ',last_name)as student")
         )->get();
-        $subject=Subject::join('exam','subjects.term','=','exam.term')
+        $subject=Subject::leftjoin('exam','subjects.term','=','exam.term')
         ->where('class',$request->class)
-        ->select('name as subject','subject_id','sub_units')
+        ->select('name as subject','subject_id',
+            db::raw('(CASE when sub_units = "339" then "1"
+                       else "0"  end) as sub_units'))
         ->groupBy('subject_id')
         ->get();
         if(!empty($studentsub))
@@ -176,11 +180,11 @@ public function destroy(Request $request)
         $data=$request->data;
         $errors=[];
         $subjects=Subject::where('subject_id',$request->subject)
-        ->select('sub_units')
-        ->first();
+        ->where('sub_units',339)
+        ->count();
         foreach($data as $k => $g)
         {
-            if($subjects->sub_units==339)
+            if($subjects > 0)
             {
                 $exam1[$k]['student'] = $g['student'];
                 $exam1[$k]['mark_one'] = $g['mark_one'];
@@ -190,6 +194,7 @@ public function destroy(Request $request)
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
+                 $exam1[$k]['class']=$request->class;
             }
             else
             {
@@ -199,8 +204,12 @@ public function destroy(Request $request)
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
+                 $exam1[$k]['class']=$request->class;
             }
-                    
+            $id=auth::user()->id;
+            //activity
+            sendActivities($id, 'student','mark', 'you have created new exam mark',0);
+        
             
             
         }
@@ -274,8 +283,7 @@ public function destroy(Request $request)
     }
     public function termForExam()
     {
-        $term=Terms::select('terms.*',DB::raw("DATE_FORMAT(terms.from_year, '%Y-%m') as from_date"),
-        DB::raw("DATE_FORMAT(terms.to_year, '%Y-%m') as to_date"))
+        $term=Exam::select('exam_id','title','start_date as from_date','end_date as to_date')
         ->get();
         return response()->json([
             'message'  => 'success',
@@ -291,7 +299,7 @@ public function destroy(Request $request)
         ->leftjoin('admission','users.admission_id','=','admission.admission_id')
         ->leftjoin('add_stream','admission.class','=','add_stream.id')
         ->select('admission.class')->first();
-        $timetable=Exam::where('exam.term',$request->term)
+        $timetable=Exam::where('exam_id',$request->exam)
         ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
         ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$class->class)
@@ -307,10 +315,10 @@ public function destroy(Request $request)
     public function viewExamTimetableStaff(request $request)
     {
        
-        $timetable=Exam::where('exam.term',$request->term)
-        ->leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
+        $timetable=Exam::leftjoin('exam_timetable','exam.exam_id','=','exam_timetable.exam')
         ->leftjoin('subjects','exam_timetable.subject','=','subjects.subject_id')
         ->where('exam_timetable.class',$request->class)
+        ->where('exam_timetable.exam',$request->exam)
         ->select('exam_id','title','exam.term','exam_timetable.class','subject_id','total_mark','minimum_mark',
         'date','start_time','end_time','subjects.name as subject','exam_timetable.id')
         ->get();
@@ -359,28 +367,184 @@ public function destroy(Request $request)
     }
     public function examReportStaffView(request $request)
     {
-       
-        $teacher=AddStream::where('add_stream.teacher',$request->staff)
+       $grade=AddStream::where('add_stream.teacher',$request->staff)
         ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
-        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
-        ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
+        ->where('exam_mark.exam',$request->exam)
+       ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
         ->leftjoin('gradings','grading_system.grading_systm_id','=','gradings.grading_system_id')
         ->leftjoin('grade','gradings.grade','=','grade.gradings_id')
-        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
-        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
-       // ->whereBetween('exam_mark.total_mark',['max_mark','min_mark'])
-       ->where('exam_mark.total_mark','>=','gradings.min_mark')
-       ->where('exam_mark.total_mark','<=','gradings.max_mark')
-        ->select('exam.title as exam','subjects.name as subject',
-        db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
-        'total_mark','grading_system.title as grading_system','grade.title as grade',
+        ->select('grade.title as grade','min_mark','max_mark',
         'grade.remarks')
-        ->groupBy('exam_mark.id')
-        ->get(); 
+        ->groupBy('gradings_id')
+        ->get();
+
+        $studentName=AddStream::where('add_stream.teacher',$request->staff)
+        ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
+        ->where('exam_mark.exam',$request->exam)
+         ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+         ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))
+         ->groupBy('exam_mark.student')
+         ->get();
+
+
+      //$mark=[];
+
+        $mark=AddStream::where('add_stream.teacher',$request->staff)
+        ->leftjoin('exam_mark','add_stream.id','=','exam_mark.class')
+        //->where('exam_mark.student',$g['student'])
+        ->where('exam_mark.exam',$request->exam)
+        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
+        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+        ->select('subjects.name as subject','student',
+        'total_mark')
+        ->get()->toArray(); 
+    
+    
+     $marks=[];
+      
+     foreach($studentName as  $k => $g)
+
+     {
+
+          $data=array_filter($mark, function($m) use ($g){
+
+            return array($m['student']==$g['admission_id']);
+            //return is_array($datad)? array_values($datad): array();   
+           
+            //return (is_array($m) && $m['student'] == $g['admission_id']);
+           //print_r($m);
+           });
+
+           $marks[]=array("name"=>$g["name"],"data"=>$data);
+
+     }
         return response()->json([
             'message'  => 'success',
-            'data'=>$teacher
+            // 'student'=> $data,
+           'mark'=>$marks,
+            'grade'=>$grade
           ]);
+    }
+
+     public function ExamResults(request $request)
+    {
+         $grade=ExamMark::where('exam_mark.student',$request->student)
+         ->where('exam_mark.exam',$request->exam)
+       ->leftjoin('grading_system','exam_mark.grading_system','=','grading_system.grading_systm_id')
+        ->leftjoin('gradings','grading_system.grading_systm_id','=','gradings.grading_system_id')
+        ->leftjoin('grade','gradings.grade','=','grade.gradings_id')
+        ->select('grade.title as grade','min_mark','max_mark',
+        'grade.remarks')
+        ->groupBy('gradings_id')
+        ->get();
+
+        $mark=ExamMark::where('exam_mark.student',$request->student)
+         ->where('exam_mark.exam',$request->exam)
+        ->leftjoin('exam','exam_mark.exam','=','exam.exam_id')
+        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+        ->select('subjects.name as subject',
+        'total_mark')
+        //->groupBy('exam_mark.id')
+        ->get(); 
+
+        return response()->json([
+            'message'  => 'success',
+            'data'=>$mark,
+            'grade'=>$grade
+          ]);
+    }
+    public function examList(request $request)
+    {
+        $mark=ExamMark::where('exam_mark.class',$request->class)
+                        ->where('exam_mark.subject',$request->subject)
+                        ->where('exam_mark.exam',$request->exam)
+                        ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+                        ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+                        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+                                 'total_mark','exam_mark.id',
+                             db::raw('(CASE when sub_units = "339" then "1"
+                       else "0"  end) as sub_units'))
+                        ->get();
+                        return response()->json([
+            'message'  => 'success',
+            'data'=>$mark
+          ]);
+
+
+    }
+    public function MarkSelectshow(request $request)
+   {
+
+    $subUnit=ExamMark::where('id',$request->id)
+    ->leftjoin('subjects','exam_mark.subject','=','subjects.subject_id')
+    ->where('sub_units',339)
+    ->count(); 
+    if($subUnit > 0)
+    {
+         $ExamMark=ExamMark::where('id',$request->id)
+    ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+     ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
+                             'mark_one','mark_two','total_mark','exam_mark.id','exam_mark.student','exam_mark.subject')
+    ->first(); 
+
+    }else
+    {
+        $ExamMark=ExamMark::where('id',$request->id)
+    ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+     ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
+                              'total_mark','exam_mark.id','exam_mark.student',
+                                 'exam_mark.subject')
+    ->first(); 
+
+    }
+          if(!empty($ExamMark)){
+                    return response()->json([
+                    'data'  => $ExamMark          
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'No data found in this id'  
+                  ]);
+                 }
+   }
+     public function markEdit(request $request)
+    {
+         $subUnit=ExamMark::where('exam_mark.id',$request->id)
+    ->join('subjects','exam_mark.subject','=','subjects.subject_id')
+        ->where('subjects.sub_units', 339)
+        ->groupBy('exam_mark.id')
+        ->count(); 
+        if($subUnit > 0)
+            {
+        $mark=ExamMark::find($request->id);
+         $mark->mark_one = $request->mark_one ;
+         $mark->mark_two = $request->mark_two ;
+         $mark->total_mark = $request->mark_one +  $request->mark_two;
+     }
+     else
+     {
+        $mark=ExamMark::find($request->id);
+         $mark->total_mark = $request->total_mark ;
+
+     }
+     $id=auth::user()->id;
+        //activity
+        sendActivities($id, 'student','mark', 'you have updated exam mark',0);
+
+        if($mark->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $mark
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
+
+
     }
     // public function ExamCertificate(request $request)
     // {
@@ -403,8 +567,5 @@ public function destroy(Request $request)
         
     // }
     
-    // public function ExamResults(request $request)
-    // {
-        
-    // }
+   
 }

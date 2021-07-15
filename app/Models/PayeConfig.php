@@ -2,19 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-class StudentTimetable extends Model
+
+class PayeConfig extends Model
 {
-   
+    
      protected $fillable = [
-        'start_time','end_time','class','subject','day'
+        'Range_From','Range_To','Tax_Percentage','Taxable_Amount'
     ];
-    protected $table = 'student_timetable';
+    protected $table = 'paye_configuration';
     protected $primaryKey = 'id';
 
     public function categories()
     {
-        return $this->belongsToMany('App\student_timetable');
+        return $this->belongsToMany('App\paye_configuration');
     }
      
     public function getDateFormat()

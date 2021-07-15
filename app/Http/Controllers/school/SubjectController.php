@@ -61,17 +61,32 @@ class SubjectController extends Controller
           'term'   =>$g['term'],
           'class'=>$g['class'],
          ));
-          if(!$Subject->save())
+
+        if(!$Subject->save())
           {
             $errors[]=$g;
           }
-        }  $settings=Settings::create([
+     
+        }  
+        $SubjectGet=Subject::where('name',$request->name)
+        ->where('name',$request->name)
+        ->where('code',$request->code)
+        ->where('short_name',$request->short_name)
+        ->where('priority',$request->priority)
+        ->where('type',$request->type)
+        ->select('subject_id')->get();
+       foreach($SubjectGet as $s)
+        {
+        $settings=new Settings(array(
             'group_name'=>'subject',
             'key_name'=>$request->name,
-            'key_value'=>$request->subject_id,
-            ]);
-            $settings->save();
-             
+            'key_value'=>$s['subject_id'],
+            ));
+             if(!$settings->save())
+          {
+            $errors[]=$g;
+          }
+         }
               if(count($errors)==0)
               {
               return response()->json([
@@ -127,8 +142,49 @@ public function show(request $request)
         ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
         ->leftjoin('class_stream','add_stream.stream','=','stream_id')
         ->where('subjects.code',$request->code)
-        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->get();
-        return response()->json(['status' => 'Success', 'data' => $Subject]);
+        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->first();
+        $class = Subject::leftjoin('add_stream','subjects.class','=','add_stream.id')
+        ->leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','stream_id')
+        ->where('subjects.code',$request->code)
+        ->select('unit.key_name as sub_units','class_stream.name as stream','std_class.name as class')->get();
+        return response()->json(['status' => 'Success', 'data' => $Subject,
+                                                         'class'=>$class]);
+    }
+    public function subunitShow(request $request)
+    {
+        $subunit=Subject::where('subject_id',$request->subject_id)
+        ->select('unit_title','mark')
+        ->first();
+          if(!empty($subunit)){
+                    return response()->json([
+                    'data'  => $subunit      
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'Not yet saved'  
+                  ]);
+                 }
+
+    }
+
+    public function subUnits(request $request)
+    {
+        $subUnits=Subject::find($request->subject_id);
+        $subUnits->unit_title = $request->unit_title;
+        $subUnits->mark = $request->mark;
+         if($subUnits->save()){
+            return response()->json([
+                 'message'  => 'updated successfully',
+                 'data'  => $subUnits
+            ]);
+        }else {
+            return response()->json([
+                 'message'  => 'failed'
+                 ]);
+        }
     }
 
 
@@ -233,7 +289,7 @@ public function destroy(Request $request)
     public function listStudent(request $request)
     {
       $student=Admission::where('admission.class',$request->class_id)
-      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+      ->select(db::raw("CONCAT(first_name,' ',coalesce(middle_name,''),' ',last_name)as student"),
       'admission_id','admission.image')
      ->groupBy('admission_id')
       ->get();

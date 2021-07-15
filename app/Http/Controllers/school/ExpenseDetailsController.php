@@ -12,36 +12,49 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\ExpenseDetails;
+use Illuminate\Support\Facades\Auth;
 
 class ExpenseDetailsController extends Controller
 {
-    public function store(Request $ExpenseDetails)
+    public function store(Request $request)
     {
-        
-        $expense=$ExpenseDetails->expense;
+       
+       
+        $expense=$request->expense;
         $errors=[];
         foreach($expense as $g)
         {
-         
-        
-        $ExpenseDetails = new ExpenseDetails(array(
-          'date'   =>$g['date'],
-          'title'=>$g['title'],
-          'category'=>$g['category'],  
-          'amount'  =>$g['amount'],
-          'person_responsible'   =>$g['person_responsible'],
-          'receipt'=>$g['receipt'],
-          'description'   =>$g['description'],
-         ));
-          if(!$ExpenseDetails->save())
-          {
-            $errors[]=$g;
-          }
+                  
+            if($g['receipt']){
+                        $receipt=$g['receipt'];
+                        $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+                        Storage::disk('public_uploads')->put('/expense_receipt/' . $imgName, file_get_contents($receipt));
+                        $receipt[]=config('app.url').'/public/uploads/expense_receipt/' . $imgName;
+                        }
+                  
+                 $receipt='';
+                $ExpenseDetails = new ExpenseDetails(array(
+                  'date'   =>$g['date'],
+                  'title'=>$g['title'],
+                  'category'=>$g['category'],  
+                  'amount'  =>$g['amount'],
+                  'person_responsible'   =>$g['person_responsible'],
+                  'receipt'=>$receipt,
+                  'description'   =>$g['description'],
+                  'created_by'   =>auth::user()->id,
+                 ));
+                  if(!$ExpenseDetails->save())
+                  {
+                    $errors[]=$g;
+                  }
         } 
+    
+    
              
               if(count($errors)==0)
               {
               return response()->json([
+                'data'=>$expense,
               'message'  => 'ExpenseDetails saved successfully',
                   ]);
               }
@@ -71,7 +84,12 @@ public function show(request $request)
    }
    public function index()
     {
-        $ExpenseDetails = ExpenseDetails::all();
+        $ExpenseDetails = ExpenseDetails::leftjoin('staff','expensedetails.person_responsible','=','staff.employee_id')
+        ->leftjoin('expense_item','expensedetails.title','=','expense_item.id')
+        ->leftjoin('expense_category','expensedetails.category','=','expense_category.id')
+        ->select('expensedetails.date','amount','receipt','expensedetails.description','expense_item.name as title',
+                 'expense_category.name as category',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as person_responsible"))
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $ExpenseDetails]);
     }
 
@@ -79,26 +97,24 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator =  Validator::make($request->all(), [
-            'date' => ['required', 'string'],
-            'title' => ['required', 'string'],
-            'category' => ['required', 'string'],
-            'amount' => ['required', 'string'],
-            'person_responsible' => ['required', 'string'],
-            'receipt' => ['required', 'string'],
-            'description' => ['required', 'string'],
-          
-        ]); 
-          if ($validator->fails()) {
-            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
-        }
+   
     $ExpenseDetails = ExpenseDetails::find($request->id);
+
+     if($request->file('receipt')){
+     $receipt = $request->file('receipt');
+     $imgName = time() . '.' . pathinfo($receipt->getClientOriginalName(), PATHINFO_EXTENSION);
+     Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($receipt));
+     $receipt=config('app.url').'/public/uploads/students-photo/' . $imgName;
+     $ExpenseDetails->receipt=$receipt;
+     }
+   
+    
         $ExpenseDetails->date = $request->date ;
         $ExpenseDetails->title = $request->title ;
          $ExpenseDetails->category = $request->category ;
         $ExpenseDetails->amount = $request->amount ;
          $ExpenseDetails->person_responsible = $request->person_responsible ;
-         $ExpenseDetails->receipt = $request->receipt ;
+       //  $ExpenseDetails->receipt = $request->receipt ;
          $ExpenseDetails->description = $request->description ;
         if($ExpenseDetails->save()){
             return response()->json([

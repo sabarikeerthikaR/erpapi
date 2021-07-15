@@ -15,11 +15,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Syllabus;
 use App\Models\Std_class;
 use App\Models\Subject;
+use App\Helper;
 
 class SyllabusController extends Controller
 {
     public function makeSyllabus(request $request)
     {
+        $valiDationArray=[];
         if($request->file)
         {
           $valiDationArray["file"]='required|file';
@@ -60,10 +62,10 @@ class SyllabusController extends Controller
     }
     public function select(request $request)
     {
-        $syllabs=Syllabus::join('add_stream','syllabus.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('subjects','syllabus.subject','=','subjects.subject_id')
+        $syllabs=Syllabus::leftjoin('add_stream','syllabus.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('subjects','syllabus.subject','=','subjects.subject_id')
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',
         'syllabus.date','syllabus.description','syllabus.file','syllabus.id')
         ->get();
@@ -72,6 +74,20 @@ class SyllabusController extends Controller
             'data'=>$syllabs
         ]);
     }
+    public function show(request $request)
+   {
+     $syllabs = Syllabus::find($request->id);
+             if(!empty($syllabs)){
+                    return response()->json([
+                    'data'  => $syllabs      
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'No data found in this id'  
+                  ]);
+                 }
+   }
     public function update(Request $request)
 
    {
@@ -137,6 +153,7 @@ public function destroy(Request $request)
 
     public function teachermakeSyllabus(request $request)
     {
+        $valiDationArray=[];
         if($request->file)
         {
           $valiDationArray["file"]='required|file';
@@ -158,9 +175,15 @@ public function destroy(Request $request)
           'class'=>$request->class,
           'subject'=>$request->subject,
           'description'=>$request->description,
-          'file'=>$file
+          'file'=>$file,
+          'created_by'=>auth::user()->id
 
         ]);
+
+        $id=auth::user()->id;
+         //activity
+         sendActivities($id, $request->class,'syllabus', 'you have uploaded new syllabus',0);
+
         if($syllabus->save())
         {
             return response()->json([
@@ -177,12 +200,12 @@ public function destroy(Request $request)
     }
     public function teacherselectsyllabus(request $request)
     {
-        $syllabs=Syllabus::join('add_stream','syllabus.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('subjects','syllabus.subject','=','subjects.subject_id')
-        ->join('users','syllabus.created_by','=','users.id')
-        ->where('users.staff_id',$request->staff_id)
+        $syllabs=Syllabus::leftjoin('add_stream','syllabus.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('subjects','syllabus.subject','=','subjects.subject_id')
+        ->leftjoin('users','syllabus.created_by','=','users.id')
+        ->where('syllabus.class',$request->class)
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',
         'syllabus.date','syllabus.description','file','add_stream.id as class_id','syllabus.id as syllabus_id','syllabus.created_at')
         ->get();
@@ -194,11 +217,11 @@ public function destroy(Request $request)
 
     public function studentselectsyllabus(request $request)
     {
-        $syllabs=Syllabus::join('add_stream','syllabus.class','=','add_stream.id')
-        ->join('admission','syllabus.class','=','admission.class')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('subjects','syllabus.subject','=','subjects.subject_id')
+        $syllabs=Syllabus::leftjoin('add_stream','syllabus.class','=','add_stream.id')
+        ->leftjoin('admission','syllabus.class','=','admission.class')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('subjects','syllabus.subject','=','subjects.subject_id')
         ->where('admission.admission_id',$request->admission_id)
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',
         'syllabus.date','syllabus.description','file','syllabus.created_at')

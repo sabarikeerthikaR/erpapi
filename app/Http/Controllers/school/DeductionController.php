@@ -12,14 +12,15 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Deduction;
+use App\Models\Settings;
 
 class DeductionController extends Controller
 {
      public function store(Request $Deduction)
     {
       $validator =  Validator::make($Deduction->all(), [
-            'name' => ['required', 'string'],
-            'amount' => ['required', 'numeric'],
+            
+            'amount' => ['required'],
    
           ]); 
          if ($validator->fails()) {
@@ -32,6 +33,12 @@ class DeductionController extends Controller
        
        
          ]);
+         $settings=Settings::create([
+            'group_name'=>'deduction',
+            'key_name'=>$Deduction->name,
+            'key_value'=>$Deduction->id,
+            ]);
+            $settings->save();
         if($Deduction->save()){
                   return response()->json([
                  'message'  => 'Deduction saved successfully',
@@ -68,9 +75,9 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'name' => ['required', 'string'],
-            'amount' => ['required', 'string'],
-           
+              
+            'amount' => ['required'],
+   
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -78,7 +85,9 @@ public function update(Request $request)
     $Deduction = Deduction::find($request->id);
        $Deduction->name= $request->name;
        $Deduction->amount= $request->amount;
-      
+       $settings=Settings::where('group_name','=','deduction')->where('key_value',$request->id)->first();
+        $settings->key_name= $request->name;
+        $settings->save();
         if($Deduction->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -93,13 +102,18 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Deduction = Deduction::find($request->id);
+         $settings=Settings::where('group_name','=','deduction')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Deduction))
 
                 {
                   if($Deduction->delete()){
                   return response()->json([
                   'message'  => 'successfully deleted'
-                   ]);
+                   ]);  
                }else {
                   return response()->json([
                   'message'  => 'failed'

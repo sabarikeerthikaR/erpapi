@@ -32,6 +32,7 @@ route::get('profile', 'school\AuthController@profile');
 //allstudents
 route::get('list_students', 'school\AdmissionController@allstudent');
 route::post('b_day', 'school\AdmissionController@birthday');
+route::get('birthdayGet', 'school\AdmissionController@birthdayGet');
 route::get('studentProfile', 'school\AdmissionController@studentProfile');
 route::get('myIdCard', 'school\AdmissionController@myIdCard');
 route::get('LeavingCart', 'school\AdmissionController@LeavingCart');
@@ -388,8 +389,6 @@ route::get('ExamResults','school\ExamController@ExamResults');
 route::post('studentMovement','school\StudentClassController@studentMovement');
 route::get('student_class','school\StudentClassController@listStudent');
 
-
-
 // student certicate
 route::post('stc_store','school\StudntCertificateController@store');
 route::get('stc_show','school\StudntCertificateController@index');
@@ -474,6 +473,7 @@ route::get('fs_show','school\FeeStructureController@index');
 route::post('fs_update','school\FeeStructureController@update');
 route::get('fs_destroy','school\FeeStructureController@destroy');
 route::get('fs_select','school\FeeStructureController@show');
+
 
 //fee type
 route::post('ft_store','school\FeeTypeController@store');
@@ -613,6 +613,7 @@ route::post('pettyCash_update','school\PettyCashController@update');
 route::get('pettyCash_destroy','school\PettyCashController@destroy');
 route::get('pettyCash_select','school\PettyCashController@show');
 
+
 //grants
 route::post('grants_store','school\GrantsController@store');
 route::get('grants_show','school\GrantsController@index');
@@ -634,10 +635,11 @@ route::post('addEmpSal_update','school\AddEmpSalController@update');
 route::get('addEmpSal_destroy','school\AddEmpSalController@destroy');
 route::get('addEmpSal_select','school\AddEmpSalController@show');
 route::get('addEmpSal_select','school\AddEmpSalController@show');
-route::get('payrollConfig','school\AddEmpSalController@payrollConfig');
-route::post('payrollConfigedit','school\AddEmpSalController@payrollConfigedit');
-route::get('payrollConfigdelete','school\AddEmpSalController@payrollConfigdelete');
-route::get('payrollConfigselect','school\AddEmpSalController@payrollConfigselect');
+
+route::get('payrollConfig','school\PayConfigController@index');
+route::post('payrollConfigedit','school\PayConfigController@update');
+route::get('payrollConfigdelete','school\PayConfigController@payrollConfigdelete');
+route::get('payrollConfigselect','school\PayConfigController@show');
 
 //deduction
 route::post('deduction_store','school\DeductionController@store');
@@ -652,6 +654,8 @@ route::get('processSalary_show','school\ProcessSalaryController@index');
 route::post('processSalary_update','school\ProcessSalaryController@update');
 route::get('processSalary_destroy','school\ProcessSalaryController@destroy');
 route::get('processSalary_select','school\ProcessSalaryController@show');
+route::get('processSalView','school\ProcessSalaryController@processSalView');
+route::get('SalEmployeeView','school\ProcessSalaryController@SalEmployeeView');
 
 //advance_salary
 route::post('advanceSalary_store','school\AdvanceSalaryController@store');
@@ -672,7 +676,7 @@ route::post('salesItem_store','school\SalesItemController@store');
 route::get('salesItem_show','school\SalesItemController@index');
 route::post('salesItem_update','school\SalesItemController@update');
 route::get('salesItem_destroy','school\SalesItemController@destroy');
-route::get('salesItem_select','school\EmergencyContactController@show');
+route::get('salesItem_select','school\SalesItemController@show');
 
 //sales item stock
 route::post('salesItemStock_store','school\SalesItemStockController@store');
@@ -692,11 +696,15 @@ route::get('feePaymentStatusdelete','school\FeePaymentController@feePaymentStatu
 route::get('feePaymentlist','school\FeePaymentController@feePaymentlist');
 route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit');
 route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
-route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
 route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+route::get('feePaymentlistview','school\FeePaymentController@feePaymentlistview');
 
 //fee extrass 
 route::post('storeFeeExtras','school\FeeExtrassController@storeFeeExtras');
+route::get('FeeExtrasShow','school\FeeExtrassController@index');
+route::post('FeeExtrasUpdate','school\FeeExtrassController@update');
+route::get('FeeExtrasDelete','school\FeeExtrassController@destroy');
+route::get('FeeExtrasSelect','school\FeeExtrassController@show');
 route::get('manageFeeExtras','school\FeeExtrassController@manageFeeExtras');
 route::get('allInvoices','school\FeeExtrassController@allInvoices');
 route::get('generateInvoice','school\FeeExtrassController@generateInvoice');
@@ -923,6 +931,7 @@ route::get('recordSales_show','school\RecordSalesController@index');
 route::post('recordSales_update','school\RecordSalesController@update');
 route::get('recordSales_destroy','school\RecordSalesController@destroy');
 route::get('recordSales_select','school\RecordSalesController@show');
+route::get('recordSalesView','school\RecordSalesController@recordSalesView');
 
 //student timetable
 route::post('studentTimetable_store','school\StudentTimetableController@store');
@@ -937,7 +946,9 @@ route::get('teacherTimetable_show','school\TeacherTimetableController@index');
 route::post('teacherTimetable_update','school\TeacherTimetableController@update');
 route::get('teacherTimetable_destroy','school\TeacherTimetableController@destroy');
 route::get('teacherTimetable_select','school\TeacherTimetableController@show');
-
+route::get('StaffSubject','school\TeacherTimetableController@StaffSubject');
+route::post('subUnits','school\SubjectController@subUnits');
+route::get('subunitShow','school\SubjectController@subunitShow');
 
 //employee attendance
 route::post('employeAtten_store','school\EmployeeAttendanceController@store');
@@ -956,7 +967,8 @@ route::get('studentAtten_destroy','school\ClassAttendanceController@destroy');
 route::get('studentAtten_select','school\ClassAttendanceController@show');
 route::get('classAttendanceView','school\ClassAttendanceController@classAttendanceView');
 route::get('ClassStudentTeacher','school\ClassAttendanceController@ClassStudentTeacher');
-
+route::get('attendanceView','school\ClassAttendanceController@attendanceView');
+route::get('ClassStudent','school\ClassAttendanceController@ClassStudent');
 
 //discipline
 route::post('discipline_store','school\DisciplineController@store');
@@ -980,7 +992,7 @@ route::post('makeSyllabus','school\SyllabusController@makeSyllabus');
 route::get('syllabusshow','school\SyllabusController@select');
 route::post('SyllabusUpdate','school\SyllabusController@update');
 route::get('SyllabusDelete','school\SyllabusController@destroy');
-route::get('SyllabusSelect','school\SyllabusController@SyllabusShow');
+route::get('SyllabusSelect','school\SyllabusController@show');
 //route::post('requisitions_update','school\SyllabusController@update');
 
 
@@ -1002,30 +1014,30 @@ route::get('contactdetails_destroy','school\InstitutionSetupController@destroy')
 route::get('contactdetails_select','school\InstitutionSetupController@show');
 
 //reports
-route::get('StudentHistoryreport','school\InstitutionSetupController@StudentHistoryreport');
-route::get('AdmissionReport','school\InstitutionSetupController@AdmissionReport');
-route::get('ActivitiesReport','school\InstitutionSetupController@ActivitiesReport');
-route::get('feePaymentSummery','school\InstitutionSetupController@feePaymentSummery');
-route::get('feeStatus','school\InstitutionSetupController@feeStatus');
-route::get('feeArrears','school\InstitutionSetupController@feeArrears');
-route::get('feeExtrassReport','school\InstitutionSetupController@feeExtrassReport');
-route::get('feeExtrassList','school\InstitutionSetupController@feeExtrassList');
-route::get('feePaymentReport','school\InstitutionSetupController@feePaymentReport');
-route::get('ExamReport','school\InstitutionSetupController@ExamReport');
-route::get('jointExamReport','school\InstitutionSetupController@jointExamReport');
-route::get('smsExamsReport','school\InstitutionSetupController@smsExamsReport');
-route::get('GradeAnalysis','school\InstitutionSetupController@GradeAnalysis');
-route::get('expenseSummeryReport','school\InstitutionSetupController@expenseSummeryReport');
-route::get('DetailExpensesReport','school\InstitutionSetupController@DetailExpensesReport');
-route::get('wagsReport','school\InstitutionSetupController@wagsReport');
-route::get('SchoolAssets','school\InstitutionSetupController@SchoolAssets');
-route::get('BookFundReport','school\InstitutionSetupController@BookFundReport');
+route::get('StudentHistoryreport','school\ReportController@StudentHistoryreport');
+route::get('AdmissionReport','school\ReportController@AdmissionReport');
+route::get('ActivitiesReport','school\ReportController@ActivitiesReport');
+route::get('feePaymentSummery','school\ReportController@feePaymentSummery');
+route::get('feeStatus','school\ReportController@feeStatus');
+route::get('feeArrears','school\ReportController@feeArrears');
+route::get('feeExtrassReport','school\ReportController@feeExtrassReport');
+route::get('feeExtrassList','school\ReportController@feeExtrassList');
+route::get('feePaymentReport','school\ReportController@feePaymentReport');
+route::get('ExamReport','school\ReportController@ExamReport');
+route::get('jointExamReport','school\ReportController@jointExamReport');
+route::get('smsExamsReport','school\ReportController@smsExamsReport');
+route::get('GradeAnalysis','school\ReportController@GradeAnalysis');
+route::get('expenseSummeryReport','school\ReportController@expenseSummeryReport');
+route::get('DetailExpensesReport','school\ReportController@DetailExpensesReport');
+route::get('wagsReport','school\ReportController@wagsReport');
+route::get('SchoolAssets','school\ReportController@SchoolAssets');
+route::get('BookFundReport','school\ReportController@BookFundReport');
 
 //admin
 route::get('admindata','school\AdminController@Admindata');
 route::post('changePassword','school\AdminController@changePassword');
 route::post('adminupdate','school\AdminController@adminupdate');
-
+    route::post('MessageTeacher','school\SmsController@MessageTeacher');
 
 });
 
@@ -1042,6 +1054,10 @@ Route::group(["middleware"=>["auth:api"]], function () {
          route::get('ShowLeaveRequestStudent/{id}','school\LeaveRequestController@ShowLeaveRequestStudent');
          route::get('AcceptLeaveRequest/{id}','school\LeaveRequestController@AcceptLeaveRequest');
          route::post('AcceptReject','school\LeaveRequestController@AcceptReject');
+          route::get('studentLeaveAdminView','school\LeaveRequestController@studentLeaveAdminView');
+              //activities
+    route::get('activityGet','school\ActivityController@activityGet');
+    
      });
 
 Route::get('testCode', function () {

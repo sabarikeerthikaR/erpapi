@@ -4,18 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ExpenseDetails extends Model
-{
 
+class Online_payment extends Model
+{
+ 
      protected $fillable = [
-        'date','title','category', 'amount', 'person_responsible','receipt','description','created_by'
+        'name','email','phone','address','card_number','transaction_id'
     ];
-    protected $table = 'expensedetails';
+    protected $table = 'online_payment';
     protected $primaryKey = 'id';
 
     public function categories()
     {
-        return $this->belongsToMany('App\expensedetails');
+        return $this->belongsToMany('App\online_payment');
     } 
     public function getDateFormat()
     {

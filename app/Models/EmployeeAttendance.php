@@ -8,7 +8,7 @@ class EmployeeAttendance extends Model
 {
  
      protected $fillable = [
-        'date','employee','time_in', 'time_out'
+        'date','employee','present'
     ];
     protected $table = 'employee_attendance';
     protected $primaryKey = 'id';

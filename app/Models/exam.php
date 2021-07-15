@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Exam extends Model
 {
      protected $fillable = [
-       'titte','term','year','weight','start_date' ,'end_date',
+       'title','term','year','weight','start_date' ,'end_date','description'
     ];
     protected $table = 'exam';
     protected $primaryKey = 'exam_id';

@@ -89,6 +89,7 @@ class DashboardController extends Controller
     ->where('message.created_at','>=',$date)
     ->select('message',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
     DB::raw("DATE_FORMAT(message.created_at, '%Y-%m-%d') as date"))
+    ->orderBy('message.id', 'desc')
      ->get();
     	return response()->json([
                  'message'  => ' success',
@@ -175,7 +176,10 @@ class DashboardController extends Controller
         $sock=Item_stock::count();
         $registerd=OnlineRegistration::join('std_class','online_registration.admission_for','=','std_class.class_id')->join('setings','online_registration.gender','=','setings.s_d')->select('online_reg_id','date','setings.key_name as gender','std_class.name as admission_for',
         db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"))->get();
-        $feePayment=Fee_payment::join('admission','fee_payment.student','=','admission.admission_id')->select('amount','fee_payment.date','created_by',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"))->get();
+        $feePayment=Fee_payment::join('admission','fee_payment.student','=','admission.admission_id')
+        ->join('users','fee_payment.created_by','=','users.id')
+        ->select('amount','fee_payment.date',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name)as created_by"),
+                 db::raw("CONCAT(admission.first_name,' ',admission.middle_name,' ',admission.last_name)as student"))->get();
        $message=Sms::get();
        return response()->json(apiResponseHandler(['student'=>$student,
                                                    'staff'=>$staff,
@@ -248,6 +252,7 @@ class DashboardController extends Controller
     ->where('message.created_at','>=',$date)
     ->select('message',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as name"),
     DB::raw("DATE_FORMAT(message.created_at, '%Y-%m-%d') as date"))
+    ->orderBy('message.id', 'desc')
      ->get();
     $examList=Exam::
     whereDate('end_date', '>=', date('Y-m-d'))

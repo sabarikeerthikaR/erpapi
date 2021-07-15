@@ -18,20 +18,13 @@ class AddEmpSalController extends Controller
     public function store(Request $Add_emp_sal)
     {
       $validator =  Validator::make($Add_emp_sal->all(), [
-            'employee' => ['required', 'string'],
-            'salary_method' => ['required', 'string'],
-            'basic_salary'    => ['required', 'numeric'],
-            'NHIF_Amount'  => ['required', 'numeric'],
-             'NSSF_Amount' => ['required', 'numeric'],
-            'deductions' => ['required', 'string'],
-            'allowances'    => ['required', 'string'],
-            'staff_with_student_deduction'  => ['required','string'],
-             'bank_name' => ['required', 'string'],
-            'acc_no' => ['required', 'numeric'],
-            'NHIF_Number' => ['required', 'string'],
-            'NSSF_Number' => ['required', 'string'],
-
-            
+            'employee' => ['required'],
+            'NHIF_Amount'  => ['required'],
+             'NSSF_Amount' => ['required'],
+            'staff_with_student_deduction'  => ['required'],
+            'acc_no' => ['required'],
+            'NHIF_Number' => ['required'],
+            'NSSF_Number' => ['required']    
           ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -81,28 +74,30 @@ public function show(request $request)
    }
    public function index()
     {
-        $Add_emp_sal = Add_emp_sal::all();
+        $Add_emp_sal = Add_emp_sal::leftjoin('staff','add_emp_sal.employee','=','staff.employee_id')
+        ->leftjoin('setings as sal','add_emp_sal.salary_method','=','sal.s_d')
+        ->leftjoin('deduction','add_emp_sal.deductions','=','deduction.id')
+         ->leftjoin('allowances','add_emp_sal.allowances','=','allowances.id')
+        ->leftjoin('setings as bk','add_emp_sal.bank_name','=','bk.s_d')
+        ->select('basic_salary','NHIF_Amount','NSSF_Amount','staff_with_student_deduction','acc_no','NHIF_Number',
+                 'NSSF_Number','add_emp_sal.id',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as employee"),
+                 'sal.key_name as salary_method','bk.key_name as bank_name','deduction.name as deductions','allowances.name as allowances')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Add_emp_sal]);
     }
 
 
-public function upsalary_method(Request $request)
+public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'employee' => ['required', 'string'],
-            'salary_method' => ['required', 'string'],
-            'basic_salary'    => ['required', 'numeric'],
-            'NHIF_Amount'  => ['required', 'numeric'],
-             'NSSF_Amount' => ['required', 'numeric'],
-            'deductions' => ['required', 'string'],
-            'allowances'    => ['required', 'string'],
-            'staff_with_student_deduction'  => ['required','string'],
-             'bank_name' => ['required', 'string'],
-            'acc_no' => ['required', 'numeric'],
-            'NHIF_Number' => ['required', 'string'],
-            'NSSF_Number' => ['required', 'string'],
-
+            'employee' => ['required'],
+            'NHIF_Amount'  => ['required'],
+             'NSSF_Amount' => ['required'],
+            'staff_with_student_deduction'  => ['required'],
+            'acc_no' => ['required'],
+            'NHIF_Number' => ['required'],
+            'NSSF_Number' => ['required']  
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);

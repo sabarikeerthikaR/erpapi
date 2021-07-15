@@ -9,7 +9,7 @@ class Email_template extends Model
 {
 
      protected $fillable = [
-       'title','slug','description','email_body','status'
+       'title','slug','description','email_body','status','created_by'
     ];
     protected $table = 'email_template';
     protected $primaryKey = 'id';

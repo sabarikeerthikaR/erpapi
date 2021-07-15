@@ -32,18 +32,26 @@ class HostelBedController extends Controller
           
          ));
 
-        //  $settings= new Settings(array(
-        //  'group_name'=>'bed',
-        //  'key_name'=>$g['bed_no'],
-        //  'key_value' =>
-        //  ));
-        //  return $settings;die;
-        //  $settings->save();
           if(!$HostelBed->save())
           {
             $errors[]=$g;
           }
         } 
+         $roomData=HostelBed::where('hostel_room',$g['hostel_room'])
+                               ->where('bed_no',$g['bed_no'])
+                               ->select('bed_no','id')
+                               ->get();
+
+        foreach($roomData as $s)
+        {
+                $settings= new Settings(array(
+         'group_name'=>'bed',
+         'key_name'=>$s['bed_no'],
+         'key_value' =>$s['id']
+         ));
+        
+         $settings->save();
+        }
 
              
               if(count($errors)==0)
@@ -81,7 +89,7 @@ public function show(request $request)
         $HostelBed = db::table('hostel_bed')->join('hostel_rooms','hostel_bed.hostel_room','=','hostel_rooms.id')->join('assign_bed','hostel_bed.id','=','assign_bed.bed')->join('admission','assign_bed.student','=','admission.admission_id')
         ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as full_name"),
         'hostel_bed.id','admission_id','bed_no','hostel_bed.created_at',
-        'hostel_rooms.room_name','status')->first();
+        'hostel_rooms.room_name','status')->get();
         return response()->json(['status' => 'Success', 'data' => $HostelBed]);
     }
 

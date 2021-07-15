@@ -29,29 +29,32 @@ class StudentClassController extends Controller
  
     $class = Admission::where('admission_id',$g['admission_id'])->first();
       
-      $class->class=$g['class'];
+      $class->class=$request->class;
  
-      if(!$class->save())
-      {
-        $errors[]=$g;
-      }
-    } 
-         
-          if(count($errors)==0)
+     $check=$g['status'];
+        if($check == true)
+        {
+          if(!$class->save())
           {
-          return response()->json([
-          'message'  => 'class saved successfully',
-          'data'=>$data,
-         
-              ]);
+            $errors[]=$g;
           }
-          else 
-          {
+           if(count($errors)==0)
+              {
               return response()->json([
-               'message'  => 'failed',
-               'errors'=>$errors
-             ]);
-           }
+              'message'  => 'class saved successfully',
+              'activity'=>$request->class,
+          'data'=>$data,
+                  ]);
+              } 
+        }else 
+        {
+            return response()->json([
+             'message'  => 'failed',
+             'errors'=>$errors
+           ]);
+         }
+       }
+             
   }
   public function listStudent(request $request)
   {

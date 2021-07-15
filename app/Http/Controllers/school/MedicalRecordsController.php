@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\MedicalRecords;
+use Illuminate\Support\Facades\Auth;
 
 class MedicalRecordsController extends Controller
 {
@@ -33,7 +34,7 @@ class MedicalRecordsController extends Controller
         'action_taken'        =>$MedicalRecords->action_taken,
         'comment'        =>$MedicalRecords->comment,  
         'comment'        =>$MedicalRecords->comment,  
-        'action_taken_by'        =>'admin',  
+        'action_taken_by'        =>Auth::user()->id,  
          ]);
         if($MedicalRecords->save()){
                   return response()->json([
@@ -63,8 +64,10 @@ public function show(request $request)
    public function index()
     {
         $MedicalRecords = MedicalRecords::join('admission','medical_records.student','=','admission.admission_id')
-        ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name) as student"),
-    'sickness','notify_parent','action_taken','comment','action_taken_by','medical_records.id','medical_records.date')->get();
+        ->join('users','medical_records.action_taken_by','=','users.id')
+        ->select(db::raw("CONCAT(admission.first_name,' ',COALESCE(admission.middle_name,''),' ',admission.last_name) as student"),
+    'sickness','notify_parent',db::raw("CONCAT(users.first_name,' ',COALESCE(users.middle_name,''),' ',users.last_name) as action_taken_by"),
+    'comment','action_taken','medical_records.id','medical_records.date')->get();
         return response()->json(['gender' => 'Success', 'data' => $MedicalRecords]);
     }
 

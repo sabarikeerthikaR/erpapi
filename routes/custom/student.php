@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
     //switch student
 
     route::post('switchstudent','school\AdminController@switchStudent');
+        route::get('listStudents','school\AdminController@listStudents');
     //student dashboard
     route::get('dashboardstudent','school\DashboardController@dashboard');
     route::get('getweeklyattendance','school\DashboardController@getweeklyattendance');
@@ -68,21 +69,16 @@ use Illuminate\Support\Facades\Route;
     // exam
     route::get('termForExam','school\ExamController@termForExam');
     route::get('viewExamTimetableStudent','school\ExamController@viewExamTimetableStudent');
-   
+       route::get('ExamResults','school\ExamController@ExamResults');
 
     //fee payments
-    route::post('feePayment_store','school\FeePaymentController@store');
-    route::get('feePayment_show','school\FeePaymentController@index');
-    route::post('feePayment_update','school\FeePaymentController@update');
-    route::get('feePayment_destroy','school\FeePaymentController@destroy');
-    route::get('feePayment_select','school\FeePaymentController@show');
-    route::get('feePaymentStatusview','school\FeePaymentController@feePaymentStatusview');
-    route::get('feePaymentStatusdelete','school\FeePaymentController@feePaymentStatusdelete');
-    route::get('feePaymentlist','school\FeePaymentController@feePaymentlist');
-    route::post('feePaymentlistedit','school\FeePaymentController@feePaymentlistedit');
-    route::get('feePaymentlistdelete','school\FeePaymentController@feePaymentlistdelete');
-    route::post('OnlinePayment','school\FeePaymentController@OnlinePayment');
-    route::get('FeeStatement','school\FeePaymentController@FeeStatement');
+
+    route::post('OnlinePaymentpost','school\OnlinePaymentController@OnlinePaymentpost');
+    route::get('FeeStatement','school\OnlinePaymentController@FeeStatement');
+route::get('OnlinePaymentTermFeeList','school\OnlinePaymentController@OnlinePaymentTermFeeList');
+route::get('feeExtrass','school\OnlinePaymentController@feeExtrass');
+route::post('FeeExtraspost','school\OnlinePaymentController@FeeExtraspost');
+route::get('FeeExtrassStatement','school\OnlinePaymentController@FeeExtrassStatement');
 
     });
     });

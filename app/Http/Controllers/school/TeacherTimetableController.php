@@ -29,7 +29,7 @@ class TeacherTimetableController extends Controller
         $TeacherTimetable = new TeacherTimetable(array(
           'start_time'   =>$g['start_time'],
           'end_time'=>$g['end_time'],
-          'day'=>$g['day'],  
+          'day'=>$TeacherTimetable->day,  
           'subject'=>$g['subject'],
           'class'=>$g['class'],
           'staff'=>$TeacherTimetable->staff,
@@ -71,10 +71,30 @@ class TeacherTimetableController extends Controller
                  }
     }
     
-   public function index()
+   public function index(request $request)
     {
-        $TeacherTimetable = TeacherTimetable::all();
-        return response()->json(['knec_code' => 'Success', 'data' => $TeacherTimetable]);
+        $TeacherTimetable=TeacherTimetable::leftjoin('add_stream','teacher_timetable.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('subjects','teacher_timetable.subject','=','subjects.subject_id')
+        ->where('teacher_timetable.staff',$request->staff)
+        ->where('teacher_timetable.day',$request->day)
+        ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject','start_time','end_time',
+        'teacher_timetable.id')
+        ->get();
+        return response()->json(['message' => 'Success', 'data' => $TeacherTimetable]);
+    }
+     public function StaffSubject(request $request)
+    {
+        $TeacherTimetable=TeacherTimetable::leftjoin('add_stream','teacher_timetable.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('subjects','teacher_timetable.subject','=','subjects.subject_id')
+        ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
+        ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as staff_name"))
+        ->groupBy('teacher_timetable.subject')
+        ->get();
+        return response()->json(['message' => 'Success', 'data' => $TeacherTimetable]);
     }
 
 
@@ -132,10 +152,10 @@ public function destroy(Request $request)
     }
     public function myclass(request $request)
     {
-      $class=TeacherTimetable::join('subjects','teacher_timetable.subject','=','subjects.subject_id')
-      ->join('add_stream','teacher_timetable.class','=','add_stream.id')
-      ->join('std_class','add_stream.class','=','std_class.class_id')
-      ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
+      $class=TeacherTimetable::leftjoin('subjects','teacher_timetable.subject','=','subjects.subject_id')
+      ->leftjoin('add_stream','teacher_timetable.class','=','add_stream.id')
+      ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+      ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
       ->where('teacher_timetable.staff',$request->teacher)
       ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject','add_stream.id')
       ->groupBy('add_stream.id')
@@ -147,10 +167,10 @@ public function destroy(Request $request)
     }
     public function myTimetable(request $request)
     {
-        $timetable=TeacherTimetable::join('add_stream','teacher_timetable.class','=','add_stream.id')
-        ->join('std_class','add_stream.class','=','std_class.class_id')
-        ->join('class_stream','add_stream.stream','=','class_stream.stream_id')
-        ->join('subjects','teacher_timetable.subject','=','subjects.subject_id')
+        $timetable=TeacherTimetable::leftjoin('add_stream','teacher_timetable.class','=','add_stream.id')
+        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+        ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+        ->leftjoin('subjects','teacher_timetable.subject','=','subjects.subject_id')
         ->where('teacher_timetable.staff',$request->staff)
         ->where('teacher_timetable.day',$request->day)
         ->select('std_class.name as class','class_stream.name as stream','subjects.name as subject','start_time','end_time',

@@ -9,7 +9,7 @@ class Library_settings extends Model
 {
 
      protected $fillable = [
-       'fine_per_day', 'book_duration','borrow_limit', 
+       'fine_per_day', 'book_duration','borrow_limit','created_by'
     ];
     protected $table = 'library_settings';
     protected $primaryKey = 'library_setting_id';

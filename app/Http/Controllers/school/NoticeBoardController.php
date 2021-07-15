@@ -12,6 +12,8 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Notice_board;
+use Illuminate\Support\Facades\Auth;
+use App\Helper;
 
 class NoticeBoardController extends Controller
 {
@@ -32,9 +34,12 @@ class NoticeBoardController extends Controller
         'title'  =>$Notice_board->title ,
         'description'  =>$Notice_board->description ,
 
-
-        
+       
          ]);
+         $id=Auth::user()->id;
+
+         sendNotification($id,'users','notice','you have new notice',0);
+        
         if($Notice_board->save()){
                   return response()->json([
                  'message'  => 'Notice_board saved successfully',
@@ -62,12 +67,15 @@ public function show(request $request)
    }
    public function index()
     {
-        $Notice_board = Notice_board::all();
+        $Notice_board = Notice_board::
+        orderBy('id','desc')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Notice_board]);
     }
     public function teachernoticeBoard(request $request)
     {
-        $Notice_board = Notice_board::all();
+        $Notice_board = Notice_board::orderBy('id','desc')
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Notice_board]);
     }
 

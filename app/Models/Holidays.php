@@ -2,23 +2,25 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Model;
 
-class ExpenseDetails extends Model
+class Holidays extends Model
 {
 
      protected $fillable = [
-        'date','title','category', 'amount', 'person_responsible','receipt','description','created_by'
+       'date','holiday'
     ];
-    protected $table = 'expensedetails';
+    protected $table = 'holiday';
     protected $primaryKey = 'id';
 
     public function categories()
     {
-        return $this->belongsToMany('App\expensedetails');
+        return $this->belongsToMany('App\holiday');
     } 
     public function getDateFormat()
     {
       return 'Y-m-d H:i:s';
     }
 }
+

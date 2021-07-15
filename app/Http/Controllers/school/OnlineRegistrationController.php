@@ -17,7 +17,7 @@ class OnlineRegistrationController extends Controller
 {
      public function store(Request $Online_registration)
     {
-    	 $valiDationArray = [
+    	 $valiDationArray =[
             'first_name' => ['required'],
             'last_name' => ['required'],
             'admission_for' => ['required'],
@@ -25,7 +25,7 @@ class OnlineRegistrationController extends Controller
             'gender' => ['required'],
             'first_parent' => ['required'],
             'email_f' => ['required','email' ],
-            'phone_f' => ['required', 'numeric', 'digits:10'],
+            'phone_f' => ['required','numeric','digits:10'],
             'address_f'=> ['required'],
             'former_school' => ['required'],
             'grade_completed' => ['required'],
@@ -43,8 +43,8 @@ class OnlineRegistrationController extends Controller
         if($Online_registration->file('image')){
             $image = $Online_registration->file('image');
             $imgName = time() . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            Storage::disk('public_uploads')->put('/students-photo/' . $imgName, file_get_contents($image));
-            $image=config('app.url').'/public/uploads/students-photo/' . $imgName;
+            Storage::disk('public_uploads')->put('/reg-students-photo/' . $imgName, file_get_contents($image));
+            $image=config('app.url').'/public/uploads/reg-students-photo/' . $imgName;
             }
         $Online_registration=OnlineRegistration::create([
         	'date'    =>date('Y-m-d'),
@@ -100,7 +100,7 @@ public function show(request $request)
                'second_parent_occupation','second_parent','address_f','phone_f','email_f','relation_f','first_parent_occupation',
                'first_parent','nationality','religion','gender','dob',
                db::raw("CONCAT(std_class.name,' ',class_stream.name)as admission_for"),'last_name','middle_name',
-               'first_name','date','online_reg_id')
+               'first_name','online_registration.date','online_reg_id')
                ->first(); 
 
              if(!empty($Online_registration)){
@@ -182,7 +182,6 @@ public function update(Request $request)
        $Online_registration->disability_if_any= $request->disability_if_any;
        $Online_registration->local_guardian= $request->local_guardian;
        $Online_registration->comments= $request->comments;
-       $Online_registration->image= $request->image;
         $Online_registration->address= $request->address;
        $Online_registration->phone= $request->phone;
         if($Online_registration->save()){

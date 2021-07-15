@@ -18,9 +18,8 @@ class SalesItemCategoryController extends Controller
      public function store(Request $Sales_item_category)
     {
       $validator =  Validator::make($Sales_item_category->all(), [
-            'name' => ['required', 'string'],
-            'description' => ['required', 'string'],
-  
+            'name' => ['required'],
+            
           ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -32,6 +31,13 @@ class SalesItemCategoryController extends Controller
         
 
          ]);
+
+        $settings=Settings::create([
+             'key_name'=>$Sales_item_category->name,
+             'group_name'=>'sales_item_category',
+             'key_value'=>$Sales_item_category->id
+         ]);
+         $settings->save();
         if($Sales_item_category->save()){
                   return response()->json([
                  'message'  => 'Sales_item_category saved successfully',
@@ -46,7 +52,7 @@ class SalesItemCategoryController extends Controller
 public function show(request $request)
    {
    	 $Sales_item_category = Sales_item_category::find($request->id);
-             if(!empty($Sales_item_category)){
+            if(!empty($Sales_item_category)){
                     return response()->json([
                     'data'  => $Sales_item_category      
                     ]);
@@ -64,13 +70,11 @@ public function show(request $request)
     }
 
 
-public function updescription(Request $request)
+public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'name' => ['required', 'name_format:d-m-Y'],
-            'description' => ['required', 'string'],
-           
+          'name' => ['required'],
             
         ]); 
          if ($validator->fails()) {
@@ -79,7 +83,9 @@ public function updescription(Request $request)
     $Sales_item_category = Sales_item_category::find($request->id);
        $Sales_item_category->name= $request->name;
        $Sales_item_category->description= $request->description;
-       
+        $settings=Settings::where('group_name','=','sales_item_category')->where('key_value',$request->id)->first();
+        $settings->key_name= $request->name;
+        $settings->save();
         if($Sales_item_category->save()){
             return response()->json([
                  'message'  => 'updescriptiond successfully',
@@ -94,6 +100,11 @@ public function updescription(Request $request)
 public function destroy(Request $request)
     {
         $Sales_item_category = Sales_item_category::find($request->id);
+        $settings=Settings::where('group_name','=','sales_item_category')->where('key_value',$request->id)->first();
+        $settings->group_name=NULL;
+        $settings->key_name=NULL;
+        $settings->key_value=NULL;
+        $settings->save();
         if(!empty($Sales_item_category))
 
                 {

@@ -21,10 +21,7 @@ class AdvanceSalaryController extends Controller
         $errors=[];
         foreach($salary as $g)
         {
-          if ($g['date']=='') 
-          {
-           return response()->json(apiResponseHandler([],'The date field is required',400), 400);
-          }
+         
           if ($g['employee']=='') 
           {
            return response()->json(apiResponseHandler([],'The employee field is required',400), 400);
@@ -33,10 +30,7 @@ class AdvanceSalaryController extends Controller
           {
            return response()->json(apiResponseHandler([],'The amount field is required',400), 400);
           }
-           if ($g['comment']=='') 
-          {
-           return response()->json(apiResponseHandler([],'The comment field is required',400), 400);
-          }
+          
            
         $advanceSalary = new Advance_salary(array(
           'date'   =>$g['date'],
@@ -54,6 +48,7 @@ class AdvanceSalaryController extends Controller
               {
               return response()->json([
               'message'  => 'advanceSalary saved successfully',
+              'data'  => $salary,
                   ]);
               }
               else 
@@ -64,9 +59,26 @@ class AdvanceSalaryController extends Controller
                  ]);
                }
    }
+   public function show(request $request)
+   {
+     $Advance_salary = Advance_salary::find($request->id);
+             if(!empty($Advance_salary)){
+                    return response()->json([
+                    'data'  => $Advance_salary      
+                    ]);
+                }else
+                {
+                  return response()->json([
+                 'message'  => 'No data found in this id'  
+                  ]);
+                 }
+   }
    public function index()
     {
-        $Advance_salary = Advance_salary::all();
+        $Advance_salary = Advance_salary::leftjoin('staff','advance_salary.employee','=','staff.employee_id')
+        ->select('advance_salary.date','amount','comment','advance_salary.id',
+            db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as employee"))
+        ->get();
         return response()->json(['status' => 'Success', 'data' => $Advance_salary]);
     }
 
@@ -75,11 +87,8 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-           'date' => ['required'],
-            'employee' => ['required', 'string'],
-            'amount'    => ['required', 'string'],
-            'comment'  => ['required', 'string'],
-            
+            'employee' => ['required'],
+            'amount'    => ['required'],
         ]); 
          if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);

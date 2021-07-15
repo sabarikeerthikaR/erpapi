@@ -14,6 +14,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Auth;
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Helper;
 
 class LeaveRequestController extends Controller
 {
@@ -44,6 +45,12 @@ class LeaveRequestController extends Controller
            'request_to'=>$request_to,
              'date'=>date('Y-m-d')
          ]);
+
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id,$request_to,'leaveRequest', 'you have requested for leave',0);
+
+
         if($leaveRequest->save()){
             return response()->json([
            'message'  => 'leaveRequest saved successfully',
@@ -60,6 +67,7 @@ class LeaveRequestController extends Controller
        $id=$request->id;
        $user=Auth::user();
         $getRequest=LeaveRequest::where('request_by',$id)
+        ->whereMonth('created_at', '=', date('m'))
         ->where(function($query) use($user){
            if($user->user_role==4)
            $query->join('admission as u','users.admission_id','=','u.admission_id');
@@ -69,7 +77,8 @@ class LeaveRequestController extends Controller
        db::raw('(CASE when accept = "1" then "Accepted"
                       when accept = "2" then "Rejected"
                        else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-        )->get();
+        )->orderBy('leave_request.id', 'desc')
+         ->get();
 
         if(!empty($getRequest)){
             return response()->json([
@@ -96,7 +105,8 @@ class LeaveRequestController extends Controller
                     db::raw('(CASE when accept = "1" then "Accepted"
                                     when accept = "2" then "Rejected"
                                     else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-                      )->get();
+                      )->orderBy('leave_request.id', 'desc')
+                        ->get();
             }
         else{
                   $getRequest=LeaveRequest::where('request_to',$id)   
@@ -107,7 +117,8 @@ class LeaveRequestController extends Controller
               db::raw('(CASE when accept = "1" then "Accepted"
                               when accept = "2" then "Rejected"
                               else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
-                )->get();
+                )->orderBy('leave_request.id', 'desc')
+                  ->get();
 
            }
      
@@ -123,11 +134,38 @@ class LeaveRequestController extends Controller
           ]);
          }
     }
+    public function studentLeaveAdminView(request $request)
+    {
+        $leave=LeaveRequest::join('admission','leave_request.request_by','=','admission.admission_id')
+        ->where('admission.class',$request->class)
+        ->select('leave_request.date','from_date','to_date','leave_request.reason',
+                  'leave_request.id as leave_request_id','admission_id',
+              db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as full_name"),
+              db::raw('(CASE when accept = "1" then "Accepted"
+                              when accept = "2" then "Rejected"
+                              else "pending"  end) as request'),'leave_request.created_at','leave_request.updated_at'
+                )->orderBy('leave_request.id', 'desc')
+        ->get();
+        if(!empty($leave)){
+            return response()->json([
+            'data'  => $leave      
+            ]);
+        }else
+        {
+          return response()->json([
+         'message'  => 'No data found'  
+          ]);
+         }
+    }
     public function AcceptReject(request $request)
     {
         
         $leaveReq=LeaveRequest::find($request->leaveRequest_id);
         $leaveReq->accept=$request->acceptReject;
+
+        $id=auth::user()->id;
+        //activity
+        sendActivities($id,'','leaveRequest', 'leave request is accepted',0);
 
         if($leaveReq->save()){
             return response()->json([

@@ -19,7 +19,7 @@ class UserGroupController extends Controller
    public function store(Request $User_group)
     {
       $validator =  Validator::make($User_group->all(), [
-            'name' => ['required','string']
+            'name' => ['required']
           ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
@@ -72,7 +72,7 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-             'name' => ['required','string']
+             'name' => ['required']
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);

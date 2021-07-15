@@ -21,7 +21,9 @@ class AdminController extends Controller
      public function listStudents(request $request)
     {
         $admission_id=$request->parent_id;
-        $adminData=ParentStudents::where("p_id",$admission_id)->get();
+        $adminData=ParentStudents::where("p_id",$admission_id)
+        ->join('admission','parent_students.admission_id','=','admission.admission_id')
+        ->select('admission.admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),'p_id')->get();
         if($adminData)
         {
           return response()->json([
@@ -38,8 +40,8 @@ class AdminController extends Controller
     }
     public function switchStudent(request $request)
     {
-        $admission_id=$request->admission_id;
-        $adminData=Admission::find($admission_id);
+        $admission_id=$request->admission_id; 
+        $adminData=ParentStudents::where('admission_id',$admission_id)->first();
         if($adminData)
         {
           $user=Auth::user();

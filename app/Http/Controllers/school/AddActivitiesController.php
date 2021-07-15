@@ -19,7 +19,7 @@ class AddActivitiesController extends Controller
     public function store(Request $AddActivities)
     {
       $validator =  Validator::make($AddActivities->all(), [
-            'name' => ['required', 'string'],
+            'name' => ['required'],
             
           ]); 
           if ($validator->fails()) {
@@ -28,7 +28,7 @@ class AddActivitiesController extends Controller
         $AddActivities=AddActivities::create([
 
         'name'  =>$AddActivities->name ,
-        
+        'teacher'  =>$AddActivities->teacher ,
          ]); 
          $settings=Settings::create([
             'group_name'=>'activity',
@@ -63,7 +63,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $AddActivities = AddActivities::all();
+        $AddActivities = AddActivities::join('staff','add_activities.teacher','=','staff.employee_id')->select('name','id',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),'',last_name)as teacher"))->get();
         return response()->json(['status' => 'Success', 'data' => $AddActivities]);
     }
 
@@ -72,7 +72,7 @@ public function update(Request $request)
 
    {
     $validator =  Validator::make($request->all(), [
-         'name' => ['required', 'string'],
+         'name' => ['required'],
            
         ]); 
          if ($validator->fails()) {
@@ -80,6 +80,7 @@ public function update(Request $request)
         }
     $AddActivities = AddActivities::find($request->id);
         $AddActivities->name = $request->name ;
+         $AddActivities->teacher = $request->teacher ;
         $settings=Settings::where('group_name','=','activity')->where('key_value',$request->id)->first();
         $settings->key_name= $request->name;
         $settings->save();

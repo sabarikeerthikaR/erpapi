@@ -75,7 +75,7 @@ public function show(request $request)
         ->leftjoin('give_out_book_fund','book_for_fund.book_for_fund_id','=','give_out_book_fund.give_out_id')
         ->select('title','author','books_category.name as category','edition','quantity',
         DB::raw("COUNT('give_out_book_fund.book'='book_for_fund.book_for_fund_id')as borrowed"),
-        db::raw('quantity - give_out_book_fund.book as remaining_Book_for_fund'),'book_for_fund.book_for_fund_id')
+        db::raw('quantity - give_out_book_fund.book as remaining_Book_for_fund'),'book_for_fund.book_for_fund_id','book_for_fund.description')
         ->groupBy('book_for_fund_id')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Book_for_fund]);
@@ -143,7 +143,7 @@ public function destroy(Request $request)
     }
     public function managefundStock()
     {
-        $book=Book_for_fund::select('purchase_date','quantity','title','book_for_fund_id','receipt')->where('quantity','>',0)->get();
+        $book=Book_for_fund::select('purchase_date','quantity','title','book_for_fund_id','receipt')->get();
         return response()->json([
          'message'=>'success',
          'data'=>$book
