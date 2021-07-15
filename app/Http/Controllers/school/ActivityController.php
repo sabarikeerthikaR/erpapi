@@ -23,7 +23,8 @@ class ActivityController extends Controller
     
         $id=auth::user()->id;
     $getdata=Activities::where('action_performer',$id )
-    ->select('description','read_status')
+    ->select('description','read_status','created_at')
+    ->orderBy('id','desc')
     ->get();
     
     $post=Activities::where('action_performer',$id )

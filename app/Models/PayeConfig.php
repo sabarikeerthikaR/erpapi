@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Notification extends Model
+class PayeConfig extends Model
 {
     
      protected $fillable = [
-        'action_performer','action_to','action_title','description','read_status'
+        'Range_From','Range_To','Tax_Percentage','Taxable_Amount'
     ];
-    protected $table = 'notification';
+    protected $table = 'paye_configuration';
     protected $primaryKey = 'id';
 
     public function categories()
     {
-        return $this->belongsToMany('App\notification');
+        return $this->belongsToMany('App\paye_configuration');
     }
      
     public function getDateFormat()

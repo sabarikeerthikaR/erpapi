@@ -182,7 +182,7 @@ public function destroy(Request $request)
 
         $id=auth::user()->id;
          //activity
-         sendActivities($id, $request->class,'syllabus', 'new syllabus is uploaded',0);
+         sendActivities($id, $request->class,'syllabus', 'you have uploaded new syllabus',0);
 
         if($syllabus->save())
         {

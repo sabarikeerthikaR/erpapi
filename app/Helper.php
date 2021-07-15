@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Log;
 use PHPMailer\PHPMailer\PHPMailer;
 use Carbon\Carbon;
 use App\Models\Activities;
+use App\Models\User;
+use App\Models\Notification;
 
 function apiResponseHandler($response = [], $message = '', $status = 200)
 {
@@ -151,7 +153,79 @@ if ($result->success) {
     return ["error"=>$error];
 }
 }
-function sendNotification()
+
+
+
+
+
+
+
+function dateBetweenFilter($allFare,$yearStartDate,$yearEndDate,$ride_date)
+{
+    $yearFare=array_filter($allFare,function($a)use($yearStartDate,$yearEndDate,$ride_date){
+            $rideDateStart=strtotime($yearStartDate);
+            $rideEndStart=strtotime($yearEndDate);
+            $a=(array) $a;
+           return ($a[$ride_date]>=$rideDateStart && $a[$ride_date]<=$rideEndStart);
+        });
+    return $yearFare;
+}
+function random_color_part() {
+    return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
+}
+
+function random_color() {
+    return random_color_part() . random_color_part() . random_color_part();
+}
+function  dateByFilter()
+{
+    $now = Carbon::now();
+        $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
+        $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
+        $start = new Carbon('first day of this month');
+        $monthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
+        $end = new Carbon('last day of this month');
+        $monthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
+        $year = date('Y');
+        $yearStartDate = Carbon::create($year, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
+        $yearEndDate = Carbon::create($year, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
+        $dayStartDate=date("Y-m-d")." 00:00";
+        $dayEndDate=date("Y-m-d")." 23:59";
+        $dayYesterdayStart=Carbon::yesterday()->format("Y-m-d H:i");
+        $dayYesterdayEnd=substr($dayYesterdayStart,0,10)." 23:59";
+        $lastYear=$year-1;
+        $lastyearStartDate = Carbon::create($lastYear, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
+        $lastyearEndDate = Carbon::create($lastYear, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
+        $start = new Carbon('first day of last month');
+        $lastmonthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
+        $end = new Carbon('last day of last month');
+        $lastmonthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
+        $start = new Carbon('last sunday');
+        $lastweekEndDate=$start->format('Y-m-d H:i');
+        $end = $start->subDays("6");
+        $lastweekStartDate=$end->format('Y-m-d H:i');
+       return [
+        "dayStartDate"=>$dayStartDate,
+        "dayEndDate"=>$dayEndDate,
+        "yearStartDate"=>$yearStartDate,
+        "yearEndDate"=>$yearEndDate,
+        "weekStartDate"=>$weekStartDate,
+        "weekEndDate"=>$weekEndDate,
+        "monthStartDate"=>$monthStartDate,
+        "monthEndDate"=>$monthEndDate,
+        "yesterdayStartDate"=>$dayYesterdayStart,
+        "yesterdayEndDate"=>$dayYesterdayEnd,
+        'lastmonthStartDate'=>$lastmonthStartDate,
+        'lastmonthEndDate'=>$lastmonthEndDate,
+        'lastweekStartDate'=>$lastweekStartDate,
+        'lastweekEndDate'=>$lastweekEndDate,
+        'lastyearStartDate'=>$lastyearStartDate,
+        'lastyearEndDate'=>$lastyearEndDate
+       ];
+}
+
+
+function sendexamplNotification()
 {
     $firebase = Firebase::where('user_id', '=', $request_ride->user_id)->select('user_id', 'firebase_token', 'platform')->get();
         
@@ -230,70 +304,10 @@ function sendNotification()
         } elseif ($status == 3) {
             return response()->json(apiResponseHandler(["data"=>$request_ride], 'Ride Declined Successfully'));
         }
-}
-function dateBetweenFilter($allFare,$yearStartDate,$yearEndDate,$ride_date)
-{
-    $yearFare=array_filter($allFare,function($a)use($yearStartDate,$yearEndDate,$ride_date){
-            $rideDateStart=strtotime($yearStartDate);
-            $rideEndStart=strtotime($yearEndDate);
-            $a=(array) $a;
-           return ($a[$ride_date]>=$rideDateStart && $a[$ride_date]<=$rideEndStart);
-        });
-    return $yearFare;
-}
-function random_color_part() {
-    return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
-}
+    }
 
-function random_color() {
-    return random_color_part() . random_color_part() . random_color_part();
-}
-function  dateByFilter()
-{
-    $now = Carbon::now();
-        $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
-        $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
-        $start = new Carbon('first day of this month');
-        $monthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
-        $end = new Carbon('last day of this month');
-        $monthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
-        $year = date('Y');
-        $yearStartDate = Carbon::create($year, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
-        $yearEndDate = Carbon::create($year, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
-        $dayStartDate=date("Y-m-d")." 00:00";
-        $dayEndDate=date("Y-m-d")." 23:59";
-        $dayYesterdayStart=Carbon::yesterday()->format("Y-m-d H:i");
-        $dayYesterdayEnd=substr($dayYesterdayStart,0,10)." 23:59";
-        $lastYear=$year-1;
-        $lastyearStartDate = Carbon::create($lastYear, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
-        $lastyearEndDate = Carbon::create($lastYear, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
-        $start = new Carbon('first day of last month');
-        $lastmonthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
-        $end = new Carbon('last day of last month');
-        $lastmonthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
-        $start = new Carbon('last sunday');
-        $lastweekEndDate=$start->format('Y-m-d H:i');
-        $end = $start->subDays("6");
-        $lastweekStartDate=$end->format('Y-m-d H:i');
-       return [
-        "dayStartDate"=>$dayStartDate,
-        "dayEndDate"=>$dayEndDate,
-        "yearStartDate"=>$yearStartDate,
-        "yearEndDate"=>$yearEndDate,
-        "weekStartDate"=>$weekStartDate,
-        "weekEndDate"=>$weekEndDate,
-        "monthStartDate"=>$monthStartDate,
-        "monthEndDate"=>$monthEndDate,
-        "yesterdayStartDate"=>$dayYesterdayStart,
-        "yesterdayEndDate"=>$dayYesterdayEnd,
-        'lastmonthStartDate'=>$lastmonthStartDate,
-        'lastmonthEndDate'=>$lastmonthEndDate,
-        'lastweekStartDate'=>$lastweekStartDate,
-        'lastweekEndDate'=>$lastweekEndDate,
-        'lastyearStartDate'=>$lastyearStartDate,
-        'lastyearEndDate'=>$lastyearEndDate
-       ];
-}
+
+
 function sendFirebaseNotification($token, $notification, $platform)
 {
     $url = 'https://fcm.googleapis.com/fcm/send';
@@ -536,3 +550,53 @@ function sendActivities($action_performer,$action_to,$action_title,$description,
          ]);
          $activities->save();
 }
+
+function sendNotification($action_performer,$action_to,$title,$body,$read_status)
+    {
+
+
+        $Notification=new Notification ([
+
+            'action_performer'  =>$action_performer ,
+            'action_to'  =>$action_to ,
+            'action_title'  =>$title ,
+            'description'  =>$body ,
+            'read_status'  =>$read_status ,
+             ]);
+             $Notification->save();
+
+        $firebaseToken = User::whereNotNull('device_id')->pluck('device_id')->all();
+          
+        $SERVER_API_KEY = 'M2ViMTAyYzMtNDBlZS00YTZjLTllZWMtMDI0ODY1NjcyZWU4';
+
+      
+  
+        $data = [
+            "registration_ids" => $firebaseToken,
+            "notification" => [
+                "title" => $title,
+                "body" => $body,  
+            ]
+        ];
+        $dataString = json_encode($data);
+    
+        $headers = [
+            'Authorization: key=' . $SERVER_API_KEY,
+            'Content-Type: application/json',
+        ];
+    
+        $ch = curl_init();
+      
+        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+               
+        $response = curl_exec($ch);
+  
+        print_r($response);
+    }
+
+

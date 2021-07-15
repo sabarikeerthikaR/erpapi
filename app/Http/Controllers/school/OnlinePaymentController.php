@@ -20,6 +20,7 @@ use App\Models\Fee_structure;
 use App\Models\InstitutionDetails;
 use App\Models\Online_payment;
 use Illuminate\Support\Facades\Auth;
+use App\Helper;
 
 class OnlinePaymentController extends Controller
 {
@@ -76,6 +77,11 @@ public function OnlinePaymentpost(request $request)
           'address'   =>$request->address,
           'card_number'=>$request->card_number,
          ]);
+
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id,'','online payment', 'you have made new online payment for tuition fee',0);
+
        if($Fee_payment->save()){
                   return response()->json([
                  'message'  => 'Fee_payment saved successfully',
@@ -161,6 +167,13 @@ $selectTerm=Terms::whereMonth('from_year','<=',$month)
           'address'   =>$request->address,
           'card_number'=>$request->card_number,
          ]);
+
+
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id,'','online payment', 'you have made new online payment for fee extrass',0);
+
+
        if($Fee_payment->save()){
                   return response()->json([
                  'message'  => 'Fee_payment saved successfully',

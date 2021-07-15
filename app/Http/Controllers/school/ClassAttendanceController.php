@@ -129,7 +129,7 @@ else
          )); 
 
          //activity
-         sendActivities($ClassAttendance->taken_by, 'student','attendance', 'new attendance for student is created',0);
+         sendActivities($ClassAttendance->taken_by, 'student','attendance', 'you have posted new attendance for student',0);
 
 
 
@@ -208,7 +208,7 @@ public function show(request $request)
 
        $id=auth::user()->id;
         //activity
-        sendActivities($id, 'student','attendance', 'attendance for student is updated',0);
+        sendActivities($id, 'student','attendance', 'you have updated student attendance',0);
 
         if($ClassAttendance->save()){
             return response()->json([

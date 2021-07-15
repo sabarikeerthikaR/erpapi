@@ -360,7 +360,7 @@ public function selectStaffForMessage(request $request)
             $message=Message::where('receiver',$receiver)
                            ->leftjoin('admission','message.sender','=','admission.admission_id')
                            ->select('message.created_at','message',
-                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),'replay',
                            'message.id as message_id') 
                            ->orderBy('message.id', 'desc')
                            ->get();

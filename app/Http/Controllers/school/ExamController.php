@@ -155,7 +155,7 @@ public function destroy(Request $request)
     {
         $exam=$request->exam_id;
         $studentsub=Admission::where('class',$request->class)
-        ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student")
+        ->select('admission_id',db::raw("CONCAT(first_name,' ',coalesce(middle_name,''),' ',last_name)as student")
         )->get();
         $subject=Subject::leftjoin('exam','subjects.term','=','exam.term')
         ->where('class',$request->class)
@@ -194,6 +194,7 @@ public function destroy(Request $request)
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
+                 $exam1[$k]['class']=$request->class;
             }
             else
             {
@@ -203,10 +204,11 @@ public function destroy(Request $request)
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
+                 $exam1[$k]['class']=$request->class;
             }
             $id=auth::user()->id;
             //activity
-            sendActivities($id, 'student','mark', 'new exam mark is created',0);
+            sendActivities($id, 'student','mark', 'you have created new exam mark',0);
         
             
             
@@ -281,7 +283,7 @@ public function destroy(Request $request)
     }
     public function termForExam()
     {
-        $term=Exam::select('exam_id','title')
+        $term=Exam::select('exam_id','title','start_date as from_date','end_date as to_date')
         ->get();
         return response()->json([
             'message'  => 'success',
@@ -406,7 +408,9 @@ public function destroy(Request $request)
 
           $data=array_filter($mark, function($m) use ($g){
 
-            return($m['student']==$g['admission_id']);
+            return array($m['student']==$g['admission_id']);
+            //return is_array($datad)? array_values($datad): array();   
+           
             //return (is_array($m) && $m['student'] == $g['admission_id']);
            //print_r($m);
            });
@@ -527,7 +531,7 @@ public function destroy(Request $request)
      }
      $id=auth::user()->id;
         //activity
-        sendActivities($id, 'student','mark', 'Exam mark is updated',0);
+        sendActivities($id, 'student','mark', 'you have updated exam mark',0);
 
         if($mark->save()){
             return response()->json([

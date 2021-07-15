@@ -55,7 +55,7 @@ class AssignmentController extends Controller
           'created_by'  =>auth::user()->id, 
          ]);
 
-         sendActivities($Assignment->created_by, $Assignment->class,'assignment', 'assignment performend for students',0);
+         sendActivities($Assignment->created_by, $Assignment->class,'assignment', 'you have uploaded new assignment',0);
         if($Assignment->save()){
                   return response()->json([
                  'message'  => 'Assignment saved successfully',
@@ -213,7 +213,7 @@ public function destroy(Request $request)
          ]);
          $id=auth::user()->id;
          //activity
-         sendActivities($id, $Assignment->class,'Assignment', 'new Assignment is uploaded',0);
+         sendActivities($id, $Assignment->class,'Assignment', 'you have uploaded new assignment',0);
 
         if($Assignment->save()){
                   return response()->json([

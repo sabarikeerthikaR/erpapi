@@ -289,7 +289,7 @@ public function destroy(Request $request)
     public function listStudent(request $request)
     {
       $student=Admission::where('admission.class',$request->class_id)
-      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+      ->select(db::raw("CONCAT(first_name,' ',coalesce(middle_name,''),' ',last_name)as student"),
       'admission_id','admission.image')
      ->groupBy('admission_id')
       ->get();
