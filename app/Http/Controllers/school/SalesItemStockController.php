@@ -12,9 +12,25 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Sales_item_stock;
+use App\Models\Sales_item;
 
 class SalesItemStockController extends Controller
 {
+    public function Unitprice(request $request)
+    {
+        $Sales_item = Sales_item::where('id',$request->id)->select('unit_price')->first();
+        if(!empty($Sales_item)){
+               return response()->json([
+               'data'  => $Sales_item      
+               ]);
+           }else
+           {
+             return response()->json([
+            'message'  => 'No data found in this id'  
+             ]);
+            }
+
+    }
     public function store(Request $Sales_item_stock)
     {
       $valiDationArray = [
@@ -82,7 +98,7 @@ public function show(request $request)
     {
         $Sales_item_stock = Sales_item_stock::leftjoin('staff','sales_item_stock.person_responsible','=','staff.employee_id')
         ->leftjoin('sales_item','sales_item_stock.item','=','sales_item.id')
-        ->select('purchase_date','quantity','unit_price','buying_price','receipt','sales_item_stock.description',
+        ->select('purchase_date','quantity','sales_item.unit_price','buying_price','receipt','sales_item_stock.description',
                  'sales_item.item_name as item',db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)person_responsible")
                  ,'sales_item_stock.id')
         ->get();
@@ -93,7 +109,7 @@ public function show(request $request)
 public function update(Request $request)
 
    {
-    $validator = [
+    $valiDationArray = [
          'purchase_date' => ['required'],
             'item' => ['required'],
             'quantity'    => ['required'],

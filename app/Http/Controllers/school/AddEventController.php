@@ -66,7 +66,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $Add_event = Add_event::join('setings','add_event.visibility','=','setings.s_d')->select('id','title','start_date','end_date','venue','setings.key_name as visibility','description')->get();
+        $Add_event = Add_event::join('setings','add_event.visibility','=','setings.s_d')->select('id','title','start_date','end_date','venue','setings.key_name as visibility','description')->orderBy('id','desc')->get();
         return response()->json(['status' => 'Success', 'data' => $Add_event]);
     }
 

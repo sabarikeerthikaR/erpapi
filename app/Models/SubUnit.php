@@ -7,7 +7,7 @@ class SubUnit extends Model
 {
     
     protected $fillable = [
-       'name','mark'
+       'name','mark','subject'
    ];
    protected $table = 'sub_unit';
    protected $primaryKey = 'id';

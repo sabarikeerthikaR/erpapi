@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Log;
 use PHPMailer\PHPMailer\PHPMailer;
 use Carbon\Carbon;
 use App\Models\Activities;
+use App\Models\User;
+use App\Models\Notification;
+use App\Models\Device;
 
 function apiResponseHandler($response = [], $message = '', $status = 200)
 {
@@ -151,7 +154,79 @@ if ($result->success) {
     return ["error"=>$error];
 }
 }
-function sendNotification()
+
+
+
+
+
+
+
+function dateBetweenFilter($allFare,$yearStartDate,$yearEndDate,$ride_date)
+{
+    $yearFare=array_filter($allFare,function($a)use($yearStartDate,$yearEndDate,$ride_date){
+            $rideDateStart=strtotime($yearStartDate);
+            $rideEndStart=strtotime($yearEndDate);
+            $a=(array) $a;
+           return ($a[$ride_date]>=$rideDateStart && $a[$ride_date]<=$rideEndStart);
+        });
+    return $yearFare;
+}
+function random_color_part() {
+    return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
+}
+
+function random_color() {
+    return random_color_part() . random_color_part() . random_color_part();
+}
+function  dateByFilter()
+{
+    $now = Carbon::now();
+        $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
+        $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
+        $start = new Carbon('first day of this month');
+        $monthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
+        $end = new Carbon('last day of this month');
+        $monthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
+        $year = date('Y');
+        $yearStartDate = Carbon::create($year, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
+        $yearEndDate = Carbon::create($year, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
+        $dayStartDate=date("Y-m-d")." 00:00";
+        $dayEndDate=date("Y-m-d")." 23:59";
+        $dayYesterdayStart=Carbon::yesterday()->format("Y-m-d H:i");
+        $dayYesterdayEnd=substr($dayYesterdayStart,0,10)." 23:59";
+        $lastYear=$year-1;
+        $lastyearStartDate = Carbon::create($lastYear, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
+        $lastyearEndDate = Carbon::create($lastYear, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
+        $start = new Carbon('first day of last month');
+        $lastmonthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
+        $end = new Carbon('last day of last month');
+        $lastmonthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
+        $start = new Carbon('last sunday');
+        $lastweekEndDate=$start->format('Y-m-d H:i');
+        $end = $start->subDays("6");
+        $lastweekStartDate=$end->format('Y-m-d H:i');
+       return [
+        "dayStartDate"=>$dayStartDate,
+        "dayEndDate"=>$dayEndDate,
+        "yearStartDate"=>$yearStartDate,
+        "yearEndDate"=>$yearEndDate,
+        "weekStartDate"=>$weekStartDate,
+        "weekEndDate"=>$weekEndDate,
+        "monthStartDate"=>$monthStartDate,
+        "monthEndDate"=>$monthEndDate,
+        "yesterdayStartDate"=>$dayYesterdayStart,
+        "yesterdayEndDate"=>$dayYesterdayEnd,
+        'lastmonthStartDate'=>$lastmonthStartDate,
+        'lastmonthEndDate'=>$lastmonthEndDate,
+        'lastweekStartDate'=>$lastweekStartDate,
+        'lastweekEndDate'=>$lastweekEndDate,
+        'lastyearStartDate'=>$lastyearStartDate,
+        'lastyearEndDate'=>$lastyearEndDate
+       ];
+}
+
+
+function sendexamplNotification()
 {
     $firebase = Firebase::where('user_id', '=', $request_ride->user_id)->select('user_id', 'firebase_token', 'platform')->get();
         
@@ -230,136 +305,8 @@ function sendNotification()
         } elseif ($status == 3) {
             return response()->json(apiResponseHandler(["data"=>$request_ride], 'Ride Declined Successfully'));
         }
-}
-function dateBetweenFilter($allFare,$yearStartDate,$yearEndDate,$ride_date)
-{
-    $yearFare=array_filter($allFare,function($a)use($yearStartDate,$yearEndDate,$ride_date){
-            $rideDateStart=strtotime($yearStartDate);
-            $rideEndStart=strtotime($yearEndDate);
-            $a=(array) $a;
-           return ($a[$ride_date]>=$rideDateStart && $a[$ride_date]<=$rideEndStart);
-        });
-    return $yearFare;
-}
-function random_color_part() {
-    return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
-}
-
-function random_color() {
-    return random_color_part() . random_color_part() . random_color_part();
-}
-function  dateByFilter()
-{
-    $now = Carbon::now();
-        $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
-        $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
-        $start = new Carbon('first day of this month');
-        $monthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
-        $end = new Carbon('last day of this month');
-        $monthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
-        $year = date('Y');
-        $yearStartDate = Carbon::create($year, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
-        $yearEndDate = Carbon::create($year, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
-        $dayStartDate=date("Y-m-d")." 00:00";
-        $dayEndDate=date("Y-m-d")." 23:59";
-        $dayYesterdayStart=Carbon::yesterday()->format("Y-m-d H:i");
-        $dayYesterdayEnd=substr($dayYesterdayStart,0,10)." 23:59";
-        $lastYear=$year-1;
-        $lastyearStartDate = Carbon::create($lastYear, 1, 1, 0, 0, 0)->format('Y-m-d H:i');
-        $lastyearEndDate = Carbon::create($lastYear, 12, 31, 0, 0, 0)->format('Y-m-d H:i');
-        $start = new Carbon('first day of last month');
-        $lastmonthStartDate=$start->startOfMonth()->format('Y-m-d H:i');
-        $end = new Carbon('last day of last month');
-        $lastmonthEndDate=$end->endOfMonth()->format('Y-m-d H:i');
-        $start = new Carbon('last sunday');
-        $lastweekEndDate=$start->format('Y-m-d H:i');
-        $end = $start->subDays("6");
-        $lastweekStartDate=$end->format('Y-m-d H:i');
-       return [
-        "dayStartDate"=>$dayStartDate,
-        "dayEndDate"=>$dayEndDate,
-        "yearStartDate"=>$yearStartDate,
-        "yearEndDate"=>$yearEndDate,
-        "weekStartDate"=>$weekStartDate,
-        "weekEndDate"=>$weekEndDate,
-        "monthStartDate"=>$monthStartDate,
-        "monthEndDate"=>$monthEndDate,
-        "yesterdayStartDate"=>$dayYesterdayStart,
-        "yesterdayEndDate"=>$dayYesterdayEnd,
-        'lastmonthStartDate'=>$lastmonthStartDate,
-        'lastmonthEndDate'=>$lastmonthEndDate,
-        'lastweekStartDate'=>$lastweekStartDate,
-        'lastweekEndDate'=>$lastweekEndDate,
-        'lastyearStartDate'=>$lastyearStartDate,
-        'lastyearEndDate'=>$lastyearEndDate
-       ];
-}
-function sendFirebaseNotification($token, $notification, $platform)
-{
-    $url = 'https://fcm.googleapis.com/fcm/send';
-
-    $headers = array(
-        'Authorization: key=' . env('FIREBASE_SERVER_KEY'),
-        'Content-Type: application/json'
-    );
-
-    $body = [];
-
-    if ($platform == 1) {
-        $inputData = $notification['data'];
-        $inputData['title'] = $notification['title'];
-        $inputData['body'] = $notification['body'];
-        $body = [
-            'to' => $token,
-            'data' => $inputData,
-        ];
-    } else if ($platform == 2) {
-        $iosData = $notification;
-
-        $iosData['data'] = $notification;
-
-        $body = [
-            'to' => $token,
-            "content_available" => true,
-            "mutable_content" => true,
-            'notification' => $iosData
-
-        ];
-    } else if ($platform == 3) {
-
-        $body = [
-            "to" => $token,
-            "notification" => $notification
-        ];
     }
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
-    $result = curl_exec($ch);
-
-    Log::info($result);
-    Log::info($token);
-
-    $status = json_decode($result, true);
-
-    if ($status['failure'] == 0) {
-        curl_close($ch);
-        return false;
-    } else {
-        Log::info('Error Log');
-        if ($token) {
-            Firebase::where('firebase_token', '=', $token)->delete();
-        }
-        curl_close($ch);
-        return true;
-    }
-}
 
 function sendEmail($to, $name, $html)
 {
@@ -536,3 +483,151 @@ function sendActivities($action_performer,$action_to,$action_title,$description,
          ]);
          $activities->save();
 }
+//AIzaSyDOcDbk1PO_qgVJdLDkmNJBF6LAnugEwBM
+function sendNotification()
+{
+    $firebase = Device::where('user_id', '=', $request_ride->user_id)->select('user_id', 'firebase_token', 'platform')->get();
+        
+        foreach ($firebase as $key => $item) {
+            $notification = [
+                'title' => 'Action on request ride status is '.$final_status,
+                'body' => "Driver perform action on your requested ride is ".$final_status . $status == 2 ? 'Otp : '.$request_ride->sms_code : '',
+                'type' => RIDE_REQUEST_ACTION,
+                'data' => [
+                    'type' => RIDE_REQUEST_ACTION,
+                    'status' => $status,
+                    'otp' => $status == 2 ? $request_ride->sms_code : ''
+
+                ]
+            ];
+            sendFirebaseNotification($item->firebase_token, $notification, $item->platform);
+        }
+
+        $notify = new Notification();
+        $notify->sender = Auth::user()->id;
+        $notify->receiver = $request_ride->user_id;
+
+        if ($status == 2) {
+            $notify->title = "Your ride has been accepted  OTP Code ".$request_ride->booking_id;
+            $message = $notify->title;
+            $receiverEmail=User::find($request_ride->user_id);
+            //sendMessage($number, $message);
+            sendEmail($receiverEmail->email, $receiverEmail->name, $message);
+
+        }
+        if ($status == 3) {
+            $notify->title = 'Your ride has been declined';
+        }
+        $notify->notification_message =$notify->title." ".$driver_rides->source." ".$driver_rides->destination;
+        $notify->type = RIDE_REQUEST_ACTION;
+        $notify->otp = $request_ride->sms_code;
+        $notify->driver_ride_id = $driver_rides->user_id;
+
+        $notify->save();
+
+
+        Notification::where('type', '=', 3)
+            ->where('sender', '=', Auth::user()->id)
+            ->where('receiver', '=', $request_ride->user_id)
+            ->delete();
+
+        if ($status == 2) {
+            //admin notification
+            $admin = User::where('type', '=', 3)->select('id')->first();
+
+            $admin_fcm = Firebase::where('user_id', '=', $admin->id)->select('firebase_token', 'platform', 'user_id')->first();
+            if ($admin_fcm) {
+
+                $notification = [
+                    'title' => 'Requested Ride Accepted By Driver',
+                    'body' => "User Requested Ride Accepted By Driver",
+                    'type' => DRIVER_RIDE_ACCEPTED,
+                    'data' => [
+                        'type' => DRIVER_RIDE_ACCEPTED,
+                        'message' => 'Ride Accepted By Driver',
+                        'ride_id' => $driver_rides->id,
+                    ]];
+
+                sendFirebaseNotification($admin_fcm->firebase_token, $notification, $admin_fcm->platform);
+
+                $admin_notify = new AdminNotification();
+                $admin_notify->user_id = Auth::user()->id;
+                $admin_notify->type = DRIVER_RIDE_ACCEPTED;
+                $admin_notify->ride_id = $driver_rides->id;
+                $admin_notify->ride_posted_by_driver = 1;
+                $admin_notify->notification_message = 'User Requested Ride Accepted By Driver';
+
+                $admin_notify->save();
+            }
+            return response()->json(apiResponseHandler(["data"=>$request_ride], 'Ride Accepted Successfully'));
+        } elseif ($status == 3) {
+            return response()->json(apiResponseHandler(["data"=>$request_ride], 'Ride Declined Successfully'));
+        }
+}
+function sendFirebaseNotification($token, $notification, $platform)
+{
+    $url = 'https://fcm.googleapis.com/fcm/send';
+
+    $headers = array(
+        'Authorization: key=' . env('FIREBASE_SERVER_KEY'),
+        'Content-Type: application/json'
+    );
+
+    $body = [];
+
+    if ($platform == 2) {
+        $inputData = $notification['data'];
+        $inputData['title'] = $notification['title'];
+        $inputData['body'] = $notification['body'];
+        $body = [
+            'to' => $token,
+            'data' => $inputData,
+        ];
+    } else if ($platform == 1) {
+        $iosData = $notification;
+
+        $iosData['data'] = $notification;
+
+        $body = [
+            'to' => $token,
+            "content_available" => true,
+            "mutable_content" => true,
+            'notification' => $iosData
+
+        ];
+    } else if ($platform == 3) {
+
+        $body = [
+            "to" => $token,
+            "notification" => $notification
+        ];
+    }
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+    $result = curl_exec($ch);
+
+    Log::info($result);
+    Log::info($token);
+
+    $status = json_decode($result, true);
+
+    if ($status['failure'] == 0) {
+        curl_close($ch);
+        return false;
+    } else {
+        Log::info('Error Log');
+        if ($token) {
+            Device::where('device_id', '=', $token)->delete();
+        }
+        curl_close($ch);
+        return true;
+    }
+}
+

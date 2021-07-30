@@ -19,6 +19,8 @@ use App\Models\Subject;
 use App\Models\Admission;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AddStream;
+use App\Models\Device;
+use App\Models\Notification;
 use \Illuminate\Contracts\Support\Renderable;
 
 class SmsController extends Controller
@@ -238,7 +240,8 @@ public function selectStaffForMessage(request $request)
                           ->select('add_stream.id as class_id',
                           'employee_id',db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name) as name"))
                           ->first();
-    $subjectTeacher=Subject::leftjoin('admission','subjects.class','=','admission.class')
+    $subjectTeacher=Subject::leftjoin('subject_class','subjects.subject_id','=','subject_class.subject')
+    ->leftjoin('admission','subject_class.class','=','admission.class')
     ->where('admission.admission_id',$id)
     ->leftjoin('teacher_timetable','admission.class','=','teacher_timetable.class')
     ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')
@@ -258,7 +261,9 @@ public function selectStaffForMessage(request $request)
     public function MessageTeacher(request $request)
     {
         $errors=[];
-        $sent_to=$request->sent_to;
+
+       
+        $sent_to=$request->sent_to; 
         //teacher
           if(Auth::user()->user_role==3)
           {
@@ -333,6 +338,33 @@ public function selectStaffForMessage(request $request)
                         'message'=>$request->message,
                     ]);
           }
+
+
+        //   $id=Auth::user()->id;
+
+        //   $firebase = (new Device())->where('user_id', '=', $sent_to)->select('user_id', 'device_id')->get();
+
+        //     foreach ($firebase as $key => $item) {
+        //         $notification = [
+        //             'title' => 'You Have A New Message',
+        //             'body' => $request->message,
+        //             'type' => CHAT_MESSAGE,
+        //             'data' => [
+        //                 'type' => CHAT_MESSAGE,
+        //                 'message' => $request->message
+        //             ]
+        //         ];
+        //       sendFirebaseNotification($item->device_id, $notification,$item->device);
+        //   }
+  
+        //   $notify = new Notification();
+        //   $notify->action_performer  = Auth::user()->id;
+        //   $notify->action_to  = $sent_to;
+        //   $notify->action_title="message";
+        //   $notify->description = 'You have a new message.';
+        //   $notify->read_status = 0;
+        //   $notify->save();
+  
          
            if($message->save()){
                return response()->json([
@@ -356,11 +388,11 @@ public function selectStaffForMessage(request $request)
          if(Auth::user()->user_role==3)
          {
             //staff
-            $receiver=Auth::user()->id;
+            $receiver=Auth::user()->staff_id;
             $message=Message::where('receiver',$receiver)
                            ->leftjoin('admission','message.sender','=','admission.admission_id')
                            ->select('message.created_at','message',
-                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),
+                           db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name) as name"),'replay',
                            'message.id as message_id') 
                            ->orderBy('message.id', 'desc')
                            ->get();

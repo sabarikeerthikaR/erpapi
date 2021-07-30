@@ -65,7 +65,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $Other_event = Other_event::all();
+        $Other_event = Other_event::orderBy('id','desc')->get();
         return response()->json(['status' => 'Success', 'data' => $Other_event]);
     }
 

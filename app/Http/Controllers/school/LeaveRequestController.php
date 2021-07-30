@@ -48,7 +48,7 @@ class LeaveRequestController extends Controller
 
          $id=auth::user()->id;
          //activity
-         sendActivities($id,$request_to,'leaveRequest', 'requested for leave',0);
+         sendActivities($id,$request_to,'leaveRequest', 'you have requested for leave',0);
 
 
         if($leaveRequest->save()){
@@ -165,7 +165,7 @@ class LeaveRequestController extends Controller
 
         $id=auth::user()->id;
         //activity
-        sendActivities($id,$request_to,'leaveRequest', 'leave request is accepted',0);
+        sendActivities($id,'','leaveRequest', 'leave request is accepted',0);
 
         if($leaveReq->save()){
             return response()->json([

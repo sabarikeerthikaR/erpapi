@@ -7,7 +7,7 @@ class Sales_item extends Model
 {
    
      protected $fillable = [
-        'item_name','category','description'
+        'item_name','category','description','unit_price'
     ];
     protected $table = 'sales_item';
     protected $primaryKey = 'id';

@@ -114,12 +114,13 @@ public function update(Request $request)
              return response()->json(apiResponseHandler([], $validator->errors()->first(), 400), 400);
          }
        $Grants = Grants::find($request->id);
-          if($request->file('add_file')){
+
+                if($request->file('add_file')){
               $add_file = $request->file('add_file');
               $imgName = time() . '.' . pathinfo($add_file->getClientOriginalName(), PATHINFO_EXTENSION);
-              Storage::disk('public_uploads')->put('/grants-file/' . $imgName, file_get_contents($add_file));
-              $add_file=config('app.url').'/public/uploads/grants-file/' . $imgName;
-              $request->add_file=$add_file;
+              Storage::disk('public_uploads')->put('/syllabus-file/' . $imgName, file_get_contents($add_file));
+              $add_file=config('app.url').'/public/uploads/syllabus-file/' . $imgName;
+              $Grants->add_file=$add_file;
               }
        $Grants->grant_type= $request->grant_type;
        $Grants->date= $request->date;

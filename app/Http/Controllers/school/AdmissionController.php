@@ -20,7 +20,7 @@ use Illuminate\Database\Migrations\Migration;
 use App\Mail\BirthdayRemainder;
 use App\Models\ParentStudents;
 use App\Models\Admission;
-use App\Models\Online_registration;
+use App\Models\OnlineRegistration;
 use App\Models\First_parent;
 use App\Models\Second_parent;
 use App\Models\Emergency_contact;
@@ -411,7 +411,7 @@ public function destroy(Request $request)
    
         $count=Admission::count();
         $admission_id=date("Ymd").$count;
-        $Online_registration = Online_registration::find($request->online_reg_id);
+        $Online_registration = OnlineRegistration::find($request->online_reg_id);
         $Online_registration->status=1;
         $Online_registration->save();
         if(!empty($Online_registration))
@@ -795,7 +795,8 @@ $id=$request->admission_id;
     ->select('qualification','staff.phone','staff.email',
     db::raw("CONCAT(staff.first_name,' ',COALESCE(staff.middle_name,''),' ',staff.last_name)as name"),'staff.passport_photo')
     ->first();
-    $subjectTeacher=Subject::leftjoin('admission','subjects.class','=','admission.class')
+    $subjectTeacher=Subject::leftjoin('subject_class','subjects.subject_id','=','subject_class.subject')
+    ->leftjoin('admission','subject_class.class','=','admission.class')
     ->where('admission.admission_id',$request->admission_id)
     ->leftjoin('teacher_timetable','admission.class','=','teacher_timetable.class')
     ->leftjoin('staff','teacher_timetable.staff','=','staff.employee_id')

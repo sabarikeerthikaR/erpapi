@@ -113,7 +113,7 @@ public function add_stream(Request $request)
        
       $Std_classstream = new AddStream(array(
       'class'=>$request->class,
-      'stream'=>$g['stream'], 
+      'stream'=>$g['key_value'], 
       'date'=>date('Y-m-d'),   
       ));
        if(!$Std_classstream->save())
@@ -124,7 +124,7 @@ public function add_stream(Request $request)
    }
 
    $streamClass=AddStream::where('class',$request->class)
-                           ->where('stream',$g['stream'])
+                           ->where('stream',$g['key_value'])
                            ->where('date',date('Y-m-d'))
                            ->join('std_class','add_stream.class','=','std_class.class_id')
                            ->join('class_stream','add_stream.stream','=','class_stream.stream_id')

@@ -20,6 +20,7 @@ use App\Models\Fee_structure;
 use App\Models\InstitutionDetails;
 use App\Models\Online_payment;
 use Illuminate\Support\Facades\Auth;
+use App\Helper;
 
 class OnlinePaymentController extends Controller
 {
@@ -76,6 +77,11 @@ public function OnlinePaymentpost(request $request)
           'address'   =>$request->address,
           'card_number'=>$request->card_number,
          ]);
+
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id,'','online payment', 'you have made new online payment for tuition fee',0);
+
        if($Fee_payment->save()){
                   return response()->json([
                  'message'  => 'Fee_payment saved successfully',
@@ -90,17 +96,46 @@ public function OnlinePaymentpost(request $request)
 }   
 public function FeeStatement(request $request)
 {
+
+  $student=Admission::where('admission_id',$request->student)
+                                  ->leftjoin('add_stream','admission.class','=','add_stream.id')
+                                  ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
+                                  ->leftjoin('class_stream','add_stream.stream','=','class_stream.stream_id')
+                                  ->select(db::raw("concat(first_name,' ',coalesce(middle_name,''),' ',last_name)as name"),db::raw("concat(std_class.name,' ',class_stream.name)as class"),'phone')->first();
+
+   $terms=Terms::select('term_id',DB::raw('DATE_FORMAT(from_year, "%Y") as year'),'name')->get();                               
   $feeStatement=Fee_payment::where('student',$request->student)
                                  ->leftjoin('setings','fee_payment.payment_method','=','setings.s_d')
-                                 ->leftjoin('terms','fee_payment.term','=','terms.term_id')
-                         ->select('date','amount','terms.name as term','description','setings.key_name as payment_method')->get();
+                                  ->leftjoin('terms','fee_payment.term','=','terms.term_id')
+                         ->select('date','amount','term','description','setings.key_name as payment_method',DB::raw('DATE_FORMAT(from_year, "%Y") as year'))->get()->toArray();
+                         $feeStatements=[];
+      
+                         foreach($terms as  $k => $g)
+                    
+                         {
+                    
+                              $data=array_filter($feeStatement, function($m) use ($g){
+                    
+                                return ($m['term']==$g['term_id']  || $m['year']==$g['year']);
+                              
+                               });
+                    
+                               $feeStatements[]=array( 'year'=>$g['year'],
+                                                                  'term'=> ["terms"=>$g["name"],"data"=>$data]);
+                    
+                         }
+
 
                          if(!empty($feeStatement))
       {
         return response()->json([
           'message'=>'success',
-          'data'=>$feeStatement,
-          // 'term'=>$termFee
+          'student'=>['name'=>$student->name,
+                            'class'=>$student->class,
+                           'phone'=>$student->phone,
+                           'date'=>date('F d, Y H:i')],                
+           'data'=>$feeStatements          
+        
         ]);
       }else{
         return response()->json([
@@ -161,6 +196,13 @@ $selectTerm=Terms::whereMonth('from_year','<=',$month)
           'address'   =>$request->address,
           'card_number'=>$request->card_number,
          ]);
+
+
+         $id=auth::user()->id;
+         //activity
+         sendActivities($id,'','online payment', 'you have made new online payment for fee extrass',0);
+
+
        if($Fee_payment->save()){
                   return response()->json([
                  'message'  => 'Fee_payment saved successfully',

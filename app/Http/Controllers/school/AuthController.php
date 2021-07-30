@@ -24,6 +24,7 @@ use App\Notifications\PasswordResetRequest;
 use App\Notifications\PasswordResetSuccess;
 use App\PasswordReset;
 use App\Models\First_Parent;
+use App\Models\Device;
 
 
 class AuthController extends Controller
@@ -107,9 +108,11 @@ public function Login(Request $request)
             $token = $admin->createToken('myApp')->accessToken;
             $name=$admin->first_name.' '.$admin->middle_name.' '.$admin->last_name;
             $students_list=[];
-            $device=User::where('id',$admin->id)->first();
-            $device->device_id = $request->deviceId;
-            $device->device = $request->device;
+            $device=new Device ([
+            'user_id'=>auth::user()->id,
+            'device_id'=>$request->deviceId,
+            'device'=>$request->device
+            ]);
             $device->save();
             if($admin->user_role=="4")
             {
@@ -123,7 +126,7 @@ public function Login(Request $request)
                                                        'staff_id'=>$admin->staff_id, 
                                                        'name' =>$name,
                                                        'id'=>$admin->id,
-                                                       'device'=>$device,
+                                                       'device'=>$request->deviceId,
                                                        'students'=>$students_list ], 'success'));
        } else {
         
@@ -131,8 +134,13 @@ public function Login(Request $request)
         }
     }
    
-   public function logout()
+   public function logout(request $request)
     {
+       
+        $id=$request->id;
+        $device = Device::where('user_id',$id)->where('device_id',$request->deviceId)->first();  
+        $device->delete();
+
         Auth::logout();
         return response()->json(['message'=>'Successfully logged out']);
     }

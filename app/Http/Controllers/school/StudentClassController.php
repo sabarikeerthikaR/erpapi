@@ -24,20 +24,20 @@ class StudentClassController extends Controller
   {
     $data=$request->data;
     $errors=[];
+
+
     foreach($data as $g)
     {
- 
-    $class = Admission::where('admission_id',$g['admission_id'])->first();
-      
-      $class->class=$request->class;
- 
-     $check=$g['status'];
-        if($check == true)
+       $class = Admission::where('admission_id',$g['admission_id'])->first();
+
+       $class->class=$request->class;
+       $check=$g['status'];
+       if($check == 1)
         {
-          if(!$class->save())
-          {
-            $errors[]=$g;
-          }
+        $class->save();
+        }
+    }
+
            if(count($errors)==0)
               {
               return response()->json([
@@ -45,7 +45,7 @@ class StudentClassController extends Controller
               'activity'=>$request->class,
           'data'=>$data,
                   ]);
-              } 
+              
         }else 
         {
             return response()->json([
@@ -53,7 +53,7 @@ class StudentClassController extends Controller
              'errors'=>$errors
            ]);
          }
-       }
+       
              
   }
   public function listStudent(request $request)

@@ -21,6 +21,7 @@ use App\Models\ExamTimetable;
 use App\Models\Gradings;
 use App\Models\Subject;
 use App\Models\Terms;
+use App\Models\SubjectClass;
 use App\Helper;
 use Illuminate\Support\Facades\Auth;
 
@@ -155,15 +156,17 @@ public function destroy(Request $request)
     {
         $exam=$request->exam_id;
         $studentsub=Admission::where('class',$request->class)
-        ->select('admission_id',db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student")
+        ->select('admission_id',db::raw("CONCAT(first_name,' ',coalesce(middle_name,''),' ',last_name)as student")
         )->get();
-        $subject=Subject::leftjoin('exam','subjects.term','=','exam.term')
-        ->where('class',$request->class)
-        ->select('name as subject','subject_id',
+        $subject=SubjectClass::where('subject_class.class',$request->class)
+        ->leftjoin('subjects','subject_class.subject','=','subjects.subject_id')
+        ->leftjoin('exam','subject_class.term','=','exam.term')
+        ->select('subjects.name as subject','subject_id',
             db::raw('(CASE when sub_units = "339" then "1"
                        else "0"  end) as sub_units'))
         ->groupBy('subject_id')
         ->get();
+       
         if(!empty($studentsub))
         {
             return response()->json([
@@ -194,6 +197,7 @@ public function destroy(Request $request)
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
+                 $exam1[$k]['class']=$request->class;
             }
             else
             {
@@ -203,10 +207,11 @@ public function destroy(Request $request)
                 $exam1[$k]['subject'] = $request->subject;
                 $exam1[$k]['grading_system']=$request->grading_system;
                  $exam1[$k]['convert_percentage']=$request->convert_percentage;
+                 $exam1[$k]['class']=$request->class;
             }
             $id=auth::user()->id;
             //activity
-            sendActivities($id, 'student','mark', 'new exam mark is created',0);
+            sendActivities($id, 'student','mark', 'you have created new exam mark',0);
         
             
             
@@ -231,10 +236,29 @@ public function destroy(Request $request)
                    }
             }
 
-    // public function ExamMarkView(request $request)
-    // {
+    public function ExamMarkView(request $request)
+    {
 
-    // }
+        $ExamMark=ExamMark::where('exam_mark.class',$request->class)
+        ->where('exam_mark.exam',$request->exam)
+        ->where('subject',$request->subject)
+       ->leftjoin('admission','exam_mark.student','=','admission.admission_id')
+        ->select(db::raw("concat(first_name,' ',coalesce(middle_name,''),' ',last_name)as student"), 'total_mark','exam_mark.id')
+        ->get();
+        if(!empty($ExamMark)){
+            return response()->json([
+            'data'  => $ExamMark          
+            ]);
+        }else
+        {
+          return response()->json([
+         'message'  => 'No data found in this id'  
+          ]);
+         }
+
+
+
+    }
     public function examTimetable(request $request)
     {
         $data=$request->data;
@@ -281,7 +305,7 @@ public function destroy(Request $request)
     }
     public function termForExam()
     {
-        $term=Exam::select('exam_id','title')
+        $term=Exam::select('exam_id','title','start_date as from_date','end_date as to_date')
         ->get();
         return response()->json([
             'message'  => 'success',
@@ -406,9 +430,8 @@ public function destroy(Request $request)
 
           $data=array_filter($mark, function($m) use ($g){
 
-            return($m['student']==$g['admission_id']);
-            //return (is_array($m) && $m['student'] == $g['admission_id']);
-           //print_r($m);
+            return array($m['student']==$g['admission_id']);
+          
            });
 
            $marks[]=array("name"=>$g["name"],"data"=>$data);
@@ -527,7 +550,7 @@ public function destroy(Request $request)
      }
      $id=auth::user()->id;
         //activity
-        sendActivities($id, 'student','mark', 'Exam mark is updated',0);
+        sendActivities($id, 'student','mark', 'you have updated exam mark',0);
 
         if($mark->save()){
             return response()->json([

@@ -71,8 +71,8 @@ public function show(request $request)
    }
    public function index()
     {
-        $Bank_account = Bank_account::leftjoin('bank_name','bank_account.bank_name','=','bank_name.id')
-        ->select('bank_name.name as bank_name','account_name','account_no','branch','description','bank_account.id')->get();
+        $Bank_account = Bank_account::leftjoin('setings','bank_account.bank_name','=','setings.s_d')
+        ->select('setings.key_name as bank_name','account_name','account_no','branch','description','bank_account.id')->get();
         return response()->json(['status' => 'Success', 'data' => $Bank_account]);
     }
 
@@ -96,10 +96,10 @@ public function update(Request $request)
        $Bank_account->account_no= $request->account_no;
        $Bank_account->branch= $request->branch;
        $Bank_account->description= $request->description;
-       $bankName=Bank_name::where('id',$request->bank_name)
-        ->select('name')->first();
+       $bankName=Settings::where('key_value',$request->bank_name)
+        ->select('key_name')->first();
 $settings=Settings::where('group_name','=','bank_account')->where('key_value',$request->id)->first();
-        $settings->key_name= $bankName->name.' '.$request->account_no;
+        $settings->key_name= $bankName->key_name.' '.$request->account_no;
         $settings->save();  
         if($Bank_account->save()){
             return response()->json([

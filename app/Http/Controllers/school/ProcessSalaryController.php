@@ -35,7 +35,7 @@ class ProcessSalaryController extends Controller
             'year'  =>$Process_salary->year,
             'processing_date'    =>$Process_salary->processing_date,
           'comment'  =>$Process_salary->comment,
-          'employee'=>$g['employee'],
+          'employee'=>$g['key_value'],
           'created_by'=>auth::user()->id
          ));
           if(!$Process_salary->save())
@@ -79,7 +79,7 @@ public function show(request $request)
                                          ->leftjoin('users','process_salary.created_by','=','users.id')
                                          ->select('processing_date','month.name as month',
                                                   db::raw("CONCAT(first_name,' ',COALESCE(middle_name,''),' ',last_name)as created_by"),
-                                                  db::raw('count(employee)'))
+                                                  db::raw('count(employee) as employee'))
                                          ->groupBy('processing_date')
                                          ->get();
         return response()->json(['status' => 'Success', 'data' => $Process_salary]);

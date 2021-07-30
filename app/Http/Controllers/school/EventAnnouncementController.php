@@ -61,7 +61,7 @@ public function show(request $request)
    }
    public function index()
     {
-        $Event_announcement = Event_announcement::all();
+        $Event_announcement = Event_announcement::orderBy('id','desc')->get();
         return response()->json(['status' => 'Success', 'data' => $Event_announcement]);
     }
 

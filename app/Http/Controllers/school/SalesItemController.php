@@ -30,7 +30,7 @@ class SalesItemController extends Controller
         'item_name'  =>$Sales_item->item_name,
         'category'  =>$Sales_item->category,
         'description'    =>$Sales_item->description,
-        
+        'unit_price'    =>$Sales_item->unit_price,
          ]);
          $settings=Settings::create([
             'group_name'=>'sales_item',
@@ -66,7 +66,7 @@ public function show(request $request)
    public function index()
     {
         $Sales_item = Sales_item::leftjoin('sales_item_category','sales_item.category','=','sales_item_category.id')
-        ->select('item_name','sales_item.id','sales_item_category.name as category','sales_item.description')
+        ->select('item_name','sales_item.id','sales_item_category.name as category','sales_item.description','unit_price')
         ->get();
         return response()->json(['status' => 'Success', 'data' => $Sales_item]);
     }
@@ -87,6 +87,7 @@ public function update(Request $request)
        $Sales_item->item_name= $request->item_name;
        $Sales_item->category= $request->category;
        $Sales_item->description= $request->description;
+       $Sales_item->unit_price= $request->unit_price;
        $settings=Settings::where('group_name','=','sales_item')->where('key_value',$request->id)->first();
         $settings->key_name= $request->item_name;
         $settings->save();

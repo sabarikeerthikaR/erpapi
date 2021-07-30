@@ -12,6 +12,8 @@ use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Subject;
+use App\Models\SubUnit;
+use App\Models\SubjectClass;
 use App\Models\AddSubToTeacher;
 use App\Models\Admission;
 use App\Models\Staff;
@@ -25,68 +27,52 @@ class SubjectController extends Controller
 {
    public function store(Request $request)
     {
-          
-        $data=$request->data;
+            $data=$request->data;
         $errors=[];
-        foreach($data as $g)
-        {
-          if ($request->name=='') 
-          {
-           return response()->json(apiResponseHandler([],'The name field is required',400), 400);
-          }
-          if ($request->short_name=='') 
-          {
-           return response()->json(apiResponseHandler([],'The short_name field is required',400), 400);
-          }
-          if ($request->priority=='') 
-          {
-           return response()->json(apiResponseHandler([],'The priority field is required',400), 400);
-          }
-          if ($request->type=='') 
-          {
-           return response()->json(apiResponseHandler([],'The type field is required',400), 400);
-          }
-          if ($request->sub_units=='') 
-          {
-           return response()->json(apiResponseHandler([],'The sub_units field is required',400), 400);
-          }
-        
-        $Subject = new Subject(array(
-          'name'=>$request->name,
+        $validator =  Validator::make($request->all(), [
+            'name' => ['required'],
+             'short_name' => ['required'],
+              'priority' => ['required'],
+               'type' => ['required'],
+                'sub_units' => ['required']
+          ]); 
+          if ($validator->fails()) {
+            return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
+        }
+        $subject=Subject::create([
+
+       'name'=>$request->name,
           'code'=>$request->code,
           'short_name'=>$request->short_name,
           'priority'=>$request->priority,
           'type'=>$request->type,
           'sub_units'=>$request->sub_units,
+ 
+         ]); $subject->save();
+         $settings=Settings::create([
+            'group_name'=>'subject',
+            'key_name'=>$request->name,
+            'key_value'=>$subject->subject_id,
+            ]);
+            $settings->save();
+          
+      
+        foreach($data as $g)
+        {
+
+        $class = new SubjectClass(array(
+          'subject'=>$subject->subject_id,
           'term'   =>$g['term'],
           'class'=>$g['class'],
          ));
 
-        if(!$Subject->save())
+        if(!$class->save())
           {
             $errors[]=$g;
           }
      
         }  
-        $SubjectGet=Subject::where('name',$request->name)
-        ->where('name',$request->name)
-        ->where('code',$request->code)
-        ->where('short_name',$request->short_name)
-        ->where('priority',$request->priority)
-        ->where('type',$request->type)
-        ->select('subject_id')->get();
-       foreach($SubjectGet as $s)
-        {
-        $settings=new Settings(array(
-            'group_name'=>'subject',
-            'key_name'=>$request->name,
-            'key_value'=>$s['subject_id'],
-            ));
-             if(!$settings->save())
-          {
-            $errors[]=$g;
-          }
-         }
+         
               if(count($errors)==0)
               {
               return response()->json([
@@ -126,37 +112,35 @@ public function show(request $request)
    public function index()
     {
         $Subject = Subject::leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
-        ->leftjoin('terms','subjects.term','=','terms.term_id')
-        ->leftjoin('add_stream','subjects.class','=','add_stream.id')
-        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
-        ->leftjoin('class_stream','add_stream.stream','=','stream_id')
-        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->get();
+        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units',)->get();
         return response()->json(['status' => 'Success', 'data' => $Subject]);
     }
     public function subjectProfile(request $request)
     {
       
-        $Subject = Subject::leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
-        ->leftjoin('terms','subjects.term','=','terms.term_id')
-        ->leftjoin('add_stream','subjects.class','=','add_stream.id')
+        $Subject = Subject::where('subject_id',$request->subject_id)
+        ->select('subject_id','subjects.name','code','short_name','priority')->first();
+
+        $subunit = SubUnit::where('subject',$request->subject_id)
+        ->select('name','mark')->get();
+
+        $class = SubjectClass::leftjoin('terms','subject_class.term','=','terms.term_id')
+        ->leftjoin('add_stream','subject_class.class','=','add_stream.id')
         ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
         ->leftjoin('class_stream','add_stream.stream','=','stream_id')
-        ->where('subjects.code',$request->code)
-        ->select('subject_id','subjects.name','code','short_name','priority','unit.key_name as sub_units','class_stream.name as stream','std_class.name as class','terms.name as term')->first();
-        $class = Subject::leftjoin('add_stream','subjects.class','=','add_stream.id')
-        ->leftjoin('setings as unit','subjects.sub_units','=','unit.s_d')
-        ->leftjoin('std_class','add_stream.class','=','std_class.class_id')
-        ->leftjoin('class_stream','add_stream.stream','=','stream_id')
-        ->where('subjects.code',$request->code)
-        ->select('unit.key_name as sub_units','class_stream.name as stream','std_class.name as class')->get();
+        ->where('subject',$request->subject_id)
+        ->select('class_stream.name as stream','std_class.name as class','terms.name as term')->get();
+
         return response()->json(['status' => 'Success', 'data' => $Subject,
-                                                         'class'=>$class]);
+                                                         'sub_count'=> $subunit->count(),  
+                                                         'class_count'=> $class->count(),
+                                                         'class'=>$class,
+                                                         'subunit'=>$subunit]);
     }
     public function subunitShow(request $request)
     {
-        $subunit=Subject::where('subject_id',$request->subject_id)
-        ->select('unit_title','mark')
-        ->first();
+        $subunit=SubUnit::where('subject',$request->subject_id)
+        ->get();
           if(!empty($subunit)){
                     return response()->json([
                     'data'  => $subunit      
@@ -169,12 +153,47 @@ public function show(request $request)
                  }
 
     }
+    public function SubUnitdestroy(Request $request)
+    {
+        $Subject = SubUnit::find($request->id);
+        $Subjectget = SubUnit::where('id',$request->id)->select('subject')->first();
+        $Subjectcount = SubUnit::where('subject',$Subjectget->subject)->count();
+        if($Subjectcount==0)
+        {
+        $Subjectup = Subject::find($Subjectget->subject);
+        $Subjectup->sub_units =340 ;
+        $Subjectup->save();
+        }
+        if(!empty($Subject))
+
+                {
+                  if($Subject->delete()){
+                  return response()->json([
+                  'message'  => 'successfully deleted'
+                   ]);
+               }else {
+                  return response()->json([
+                  'message'  => 'failed'
+                ]);
+               }
+           }else
+           {
+           return response()->json([
+                 'message'  => 'No data found in this id'  
+                 ]);
+            }
+    }
 
     public function subUnits(request $request)
     {
-        $subUnits=Subject::find($request->subject_id);
-        $subUnits->unit_title = $request->unit_title;
-        $subUnits->mark = $request->mark;
+        $subUnits=new SubUnit([
+        'subject' => $request->subject,
+       'name' => $request->name,
+        'mark' => $request->mark,
+        ]);
+        $Subjectup = Subject::find($request->subject);
+        $Subjectup->sub_units =339 ;
+        $Subjectup->save();
          if($subUnits->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -197,25 +216,21 @@ public function update(Request $request)
             'short_name' => ['required'],
             'priority' => ['required'],
             'type' => ['required'],
-            'sub_units' => ['required'],
+           
           
         ]); 
           if ($validator->fails()) {
             return response()->json(apiResponseHandler([], $validator->errors()->first(),400), 400);
         }
     $Subject = Subject::find($request->subject_id);
-        $Subject->name = $request->name ;
-        $Subject->term = $request->term ;
-        $Subject->name = $request->name ;
-        $Subject->code = $request->code ;
-        $Subject->short_name = $request->short_name ;
-        $Subject->priority = $request->priority ;
-         $Subject->type = $request->type ;
-          $Subject->sub_units = $request->sub_units ;
-           $Subject->class = $request->class ;
-       $settings=Settings::where('group_name','=','subject')->where('key_value',$request->subject_id)->first();
-        $settings->key_name= $request->name;
-        $settings->save();  
+          $Subject->name = $request->name ;  
+          $Subject->code = $request->code ;
+          $Subject->short_name = $request->short_name ;
+          $Subject->priority = $request->priority ;
+          $Subject->type = $request->type ;
+      $settings=Settings::where('group_name','=','subject')->where('key_value',$request->subject_id)->first();
+              $settings->key_name= $request->name;
+              $settings->save();  
         if($Subject->save()){
             return response()->json([
                  'message'  => 'updated successfully',
@@ -230,11 +245,16 @@ public function update(Request $request)
 public function destroy(Request $request)
     {
         $Subject = Subject::find($request->subject_id);
+        $subunit = SubUnit::where('subject',$request->subject_id);
+        $subunit->delete();
+        $class = SubjectClass::where('subject',$request->subject_id);
+        $class->delete();
          $settings=Settings::where('group_name','=','subject')->where('key_value',$request->subject_id)->first();
         $settings->group_name=NULL;
         $settings->key_value=NULL;
         $settings->key_name=NULL;
         $settings->save();  
+     
         if(!empty($Subject))
 
                 {
@@ -289,7 +309,7 @@ public function destroy(Request $request)
     public function listStudent(request $request)
     {
       $student=Admission::where('admission.class',$request->class_id)
-      ->select(db::raw("CONCAT(first_name,' ',middle_name,' ',last_name)as student"),
+      ->select(db::raw("CONCAT(first_name,' ',coalesce(middle_name,''),' ',last_name)as student"),
       'admission_id','admission.image')
      ->groupBy('admission_id')
       ->get();
