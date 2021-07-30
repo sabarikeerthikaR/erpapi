@@ -613,6 +613,7 @@ route::post('pettyCash_update','school\PettyCashController@update');
 route::get('pettyCash_destroy','school\PettyCashController@destroy');
 route::get('pettyCash_select','school\PettyCashController@show');
 
+
 //grants
 route::post('grants_store','school\GrantsController@store');
 route::get('grants_show','school\GrantsController@index');
@@ -634,10 +635,11 @@ route::post('addEmpSal_update','school\AddEmpSalController@update');
 route::get('addEmpSal_destroy','school\AddEmpSalController@destroy');
 route::get('addEmpSal_select','school\AddEmpSalController@show');
 route::get('addEmpSal_select','school\AddEmpSalController@show');
-route::get('payrollConfig','school\AddEmpSalController@payrollConfig');
-route::post('payrollConfigedit','school\AddEmpSalController@payrollConfigedit');
-route::get('payrollConfigdelete','school\AddEmpSalController@payrollConfigdelete');
-route::get('payrollConfigselect','school\AddEmpSalController@payrollConfigselect');
+
+route::get('payrollConfig','school\PayConfigController@index');
+route::post('payrollConfigedit','school\PayConfigController@update');
+route::get('payrollConfigdelete','school\PayConfigController@payrollConfigdelete');
+route::get('payrollConfigselect','school\PayConfigController@show');
 
 //deduction
 route::post('deduction_store','school\DeductionController@store');
@@ -1053,6 +1055,9 @@ Route::group(["middleware"=>["auth:api"]], function () {
          route::get('AcceptLeaveRequest/{id}','school\LeaveRequestController@AcceptLeaveRequest');
          route::post('AcceptReject','school\LeaveRequestController@AcceptReject');
           route::get('studentLeaveAdminView','school\LeaveRequestController@studentLeaveAdminView');
+              //activities
+    route::get('activityGet','school\ActivityController@activityGet');
+    
      });
 
 Route::get('testCode', function () {

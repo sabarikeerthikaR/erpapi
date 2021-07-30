@@ -67,7 +67,7 @@ Route::group(['prefix' => 'teacher'], function () {
         route::get('markEntry','school\ExamController@markEntry');
         route::post('markentryPost','school\ExamController@markentryPost');
          route::get('examList','school\ExamController@examList');
-                  route::get('markEdit','school\ExamController@markEdit');
+                  route::post('markEdit','school\ExamController@markEdit');
                   route::get('MarkSelectshow','school\ExamController@MarkSelectshow');
        
      //sms
@@ -86,9 +86,7 @@ Route::group(['prefix' => 'teacher'], function () {
     //notice board
     route::get('teachernoticeBoard','school\NoticeBoardController@teachernoticeBoard');
     
-    //activities
-    route::get('activityGet','school\ActivityController@activityGet');
-    
+
     });
     
 });

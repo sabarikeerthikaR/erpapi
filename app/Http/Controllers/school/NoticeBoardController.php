@@ -36,8 +36,11 @@ class NoticeBoardController extends Controller
 
        
          ]);
-       
-        
+
+         $id=Auth::user()->id;
+
+         sendNotification($id,'users','notice','you have new notice',0);
+   
         if($Notice_board->save()){
                   return response()->json([
                  'message'  => 'Notice_board saved successfully',

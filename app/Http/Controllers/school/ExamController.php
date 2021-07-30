@@ -431,8 +431,12 @@ public function destroy(Request $request)
           $data=array_filter($mark, function($m) use ($g){
 
             return array($m['student']==$g['admission_id']);
-          
-           });
+
+            //return is_array($datad)? array_values($datad): array();   
+           
+            //return (is_array($m) && $m['student'] == $g['admission_id']);
+           //print_r($m);
+         });
 
            $marks[]=array("name"=>$g["name"],"data"=>$data);
 
